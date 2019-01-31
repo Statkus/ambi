@@ -2,7 +2,7 @@ with "aws";
 
 project Ambi is
 
-  for Main use ("main.adb");
+  for Main use ("ambi.adb");
 
   for Source_Dirs use ("src");
 

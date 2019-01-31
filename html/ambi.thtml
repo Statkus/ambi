@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+   <body>
+
+      <form method="POST">
+         <input type="text"   name="video_url" value="">
+         <input type="submit" name="Btn" value="Watch">
+      </form>
+
+      <iframe width="560" height="315"
+         src="https://www.youtube.com/embed/@_VIDEO_ID_@">
+      </iframe>
+
+   </body>
+</html>

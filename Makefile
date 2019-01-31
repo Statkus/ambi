@@ -1,12 +1,12 @@
-EXEC_NAME = main
+EXEC_NAME = ambi
 OBJ_DIR = obj
 
 .PHONY : clean build
 
 clean:
-	rm $(EXEC_NAME)
+	rm -f $(EXEC_NAME)
 	rm -rf $(OBJ_DIR)
 
 build:
-	mkdir $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR)
 	gprbuild ambi.gpr

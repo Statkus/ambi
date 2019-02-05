@@ -1,6 +1,7 @@
 with AWS.Server;
 
 with Callback;
+with YT_API;
 
 with Ada.Text_IO; use Ada.Text_IO;
 with GNAT.Exception_Traces;
@@ -20,7 +21,7 @@ begin
 
    -- Read Youtube API key
    Open (File => YT_API_Key_File, Mode => In_File, Name => "yt_api_key");
-   Callback.Set_YT_API_Key (Get_Line (YT_API_Key_File));
+   YT_API.Set_YT_API_Key (Get_Line (YT_API_Key_File));
    Close (YT_API_Key_File);
 
    -- Launch the server on port 80

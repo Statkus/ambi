@@ -35,6 +35,11 @@ private
       Video_Search_Results : T_Video_Search_Results;
    end record;
 
+   Video_ID : String (1 .. YT_VIDEO_ID_LENGTH) := (others => '0');
+   Video_Search_List_Response : T_Video_Search_List_Response;
+
+   function Search_Result_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
+
    function Parse_Video_Search_List_Request (Search_Result : in String)
      return T_Video_Search_List_Response;
 

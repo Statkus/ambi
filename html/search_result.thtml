@@ -3,10 +3,39 @@
    <body>
 
       <img src="@_IMAGE_URL_1_@">
+      @_VIDEO_TITLE_1_@
+      <form method="POST" action="/1">
+         <input type="submit" name="button_1" value="Select">
+      </form>
+      <br>
+
       <img src="@_IMAGE_URL_2_@">
+      @_VIDEO_TITLE_2_@
+      <form method="POST" action="/2">
+         <input type="submit" name="button_2" value="Select">
+      </form>
+      <br>
+
       <img src="@_IMAGE_URL_3_@">
+      @_VIDEO_TITLE_3_@
+      <form method="POST" action="/3">
+         <input type="submit" name="button_3" value="Select">
+      </form>
+      <br>
+
       <img src="@_IMAGE_URL_4_@">
+      @_VIDEO_TITLE_4_@
+      <form method="POST" action="/4">
+         <input type="submit" name="button_4" value="Select">
+      </form>
+      <br>
+
       <img src="@_IMAGE_URL_5_@">
+      @_VIDEO_TITLE_5_@
+      <form method="POST" action="/5">
+         <input type="submit" name="button_5" value="Select">
+      </form>
+      <br>
 
    </body>
 </html>

@@ -1,4 +1,5 @@
 with "aws";
+with "json_ada";
 
 project Ambi is
 

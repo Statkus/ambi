@@ -11,9 +11,6 @@ package Callback is
 
 private
 
-   Video_ID             : Unbounded_String;
-   Video_Search_Results : T_Video_Search_Results;
-
    function Search_Result_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
 
    function Build_Search_Result

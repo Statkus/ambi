@@ -2,22 +2,41 @@
 <html>
    <head>
       <meta charset="utf-8"/>
+      <title>Ambi</title>
       @@INCLUDE@@ ../javascripts/aws.tjs
    </head>
    <body>
 
-      <form method="POST" action="/search_result">
-         <input type="text"   name="search_input" value="">
-         <input type="submit" name="Btn" value="Watch">
-      </form>
+      <input id="search_input" type="text" value="">
+      <input id="search_button" type="button" value="Watch">
 
-	  <div id="player"></div>
+      <div id="search_results_list"></div>
 
-	  <input id="clickme" type="button" value="Clik Me">
+      @@INCLUDE@@ ../javascripts/aws_action_replace.tjs (onclick, search_button, search_results_list, 5=>search_input)
 
-	  <div id="placeholder">... result here ...</div>
+      <script>
+         function select_result_item(elm) {
+            @@INCLUDE@@ ../javascripts/aws_func_clear.tjs (search_input)
 
-	  @@INCLUDE@@ ../javascripts/aws_action_replace.tjs onclick clickme placeholder
+            var x = elm.getAttribute('value');
+            var rurl = "/onclick$search_result_item_" + String(x);
+            var rpars = "";
+            var roncomplete = reload_page();
+            AWS.Ajax.replace (rurl, rpars, 'search_results_list', roncomplete);
+         }
+
+         const sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds))
+         }
+
+         function reload_page() {
+            sleep(10).then(() => {
+               location.reload();
+            })
+         }
+      </script>
+
+      <div id="player"></div>
 
       <script>
          // 2. This code loads the IFrame Player API code asynchronously.

@@ -1,6 +1,8 @@
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 
+with GNAT.Regpat; use GNAT.Regpat;
+
 with AWS.Client;
 with AWS.MIME;
 with AWS.Parameters;
@@ -25,6 +27,7 @@ package body Callback is
       Web_Page : Unbounded_String;
    begin
       Put_Line ("New Ambi callback --------------------------------------------------------------");
+      Put_Line (URI);
 
       if URI = "/search_result" then
          return Search_Result_Callback (Request);
@@ -38,6 +41,10 @@ package body Callback is
          Current_Room.Set_Current_Video (4);
       elsif URI = "/5" then
          Current_Room.Set_Current_Video (5);
+      elsif URI = "/onclick$clickme" then
+         return AWS.Response.Build (AWS.MIME.Text_HTML, "you click me!");
+      elsif Index (URI, "we_js") > 0 then
+         return Javascripts_Callback (Request);
       end if;
 
       Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Video.Video_Title));
@@ -50,6 +57,42 @@ package body Callback is
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, To_String (Web_Page));
    end Ambi_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Javascripts_Callback
+   -------------------------------------------------------------------------------------------------
+   function Javascripts_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+      URI : constant String := AWS.Status.URI (Request);
+
+      Dummy_Translations : Templates_Parser.Translate_Table (1 .. 1);
+
+      JS_Match_Pattern : GNAT.Regpat.Pattern_Matcher :=
+        GNAT.Regpat.Compile ("/we_js/([a-zA-Z0-9_-]+\.js)");
+      TJS_Match_Pattern : GNAT.Regpat.Pattern_Matcher :=
+        GNAT.Regpat.Compile ("/we_js/([a-zA-Z0-9_-]+\.tjs)");
+
+      Match_Result : GNAT.Regpat.Match_Array (0 .. 1);
+   begin
+      Put_Line ("New Javascripts callback -------------------------------------------------------");
+
+      GNAT.Regpat.Match (JS_Match_Pattern, URI, Match_Result);
+
+      if Match_Result (1) /= GNAT.Regpat.No_Match then
+         return AWS.Response.File (AWS.MIME.Text_Javascript,
+             "javascripts/" & URI (Match_Result (1).First .. Match_Result (1).Last));
+      end if;
+
+      GNAT.Regpat.Match (TJS_Match_Pattern, URI, Match_Result);
+
+      if Match_Result (1) /= GNAT.Regpat.No_Match then
+         return AWS.Response.Build (AWS.MIME.Text_Javascript,
+             To_String (Templates_Parser.Parse
+               ("javascripts/" & URI (Match_Result (1).First .. Match_Result (1).Last),
+                Dummy_Translations)));
+      end if;
+
+      return AWS.Response.Build (AWS.MIME.Text_Javascript, "");
+   end Javascripts_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Search_Result_Callback

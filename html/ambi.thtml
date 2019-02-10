@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html>
+   <head>
+      <meta charset="utf-8"/>
+      @@INCLUDE@@ ../javascripts/aws.tjs
+   </head>
    <body>
 
       <form method="POST" action="/search_result">
@@ -8,6 +12,12 @@
       </form>
 
 	  <div id="player"></div>
+
+	  <input id="clickme" type="button" value="Clik Me">
+
+	  <div id="placeholder">... result here ...</div>
+
+	  @@INCLUDE@@ ../javascripts/aws_action_replace.tjs onclick clickme placeholder
 
       <script>
          // 2. This code loads the IFrame Player API code asynchronously.

@@ -1,4 +1,4 @@
-function ajaxGetRequest(url, cFunction) {
+function ajaxGetRequest(url, cFunction, async = true) {
   var xhttp;
   xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -6,12 +6,20 @@ function ajaxGetRequest(url, cFunction) {
       cFunction(this);
     }
  };
-  xhttp.open("GET", url, true);
+
+  xhttp.open("GET", url, async);
   xhttp.send();
 }
 
-function ajaxGetXmlRequest(url) {
-  ajaxGetRequest(url, ajaxXmlAction);
+function ajaxGetXmlRequest(url, async = true) {
+  ajaxGetRequest(url, ajaxXmlAction, async);
+}
+
+function ajaxGetRequestNoCallback(url, async = true) {
+  var xhttp;
+  xhttp = new XMLHttpRequest();
+  xhttp.open("GET", url, async);
+  xhttp.send();
 }
 
 function ajaxXmlAction(xml) {

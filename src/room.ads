@@ -14,8 +14,12 @@ package Room is
 
    procedure Add_Video_To_Playlist (This : in out T_Room; Video : in YT_API.T_Video);
 
+   procedure Remove_First_Playlist_Video (This : in out T_Room);
+
    procedure Set_Current_Video
      (This : in out T_Room; Current_Video_Index : in Integer);
+
+   procedure Set_Current_Video (This : in out T_Room);
 
    procedure Set_Video_Search_Results
      (This : in out T_Room; Video_Search_Results : in YT_API.T_Video_Search_Results);

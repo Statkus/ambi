@@ -14,12 +14,28 @@ package body Room is
    end Add_Video_To_Playlist;
 
    -------------------------------------------------------------------------------------------------
+   -- Remove_First_Playlist_Video
+   -------------------------------------------------------------------------------------------------
+   procedure Remove_First_Playlist_Video (This : in out T_Room) is
+   begin
+      Video_Vectors.Delete_First (This.Playlist);
+   end Remove_First_Playlist_Video;
+
+   -------------------------------------------------------------------------------------------------
    -- Set_Current_Video
    -------------------------------------------------------------------------------------------------
    procedure Set_Current_Video
      (This : in out T_Room; Current_Video_Index : in Integer) is
    begin
       This.Current_Video := This.Video_Search_Results (Current_Video_Index);
+   end Set_Current_Video;
+
+   -------------------------------------------------------------------------------------------------
+   -- Set_Current_Video
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Current_Video (This : in out T_Room) is
+   begin
+      This.Current_Video := Video_Vectors.Element (This.Playlist.First);
    end Set_Current_Video;
 
    -------------------------------------------------------------------------------------------------

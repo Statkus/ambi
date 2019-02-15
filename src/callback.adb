@@ -31,6 +31,13 @@ package body Callback is
          return Search_Button_Callback (Request);
       elsif Index (URI, "/onclick$search_result_item_") > 0 then
          return Search_Result_Item_Callback (Request);
+      elsif URI = "/play_first_video" then
+         Current_Room.Set_Current_Video;
+         return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+      elsif URI = "/remove_first_video" then
+         Current_Room.Remove_First_Playlist_Video;
+         return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+             ("playlist", Build_Playlist (Current_Room.Get_Playlist)));
       end if;
 
       Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Video.Video_Title));

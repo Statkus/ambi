@@ -17,13 +17,20 @@
 
       <div id="playlist">@_PLAYLIST_@</div>
 
-
       <script>
+         var playerState = "end";
+
          function select_result_item(elm) {
 			document.getElementById("search_input").value = "";
 			document.getElementById("search_results_list").innerHTML = "";
 
-            ajaxGetXmlRequest ("/onclick$search_result_item_" + String(elm.getAttribute('value')));
+            ajaxGetXmlRequest ("/onclick$search_result_item_" + String(elm.getAttribute('value')), false);
+
+            if (playerState != "play") {
+               ajaxGetRequestNoCallback ("/play_first_video", false);
+               ajaxGetXmlRequest ("/remove_first_video", false);
+               location.reload();
+            }
          }
 
          const sleep = (milliseconds) => {
@@ -52,18 +59,38 @@
                playerVars: { controls:1, showinfo: 0, rel: 0, showsearch: 0, iv_load_policy: 3, modestbranding: 1, enablejsapi: 1 },
                events: {
                  'onReady': onPlayerReady,
-                 'onStateChange': onPlayerStateChange
+                 'onStateChange': onPlayerStateChange,
+                 'onError': onPlayerError
                }
             });
          }
 
          function onPlayerReady(event) {
+            playerState = "play";
             event.target.playVideo();
          }
 
          function onPlayerStateChange(event) {
             if (event.data == YT.PlayerState.ENDED) {
                player.stopVideo();
+               playerState = "end";
+
+               if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
+                  ajaxGetRequestNoCallback ("/play_first_video", false);
+                  ajaxGetXmlRequest ("/remove_first_video", false);
+                  location.reload();
+               }
+            }
+         }
+
+         function onPlayerError(event) {
+            player.stopVideo();
+            playerState = "error";
+
+            if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
+               ajaxGetRequestNoCallback ("/play_first_video", false);
+               ajaxGetXmlRequest ("/remove_first_video", false);
+               location.reload();
             }
          }
       </script>

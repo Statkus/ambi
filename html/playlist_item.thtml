@@ -1,0 +1,4 @@
+<li id="playlist_item_@_ITEM_ID_@">
+   <img src="@_IMAGE_URL_@">
+   @_VIDEO_TITLE_@
+</li>

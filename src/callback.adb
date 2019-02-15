@@ -9,7 +9,7 @@ with AWS.Parameters;
 
 with Templates_Parser;
 
-with Room;
+with Room; use Room;
 
 package body Callback is
 
@@ -19,9 +19,9 @@ package body Callback is
    -- Ambi_Callback
    -------------------------------------------------------------------------------------------------
    function Ambi_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
-      URI        : constant String := AWS.Status.URI (Request);
+      URI : constant String := AWS.Status.URI (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 1);
+      Translations : Templates_Parser.Translate_Table (1 .. 2);
 
       Web_Page : Unbounded_String;
    begin
@@ -32,13 +32,15 @@ package body Callback is
       elsif URI = "/onclick$search_button" then
          return Search_Button_Callback (Request);
       elsif Index (URI, "/onclick$search_result_item_") > 0 then
-         Current_Room.Set_Current_Video (Integer'Value (URI (URI'Last .. URI'Last)));
-         return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+         return Search_Result_Item_Callback (Request);
       end if;
 
       Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Video.Video_Title));
 
       Translations (1) := Templates_Parser.Assoc
+        ("PLAYLIST", Build_Playlist (Current_Room.Get_Playlist));
+
+      Translations (2) := Templates_Parser.Assoc
         ("VIDEO_ID", To_String (Current_Room.Get_Current_Video.Video_ID));
 
       Web_Page := To_Unbounded_String (Templates_Parser.Parse ("html/ambi.thtml", Translations));
@@ -102,10 +104,22 @@ package body Callback is
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------
+   -- Search_Result_Item_Callback
+   -------------------------------------------------------------------------------------------------
+   function Search_Result_Item_Callback(Request : AWS.Status.Data) return AWS.Response.Data is
+      URI : constant String := AWS.Status.URI (Request);
+   begin
+      Current_Room.Add_Video_To_Playlist
+        (Current_Room.Get_Video_Search_Results (Integer'Value (URI (URI'Last .. URI'Last))));
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML,
+                                 Build_Playlist (Current_Room.Get_Playlist));
+   end Search_Result_Item_Callback;
+
+   -------------------------------------------------------------------------------------------------
    -- Build_Search_Result
    -------------------------------------------------------------------------------------------------
-   function Build_Search_Result
-     (Video_Search_Results : in T_Video_Search_Results) return String is
+   function Build_Search_Result (Video_Search_Results : in T_Video_Search_Results) return String is
       Translations : Templates_Parser.Translate_Table
         (1 .. 3);
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
@@ -128,5 +142,35 @@ package body Callback is
 
       return To_String (Response);
    end Build_Search_Result;
+
+   -------------------------------------------------------------------------------------------------
+   -- Build_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Build_Playlist (Playlist : in Room.Video_Vectors.Vector) return String is
+      Translations : Templates_Parser.Translate_Table
+        (1 .. 3);
+      Response : Unbounded_String := To_Unbounded_String ("<ul>");
+      Playlist_Cursor : Room.Video_Vectors.Cursor := Playlist.First;
+   begin
+      while Video_Vectors.Has_Element (Playlist_Cursor) loop
+         Translations (1) := Templates_Parser.Assoc
+           ("ITEM_ID", Trim (Integer'Image (Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
+
+         Translations (2) := Templates_Parser.Assoc
+           ("IMAGE_URL", Video_Vectors.Element (Playlist_Cursor).Video_Image_URL);
+
+         Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_TITLE", Video_Vectors.Element (Playlist_Cursor).Video_Title);
+
+         Append (Response, To_String
+           (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
+
+         Playlist_Cursor := Video_Vectors.Next (Playlist_Cursor);
+      end loop;
+
+      Append (Response, "</ul>");
+
+      return To_String (Response);
+   end Build_Playlist;
 
 end Callback;

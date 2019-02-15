@@ -1,8 +1,6 @@
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 
-with GNAT.Regpat; use GNAT.Regpat;
-
 with AWS.Client;
 with AWS.MIME;
 with AWS.Parameters;
@@ -27,7 +25,7 @@ package body Callback is
    begin
       Put_Line (URI);
 
-      if Index (URI, "we_js") > 0 then
+      if Index (URI, "/javascripts/") > 0 then
          return Javascripts_Callback (Request);
       elsif URI = "/onclick$search_button" then
          return Search_Button_Callback (Request);
@@ -54,33 +52,8 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    function Javascripts_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
       URI : constant String := AWS.Status.URI (Request);
-
-      Dummy_Translations : Templates_Parser.Translate_Table (1 .. 1);
-
-      JS_Match_Pattern : GNAT.Regpat.Pattern_Matcher :=
-        GNAT.Regpat.Compile ("/we_js/([a-zA-Z0-9_-]+\.js)");
-      TJS_Match_Pattern : GNAT.Regpat.Pattern_Matcher :=
-        GNAT.Regpat.Compile ("/we_js/([a-zA-Z0-9_-]+\.tjs)");
-
-      Match_Result : GNAT.Regpat.Match_Array (0 .. 1);
    begin
-      GNAT.Regpat.Match (JS_Match_Pattern, URI, Match_Result);
-
-      if Match_Result (1) /= GNAT.Regpat.No_Match then
-         return AWS.Response.File (AWS.MIME.Text_Javascript,
-             "javascripts/" & URI (Match_Result (1).First .. Match_Result (1).Last));
-      end if;
-
-      GNAT.Regpat.Match (TJS_Match_Pattern, URI, Match_Result);
-
-      if Match_Result (1) /= GNAT.Regpat.No_Match then
-         return AWS.Response.Build (AWS.MIME.Text_Javascript,
-             To_String (Templates_Parser.Parse
-               ("javascripts/" & URI (Match_Result (1).First .. Match_Result (1).Last),
-                Dummy_Translations)));
-      end if;
-
-      return AWS.Response.Build (AWS.MIME.Text_Javascript, "");
+      return AWS.Response.File (AWS.MIME.Text_Javascript, URI (URI'First + 1 .. URI'Last));
    end Javascripts_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -99,8 +72,8 @@ package body Callback is
       Current_Room.Set_Video_Search_Results
         (Parse_Video_Search_Results (AWS.Response.Message_Body (API_Response)));
 
-      return AWS.Response.Build (AWS.MIME.Text_HTML,
-                                 Build_Search_Result (Current_Room.Get_Video_Search_Results));
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("search_results_list", Build_Search_Result (Current_Room.Get_Video_Search_Results)));
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -112,16 +85,15 @@ package body Callback is
       Current_Room.Add_Video_To_Playlist
         (Current_Room.Get_Video_Search_Results (Integer'Value (URI (URI'Last .. URI'Last))));
 
-      return AWS.Response.Build (AWS.MIME.Text_HTML,
-                                 Build_Playlist (Current_Room.Get_Playlist));
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("playlist", Build_Playlist (Current_Room.Get_Playlist)));
    end Search_Result_Item_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Result
    -------------------------------------------------------------------------------------------------
    function Build_Search_Result (Video_Search_Results : in T_Video_Search_Results) return String is
-      Translations : Templates_Parser.Translate_Table
-        (1 .. 3);
+      Translations : Templates_Parser.Translate_Table (1 .. 3);
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
    begin
       for Result_Index in Video_Search_Results'Range loop
@@ -147,8 +119,7 @@ package body Callback is
    -- Build_Playlist
    -------------------------------------------------------------------------------------------------
    function Build_Playlist (Playlist : in Room.Video_Vectors.Vector) return String is
-      Translations : Templates_Parser.Translate_Table
-        (1 .. 3);
+      Translations : Templates_Parser.Translate_Table (1 .. 3);
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
       Playlist_Cursor : Room.Video_Vectors.Cursor := Playlist.First;
    begin
@@ -172,5 +143,25 @@ package body Callback is
 
       return To_String (Response);
    end Build_Playlist;
+
+   function Pack_AJAX_XML_Response (Placeholder : in String; Value : in String) return String is
+      Translations : Templates_Parser.Translate_Table (1 .. 2);
+
+      Replace_Fields : Unbounded_String;
+      Response       : Unbounded_String;
+   begin
+      -- Pack <replace> fields
+      -- For now, only one field at a time is supported
+      Translations (1) := Templates_Parser.Assoc ("PLACEHOLDER", Placeholder);
+      Translations (2) := Templates_Parser.Assoc ("VALUE", Value);
+
+      Replace_Fields := To_Unbounded_String
+        (Templates_Parser.Parse ("xml/ajax_xml_replace.txml", Translations));
+
+      -- Pack global response
+      Translations (1) := Templates_Parser.Assoc ("ACTION_FIELDS", Replace_Fields);
+
+      return Templates_Parser.Parse ("xml/ajax_xml_response.txml", Translations);
+   end Pack_AJAX_XML_Response;
 
 end Callback;

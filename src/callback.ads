@@ -19,4 +19,6 @@ private
    function Build_Search_Result (Video_Search_Results : in T_Video_Search_Results) return String;
    function Build_Playlist (Playlist : in Room.Video_Vectors.Vector) return String;
 
+   function Pack_AJAX_XML_Response (Placeholder : in String; Value : in String) return String;
+
 end Callback;

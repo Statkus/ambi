@@ -1,6 +1,6 @@
 # Ambi
 
-Installation (tested on Ubuntu 18.04):
+## Installation (tested on Ubuntu 18.04):
 - First you need to build and install Ada Web Server with SSL support and json-ada:
   - apt install git make gcc gnat gpr gprbuild libssl-dev
   - git clone --recurse-submodules https://github.com/AdaCore/aws.git
@@ -15,10 +15,11 @@ Installation (tested on Ubuntu 18.04):
   - make install
 
 - Now you can build Ambi:
-  - Go to ambi root dir
+  - Go to ambi root directory
   - make build
 
 - And finally launch Ambi:
   - ./ambi
 
-The server use the port 80, on Linux base system the access to port 80 need root privilege.
+At startup ./ambi will look for a file called "yt_api_key.txt" in ambi root directory, this file must contain a valid Youtube API key.
+The server use the port 80, on Linux based system the access to port 80 needs root privilege.

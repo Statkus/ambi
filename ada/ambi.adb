@@ -20,7 +20,7 @@ begin
    GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
 
    -- Read Youtube API key
-   Open (File => YT_API_Key_File, Mode => In_File, Name => "yt_api_key");
+   Open (File => YT_API_Key_File, Mode => In_File, Name => "yt_api_key.txt");
    YT_API.Set_YT_API_Key (Get_Line (YT_API_Key_File));
    Close (YT_API_Key_File);
 

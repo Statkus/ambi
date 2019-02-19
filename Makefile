@@ -19,8 +19,7 @@ build-server-image:
 
 start-server-image:
 	docker run -p 80:80 -dit -v $(CURDIR):/home/ubuntu/ambi --rm --name $(CONTAINER_NAME) $(IMAGE_NAME)
-	docker exec -dit -w /home/ubuntu/ambi $(CONTAINER_NAME) make build
-	docker exec -dit -w /home/ubuntu/ambi $(CONTAINER_NAME) /bin/bash -c "./ambi &> server_log.txt"
+	docker exec -dit -w /home/ubuntu/ambi $(CONTAINER_NAME) /bin/bash -c "make build && ./ambi &> server_log.txt"
 
 stop-server-image:
 	docker stop $(CONTAINER_NAME)

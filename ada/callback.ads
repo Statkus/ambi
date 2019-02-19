@@ -3,8 +3,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with AWS.Response;
 with AWS.Status;
 
-with Room;
-with YT_API; use YT_API;
+with Playlist;
+with YT_API;
 
 package Callback is
 
@@ -12,12 +12,17 @@ package Callback is
 
 private
 
+   function Room_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
    function Javascripts_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
    function Search_Button_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
-   function Search_Result_Item_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
+   function Search_Result_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
+   function Next_Video_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
+   function Get_Playlist_Callback (Request : AWS.Status.Data) return AWS.Response.Data;
 
-   function Build_Search_Result (Video_Search_Results : in T_Video_Search_Results) return String;
-   function Build_Playlist (Playlist : in Room.Video_Vectors.Vector) return String;
+   function Build_Search_Result (Video_Search_Results : in YT_API.T_Video_Search_Results)
+     return String;
+
+   function Build_Playlist (Current_Playlist : in Playlist.Video_Vectors.Vector) return String;
 
    function Pack_AJAX_XML_Response (Placeholder : in String; Value : in String) return String;
 

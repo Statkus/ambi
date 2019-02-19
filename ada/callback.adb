@@ -3,7 +3,9 @@ with Ada.Text_IO;       use Ada.Text_IO;
 
 with AWS.Client;
 with AWS.MIME;
+with AWS.Net.Websocket.Registry;
 with AWS.Parameters;
+with AWS.Session;
 
 with Templates_Parser;
 
@@ -17,42 +19,56 @@ package body Callback is
    -- Ambi_Callback
    -------------------------------------------------------------------------------------------------
    function Ambi_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
-      URI : constant String := AWS.Status.URI (Request);
+      URI        : constant String := AWS.Status.URI (Request);
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 2);
-
-      Web_Page : Unbounded_String;
+      Response : AWS.Response.Data;
    begin
-      Put_Line (URI);
+      -- If this is a new client, add it to the room
+      Current_Room.Add_Client (Session_ID);
 
-      if Index (URI, "/javascripts/") > 0 then
-         return Javascripts_Callback (Request);
+      Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
+        & ", request: '" & URI & "'");
+
+      if URI = "/" then
+         Response := Room_Callback (Request);
+      elsif Index (URI, "/javascripts/") > 0 then
+         Response := Javascripts_Callback (Request);
       elsif URI = "/onclick$search_button" then
-         return Search_Button_Callback (Request);
-      elsif Index (URI, "/onclick$search_result_item_") > 0 then
-         return Search_Result_Item_Callback (Request);
-      elsif URI = "/play_first_video" then
-         Current_Room.Set_Current_Video;
-         return AWS.Response.Build (AWS.MIME.Text_HTML, "");
-      elsif URI = "/remove_first_video" then
-         Current_Room.Remove_First_Playlist_Video;
-         return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-             ("playlist", Build_Playlist (Current_Room.Get_Playlist)));
+         Response := Search_Button_Callback (Request);
+      elsif URI = "/onclick$search_results_list" then
+         Response := Search_Result_Callback (Request);
+      elsif URI = "/next_video" then
+         Response := Next_Video_Callback (Request);
+      elsif URI = "/get_playlist" then
+         Response := Get_Playlist_Callback (Request);
+      else
+         Put_Line ("Not supported request");
+         Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
       end if;
 
-      Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Video.Video_Title));
+      return Response;
+   end Ambi_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Room_Callback
+   -------------------------------------------------------------------------------------------------
+   function Room_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+
+      Translations : Templates_Parser.Translate_Table (1 .. 2);
+   begin
+      Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
 
       Translations (1) := Templates_Parser.Assoc
-        ("PLAYLIST", Build_Playlist (Current_Room.Get_Playlist));
+        ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
 
       Translations (2) := Templates_Parser.Assoc
-        ("VIDEO_ID", To_String (Current_Room.Get_Current_Video.Video_ID));
+        ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
-      Web_Page := To_Unbounded_String (Templates_Parser.Parse ("html/ambi.thtml", Translations));
-      --Put_Line (To_String (Web_Page));
-
-      return AWS.Response.Build (AWS.MIME.Text_HTML, To_String (Web_Page));
-   end Ambi_Callback;
+      return AWS.Response.Build
+        (AWS.MIME.Text_HTML, To_String (Templates_Parser.Parse ("html/ambi.thtml", Translations)));
+   end Room_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Javascripts_Callback
@@ -70,37 +86,69 @@ package body Callback is
       Parameters   : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Search_Input : constant String := AWS.Parameters.Get (Parameters, "search_input");
 
-      API_Request  : String := Get_Search_Request (Search_Input);
+      API_Request  : String := YT_API.Get_Search_Request (Search_Input);
       API_Response : AWS.Response.DATA;
    begin
       Put_Line ("API query: " & API_Request);
       API_Response := AWS.Client.Get (URL => API_Request);
 
       Current_Room.Set_Video_Search_Results
-        (Parse_Video_Search_Results (AWS.Response.Message_Body (API_Response)));
+        (YT_API.Parse_Video_Search_Results (AWS.Response.Message_Body (API_Response)));
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("search_results_list", Build_Search_Result (Current_Room.Get_Video_Search_Results)));
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Search_Result_Item_Callback
+   -- Search_Result_Callback
    -------------------------------------------------------------------------------------------------
-   function Search_Result_Item_Callback(Request : AWS.Status.Data) return AWS.Response.Data is
-      URI : constant String := AWS.Status.URI (Request);
+   function Search_Result_Callback(Request : AWS.Status.Data) return AWS.Response.Data is
+      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Item_Number : constant Integer := Integer'Value (AWS.Parameters.Get (Parameters, "item"));
+
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+
+      Rcp : AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      Current_Room.Add_Video_To_Playlist
-        (Current_Room.Get_Video_Search_Results (Integer'Value (URI (URI'Last .. URI'Last))));
+      Current_Room.Add_Video_To_Clients_Playlist
+        (Current_Room.Get_Video_Search_Results (Item_Number));
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Search_Result_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Next_Video_Callback
+   -------------------------------------------------------------------------------------------------
+   function Next_Video_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+   begin
+      Current_Room.Set_Current_Client_Video (Session_ID);
+      Current_Room.Remove_First_Client_Playlist_Video (Session_ID);
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("playlist", Build_Playlist (Current_Room.Get_Playlist)));
-   end Search_Result_Item_Callback;
+          ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
+   end Next_Video_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+   begin
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
+   end Get_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Result
    -------------------------------------------------------------------------------------------------
-   function Build_Search_Result (Video_Search_Results : in T_Video_Search_Results) return String is
+   function Build_Search_Result (Video_Search_Results : in YT_API.T_Video_Search_Results)
+     return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
+
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
    begin
       for Result_Index in Video_Search_Results'Range loop
@@ -125,25 +173,27 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Build_Playlist
    -------------------------------------------------------------------------------------------------
-   function Build_Playlist (Playlist : in Room.Video_Vectors.Vector) return String is
+   function Build_Playlist (Current_Playlist : in Playlist.Video_Vectors.Vector) return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
+
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
-      Playlist_Cursor : Room.Video_Vectors.Cursor := Playlist.First;
+
+      Playlist_Cursor : Playlist.Video_Vectors.Cursor := Current_Playlist.First;
    begin
-      while Video_Vectors.Has_Element (Playlist_Cursor) loop
+      while Playlist.Video_Vectors.Has_Element (Playlist_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim (Integer'Image (Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
+           ("ITEM_ID", Trim (Integer'Image (Playlist.Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Video_Vectors.Element (Playlist_Cursor).Video_Image_URL);
+           ("IMAGE_URL", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Image_URL);
 
          Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", Video_Vectors.Element (Playlist_Cursor).Video_Title);
+           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Title);
 
          Append (Response, To_String
            (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
 
-         Playlist_Cursor := Video_Vectors.Next (Playlist_Cursor);
+         Playlist_Cursor := Playlist.Video_Vectors.Next (Playlist_Cursor);
       end loop;
 
       Append (Response, "</ul>");

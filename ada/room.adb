@@ -1,42 +1,89 @@
+with AWS.Session; use AWS.Session;
+
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Room is
 
    -------------------------------------------------------------------------------------------------
-   -- Video_Compare
+   -- Client_Compare
    -------------------------------------------------------------------------------------------------
-   function Video_Compare (Left, Right : YT_API.T_Video) return Boolean is (False);
+   function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
 
    -------------------------------------------------------------------------------------------------
-   -- Add_Video_To_Playlist
+   -- Add_Client
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlist (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+      New_Client         : Boolean := True;
    begin
-      This.Playlist.Append (Video);
-   end Add_Video_To_Playlist;
+      while Client_Vectors.Has_Element (Client_List_Cursor) and New_Client loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            New_Client := False;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      if New_Client then
+         Put_Line ("New client: " & AWS.Session.Image (Session_ID));
+
+         -- Set a parameter to this session ID to register it, the parameter is a unique ID
+         AWS.Session.Set (Session_ID, "ID", This.Client_ID_Counter);
+         This.Client_ID_Counter := This.Client_ID_Counter + 1;
+
+         -- Add the new client to the list and set his session ID
+         This.Client_List.Append (new Client.T_Client);
+         This.Client_List.Last_Element.Set_Session_ID (Session_ID);
+
+         Put_Line ("Internal ID:" & Integer'Image (AWS.Session.Get (This.Client_List.Last_Element.Get_Session_ID, "ID")));
+      end if;
+   end Add_Client;
 
    -------------------------------------------------------------------------------------------------
-   -- Remove_First_Playlist_Video
+   -- Add_Video_To_Clients_Playlist
    -------------------------------------------------------------------------------------------------
-   procedure Remove_First_Playlist_Video (This : in out T_Room) is
+   procedure Add_Video_To_Clients_Playlist (This : in out T_Room; Video : in YT_API.T_Video) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      Video_Vectors.Delete_First (This.Playlist);
-   end Remove_First_Playlist_Video;
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Add_Video_To_Clients_Playlist;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Current_Video
+   -- Remove_First_Client_Playlist_Video
    -------------------------------------------------------------------------------------------------
-   procedure Set_Current_Video
-     (This : in out T_Room; Current_Video_Index : in Integer) is
+   procedure Remove_First_Client_Playlist_Video
+     (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      This.Current_Video := This.Video_Search_Results (Current_Video_Index);
-   end Set_Current_Video;
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            Client_Vectors.Element (Client_List_Cursor).Remove_First_Playlist_Video;
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Remove_First_Client_Playlist_Video;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Current_Video
+   -- Set_Current_Client_Video
    -------------------------------------------------------------------------------------------------
-   procedure Set_Current_Video (This : in out T_Room) is
+   procedure Set_Current_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      This.Current_Video := Video_Vectors.Element (This.Playlist.First);
-   end Set_Current_Video;
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video;
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Set_Current_Client_Video;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Video_Search_Results
@@ -48,9 +95,22 @@ package body Room is
    end Set_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Current_Video
+   -- Get_Current_Client_Video
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in T_Room) return YT_API.T_Video is (This.Current_Video);
+   function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return YT_API.T_Video is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      return Client_Vectors.Element (Client_List_Cursor).Get_Current_Video;
+   end Get_Current_Client_Video;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
@@ -59,8 +119,21 @@ package body Room is
      (This.Video_Search_Results);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Playlist
+   -- Get_Client_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in T_Room) return Video_Vectors.Vector is (This.Playlist);
+   function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Playlist.Video_Vectors.Vector is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      return Client_Vectors.Element (Client_List_Cursor).Get_Playlist;
+   end Get_Client_Playlist;
 
 end Room;

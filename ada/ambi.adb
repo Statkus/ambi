@@ -1,3 +1,4 @@
+with AWS.Net.Websocket.Registry.Control;
 with AWS.Server;
 
 with Callback;
@@ -26,10 +27,15 @@ begin
 
    -- Launch the server on port 80
    AWS.Server.Start
-     (Web_Server => Ambi_Server,
-      Name       => "Ambi",
-      Callback   => Callback.Ambi_Callback'Access,
-      Port       => 80);
+     (Web_Server     => Ambi_Server,
+      Name           => "Ambi",
+      Callback       => Callback.Ambi_Callback'Access,
+      Port           => 80,
+      Max_Connection => 100,
+      Session        => True);
+
+   -- Launch Websocket server
+   AWS.Net.WebSocket.Registry.Control.Start;
 
    Put_Line ("Press any key to quit.");
    Get_Immediate (Ch);

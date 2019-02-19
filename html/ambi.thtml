@@ -4,6 +4,7 @@
       <meta charset="utf-8"/>
       <title>Ambi</title>
 
+      <script src="/javascripts/xml_actions.js" type="text/javascript"></script>
       <script src="/javascripts/ajax_get_handler.js" type="text/javascript"></script>
    </head>
    <body>
@@ -18,32 +19,36 @@
       <div id="playlist">@_PLAYLIST_@</div>
 
       <script>
+         // State of the Youtube player
          var playerState = "end";
 
-         function select_result_item(elm) {
-			document.getElementById("search_input").value = "";
-			document.getElementById("search_results_list").innerHTML = "";
+         // WebSocket to update playlist for all clients
+         var ambiSocket = new WebSocket("ws://localhost/socket");
 
-            ajaxGetXmlRequest ("/onclick$search_result_item_" + String(elm.getAttribute('value')), false);
-
-            if (playerState != "play") {
-               ajaxGetRequestNoCallback ("/play_first_video", false);
-               ajaxGetXmlRequest ("/remove_first_video", false);
-               location.reload();
+         ambiSocket.onmessage = function (event) {
+            if (event.data == "update_client_playlist_request") {
+               if (playerState != "play") {
+                  ajaxGetXmlRequest ("/next_video", false);
+                  location.reload();
+               }
+               else {
+                  ajaxGetXmlRequest ("/get_playlist");
+               }
             }
+            //xmlActions(new window.DOMParser().parseFromString(event.data, "text/xml"));
          }
 
-         const sleep = (milliseconds) => {
-            return new Promise(resolve => setTimeout(resolve, milliseconds))
+         // Function called when an item of search_results_list is clicked
+         function select_result_item(elm) {
+			   document.getElementById("search_input").value = "";
+			   document.getElementById("search_results_list").innerHTML = "";
+
+            ajaxGetRequestNoCallback ("/onclick$search_results_list?item=" + String(elm.getAttribute('value')));
          }
 
-         function reload_page() {
-            sleep(10).then(() => {
-               location.reload();
-            })
-         }
-
+         ///////////////////////////////////////////////////////////////////////////////////////////
          // Youtube player script
+         ///////////////////////////////////////////////////////////////////////////////////////////
          var tag = document.createElement('script');
 
          tag.src = "https://www.youtube.com/iframe_api";
@@ -76,8 +81,7 @@
                playerState = "end";
 
                if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-                  ajaxGetRequestNoCallback ("/play_first_video", false);
-                  ajaxGetXmlRequest ("/remove_first_video", false);
+                  ajaxGetXmlRequest ("/next_video", false);
                   location.reload();
                }
             }
@@ -88,11 +92,13 @@
             playerState = "error";
 
             if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-               ajaxGetRequestNoCallback ("/play_first_video", false);
-               ajaxGetXmlRequest ("/remove_first_video", false);
+               ajaxGetXmlRequest ("/next_video", false);
                location.reload();
             }
          }
+         ///////////////////////////////////////////////////////////////////////////////////////////
+         // End of Youtube player script
+         ///////////////////////////////////////////////////////////////////////////////////////////
       </script>
    </body>
 </html>

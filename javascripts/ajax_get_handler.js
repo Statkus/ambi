@@ -1,23 +1,27 @@
-function ajaxGetRequest(url, cFunction, async = true) {
+function ajaxGetRequest(url, cFunction, reloadPage = false) {
   var xhttp = new XMLHttpRequest();
 
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       cFunction(this);
+
+      if (reloadPage == true) {
+        location.reload();
+      }
     }
   };
 
-  xhttp.open("GET", url, async);
+  xhttp.open("GET", url);
   xhttp.send();
 }
 
-function ajaxGetXmlRequest(url, async = true) {
-  ajaxGetRequest(url, ajaxXmlActions, async);
+function ajaxGetXmlRequest(url, reloadPage = false) {
+  ajaxGetRequest(url, ajaxXmlActions, reloadPage);
 }
 
-function ajaxGetRequestNoCallback(url, async = true) {
+function ajaxGetRequestNoCallback(url) {
   var xhttp = new XMLHttpRequest();
-  xhttp.open("GET", url, async);
+  xhttp.open("GET", url);
   xhttp.send();
 }
 

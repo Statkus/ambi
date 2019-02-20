@@ -15,9 +15,14 @@ package Client is
 
    procedure Set_Current_Video (This : in out T_Client);
 
+   procedure Set_Current_Video (This : in out T_Client; Video : in YT_API.T_Video);
+
    procedure Add_Video_To_Playlist (This : in out T_Client; Video : in YT_API.T_Video);
 
    procedure Remove_First_Playlist_Video (This : in out T_Client);
+
+   procedure Set_Playlist
+     (This : in out T_Client; Client_Playlist : in Playlist.Video_Vectors.Vector);
 
    function Get_Session_ID (This : in T_Client) return AWS.Session.ID;
 

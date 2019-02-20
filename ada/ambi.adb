@@ -1,22 +1,20 @@
+with GNAT.Exception_Traces;
+
+with Ada.Text_IO; use Ada.Text_IO;
+
 with AWS.Net.Websocket.Registry.Control;
 with AWS.Server;
 
 with Callback;
 with YT_API;
 
-with Ada.Text_IO; use Ada.Text_IO;
-with GNAT.Exception_Traces;
-
-with Templates_Parser;
-
 ----------------------------------------------------------------------------------------------------
 -- Ambi
 ----------------------------------------------------------------------------------------------------
 procedure Ambi is
    Config_File : File_Type;
-
    Ambi_Server : AWS.Server.HTTP;
-   Ch : Character;
+   Ch          : Character;
 begin
    GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
 
@@ -29,6 +27,9 @@ begin
    Open (File => Config_File, Mode => In_File, Name => "yt_api_key.txt");
    YT_API.Set_YT_API_Key (Get_Line (Config_File));
    Close (Config_File);
+
+   -- Create the room
+   Callback.Create_Room;
 
    -- Launch the server on port 80
    AWS.Server.Start
@@ -45,5 +46,6 @@ begin
    Put_Line ("Press any key to quit.");
    Get_Immediate (Ch);
 
+   AWS.Net.WebSocket.Registry.Control.Shutdown;
    AWS.Server.Shutdown (Ambi_Server);
 end Ambi;

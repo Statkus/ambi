@@ -17,6 +17,14 @@ package body Client is
    end Set_Current_Video;
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Current_Video
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Current_Video (This : in out T_Client; Video : in YT_API.T_Video) is
+   begin
+      This.Client_Current_Video := Video;
+   end Set_Current_Video;
+
+   -------------------------------------------------------------------------------------------------
    -- Add_Video_To_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Add_Video_To_Playlist (This : in out T_Client; Video : in YT_API.T_Video) is
@@ -31,6 +39,15 @@ package body Client is
    begin
       This.Client_Playlist.Delete_First;
    end Remove_First_Playlist_Video;
+
+   -------------------------------------------------------------------------------------------------
+   -- Set_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Playlist
+     (This : in out T_Client; Client_Playlist : in Playlist.Video_Vectors.Vector) is
+   begin
+      This.Client_Playlist := Client_Playlist;
+   end Set_Playlist;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Session_ID

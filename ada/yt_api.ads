@@ -22,16 +22,23 @@ package YT_API is
       Video_Search_Results : T_Video_Search_Results;
    end record;
 
-   procedure Set_YT_API_Key (Key : String);
+   procedure Set_YT_API_Key (Key : in String);
 
-   function Get_Search_Request (Search_Input : in String) return String;
+   function Get_Video_Search_Results (Search_Input : in String) return T_Video_Search_Results;
 
-   function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results;
+   function Get_Video_Duration (Video : in T_Video) return Natural;
 
 private
 
    package Types is new JSON.Types (Long_Integer, Long_Float); use Types;
    package Parsers is new JSON.Parsers (Types);
+
+   function Get_Search_Request (Search_Input : in String) return String;
+   function Get_Video_Request (Video_ID : in String) return String;
+
+   function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results;
+   function Parse_Video_Duration_Result (Search_Result : in String) return Natural;
+   function Parse_Duration (Duration_String : in String) return Natural;
 
    YT_API_KEY : Unbounded_String;
    YT_API_URL : constant String := "https://www.googleapis.com/youtube/v3/";

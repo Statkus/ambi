@@ -16,6 +16,8 @@
 
       <div id="player"></div>
 
+      <p>Current room video: <div id="current_room_video">@_ROOM_VIDEO_@</div></p>
+
       <div id="playlist">@_PLAYLIST_@</div>
 
       <script>
@@ -28,14 +30,15 @@
          ambiSocket.onmessage = function (event) {
             if (event.data == "update_client_playlist_request") {
                if (playerState != "play") {
-                  ajaxGetXmlRequest ("/next_video", false);
-                  location.reload();
+                  ajaxGetXmlRequest ("/next_video", true);
                }
                else {
                   ajaxGetXmlRequest ("/get_playlist");
                }
             }
-            //xmlActions(new window.DOMParser().parseFromString(event.data, "text/xml"));
+            else if (event.data == "update_room_current_video_request") {
+               ajaxGetXmlRequest ("/get_current_room_video");
+            }
          }
 
          // Function called when an item of search_results_list is clicked
@@ -81,8 +84,7 @@
                playerState = "end";
 
                if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-                  ajaxGetXmlRequest ("/next_video", false);
-                  location.reload();
+                  ajaxGetXmlRequest ("/next_video", true);
                }
             }
          }
@@ -92,8 +94,7 @@
             playerState = "error";
 
             if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-               ajaxGetXmlRequest ("/next_video", false);
-               location.reload();
+               ajaxGetXmlRequest ("/next_video", true);
             }
          }
          ///////////////////////////////////////////////////////////////////////////////////////////

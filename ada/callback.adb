@@ -1,7 +1,6 @@
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 
-with AWS.Client;
 with AWS.MIME;
 with AWS.Net.Websocket.Registry;
 with AWS.Parameters;
@@ -9,11 +8,7 @@ with AWS.Session;
 
 with Templates_Parser;
 
-with Room; use Room;
-
 package body Callback is
-
-   Current_Room : Room.T_Room;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Server_Address
@@ -24,6 +19,15 @@ package body Callback is
    end Set_Server_Address;
 
    -------------------------------------------------------------------------------------------------
+   -- Create_Room
+   -------------------------------------------------------------------------------------------------
+   procedure Create_Room is
+   begin
+      Current_Room := new Room.T_Room;
+      Current_Room.Set_Room_Sync_Task (new Room.T_Room_Sync_Task (Current_Room));
+   end Create_Room;
+
+   -------------------------------------------------------------------------------------------------
    -- Ambi_Callback
    -------------------------------------------------------------------------------------------------
    function Ambi_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
@@ -32,28 +36,43 @@ package body Callback is
 
       Response : AWS.Response.Data;
    begin
-      -- If this is a new client, add it to the room
-      Current_Room.Add_Client (Session_ID);
-
-      Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
-        & ", request: '" & URI & "'");
+      Current_Room_Mutex.Seize;
 
       if URI = "/" then
+         if not Current_Room.Is_Registered (Session_ID) then
+            Current_Room.Add_Client (Session_ID);
+         end if;
+
+         Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
+           & ", request: '" & URI & "'");
+
          Response := Room_Callback (Request);
-      elsif Index (URI, "/javascripts/") > 0 then
-         Response := Javascripts_Callback (Request);
-      elsif URI = "/onclick$search_button" then
-         Response := Search_Button_Callback (Request);
-      elsif URI = "/onclick$search_results_list" then
-         Response := Search_Result_Callback (Request);
-      elsif URI = "/next_video" then
-         Response := Next_Video_Callback (Request);
-      elsif URI = "/get_playlist" then
-         Response := Get_Playlist_Callback (Request);
+      elsif Current_Room.Is_Registered (Session_ID) then
+         Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
+           & ", request: '" & URI & "'");
+
+         if Index (URI, "/javascripts/") > 0 then
+            Response := Javascripts_Callback (Request);
+         elsif URI = "/onclick$search_button" then
+            Response := Search_Button_Callback (Request);
+         elsif URI = "/onclick$search_results_list" then
+            Response := Search_Result_Callback (Request);
+         elsif URI = "/next_video" then
+            Response := Next_Video_Callback (Request);
+         elsif URI = "/get_playlist" then
+            Response := Get_Playlist_Callback (Request);
+         elsif URI = "/get_current_room_video" then
+            Response := Get_Current_Room_Video_Callback (Request);
+         else
+            Put_Line ("Not supported request: '" & URI & "'");
+            Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
+         end if;
       else
-         Put_Line ("Not supported request");
+         Put_Line ("Not registered session ID and not supported request: '" & URI & "'");
          Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
       end if;
+
+      Current_Room_Mutex.Release;
 
       return Response;
    end Ambi_Callback;
@@ -64,17 +83,21 @@ package body Callback is
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 3);
+      Translations : Templates_Parser.Translate_Table (1 .. 4);
    begin
-      Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
+      Put_Line ("Video to play: "
+        & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
 
       Translations (1) := Templates_Parser.Assoc
-        ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
+        ("ROOM_VIDEO", To_String (Current_Room.Get_Current_Video.Video_Title));
 
       Translations (2) := Templates_Parser.Assoc
-        ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+        ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
 
       Translations (3) := Templates_Parser.Assoc
+        ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+
+      Translations (4) := Templates_Parser.Assoc
         ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
       return AWS.Response.Build
@@ -96,15 +119,8 @@ package body Callback is
    function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters   : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Search_Input : constant String := AWS.Parameters.Get (Parameters, "search_input");
-
-      API_Request  : String := YT_API.Get_Search_Request (Search_Input);
-      API_Response : AWS.Response.DATA;
    begin
-      Put_Line ("API query: " & API_Request);
-      API_Response := AWS.Client.Get (URL => API_Request);
-
-      Current_Room.Set_Video_Search_Results
-        (YT_API.Parse_Video_Search_Results (AWS.Response.Message_Body (API_Response)));
+      Current_Room.Set_Video_Search_Results (YT_API.Get_Video_Search_Results (Search_Input));
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("search_results_list", Build_Search_Result (Current_Room.Get_Video_Search_Results)));
@@ -122,7 +138,7 @@ package body Callback is
       Rcp : AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      Current_Room.Add_Video_To_Clients_Playlist
+      Current_Room.Add_Video_To_Playlists
         (Current_Room.Get_Video_Search_Results (Item_Number));
 
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
@@ -152,6 +168,16 @@ package body Callback is
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
    end Get_Playlist_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Current_Room_Video_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Current_Room_Video_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data is
+   begin
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("current_room_video", To_String (Current_Room.Get_Current_Video.Video_Title)));
+   end Get_Current_Room_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Result
@@ -193,7 +219,8 @@ package body Callback is
    begin
       while Playlist.Video_Vectors.Has_Element (Playlist_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim (Integer'Image (Playlist.Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
+           ("ITEM_ID", Trim
+             (Integer'Image (Playlist.Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
            ("IMAGE_URL", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Image_URL);
@@ -231,5 +258,19 @@ package body Callback is
 
       return Templates_Parser.Parse ("xml/ajax_xml_response.txml", Translations);
    end Pack_AJAX_XML_Response;
+
+   protected body Mutex is
+
+      entry Seize when not Owned is
+      begin
+         Owned := True;
+      end Seize;
+
+      procedure Release is
+      begin
+         Owned := False;
+      end Release;
+
+   end Mutex;
 
 end Callback;

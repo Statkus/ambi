@@ -19,7 +19,7 @@ package body YT_API is
    begin
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&part=snippet&q=" & Search_Input
-        & "&videoDefinition=high&type=video&order=viewCount&maxResult="
+        & "&videoDefinition=any&type=video&order=relevance&safeSearch=none&maxResult="
         & MAX_VIDEO_SEARCH_RESULTS'Img
         & "&videoEmbeddable=true&videoSyndicated=true";
    End Get_Search_Request;

@@ -1,6 +1,6 @@
 # Ambi
 
-## Installation (tested on Ubuntu 18.04):
+## Installation (tested on Ubuntu 18.04)
 
 - First you need to build and install Ada Web Server with SSL support and json-ada:
   - apt install git make gcc gnat gpr gprbuild libssl-dev
@@ -34,8 +34,12 @@ To ease the deployment of Ambi without installing all the dependencies, commands
 - If you want to remove the image (should not be done if you want to reuse it as it takes time to build the image):
   - make remove-server-image
 
-At startup ./ambi will look for two files in ambi root directory:
+## Configuration
+
+At startup the executable will look for two files in ambi root directory:
 - "server_address.txt", this file must contain the address of the server in which ambi will be executed
 - "yt_api_key.txt", this file must contain a valid Youtube API key
 
 The server use the port 80, on Linux based system the access to port 80 needs root privilege.
+
+When launched from the Docker container, the stdout and stderr outputs of the executable are logged in "server_log.txt".

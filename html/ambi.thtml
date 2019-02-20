@@ -23,7 +23,7 @@
          var playerState = "end";
 
          // WebSocket to update playlist for all clients
-         var ambiSocket = new WebSocket("ws://localhost/socket");
+         var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");
 
          ambiSocket.onmessage = function (event) {
             if (event.data == "update_client_playlist_request") {

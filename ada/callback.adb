@@ -16,6 +16,14 @@ package body Callback is
    Current_Room : Room.T_Room;
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Server_Address
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Server_Address (Address : in String) is
+   begin
+      SERVER_ADDRESS := To_Unbounded_String (Address);
+   end Set_Server_Address;
+
+   -------------------------------------------------------------------------------------------------
    -- Ambi_Callback
    -------------------------------------------------------------------------------------------------
    function Ambi_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
@@ -53,10 +61,10 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Room_Callback
    -------------------------------------------------------------------------------------------------
-   function Room_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+   function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 2);
+      Translations : Templates_Parser.Translate_Table (1 .. 3);
    begin
       Put_Line ("Video to play: " & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
 
@@ -64,6 +72,9 @@ package body Callback is
         ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
 
       Translations (2) := Templates_Parser.Assoc
+        ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+
+      Translations (3) := Templates_Parser.Assoc
         ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
       return AWS.Response.Build
@@ -73,7 +84,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Javascripts_Callback
    -------------------------------------------------------------------------------------------------
-   function Javascripts_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+   function Javascripts_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       URI : constant String := AWS.Status.URI (Request);
    begin
       return AWS.Response.File (AWS.MIME.Text_Javascript, URI (URI'First + 1 .. URI'Last));
@@ -82,7 +93,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Search_Button_Callback
    -------------------------------------------------------------------------------------------------
-   function Search_Button_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+   function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters   : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Search_Input : constant String := AWS.Parameters.Get (Parameters, "search_input");
 
@@ -102,7 +113,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Search_Result_Callback
    -------------------------------------------------------------------------------------------------
-   function Search_Result_Callback(Request : AWS.Status.Data) return AWS.Response.Data is
+   function Search_Result_Callback(Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Item_Number : constant Integer := Integer'Value (AWS.Parameters.Get (Parameters, "item"));
 
@@ -122,7 +133,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
    -------------------------------------------------------------------------------------------------
-   function Next_Video_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+   function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
    begin
       Current_Room.Set_Current_Client_Video (Session_ID);
@@ -135,7 +146,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist_Callback
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist_Callback (Request : AWS.Status.Data) return AWS.Response.Data is
+   function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
    begin
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response

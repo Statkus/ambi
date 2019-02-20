@@ -34,5 +34,8 @@ To ease the deployment of Ambi without installing all the dependencies, commands
 - If you want to remove the image (should not be done if you want to reuse it as it takes time to build the image):
   - make remove-server-image
 
-At startup ./ambi will look for a file called "yt_api_key.txt" in ambi root directory, this file must contain a valid Youtube API key.
+At startup ./ambi will look for two files in ambi root directory:
+- "server_address.txt", this file must contain the address of the server in which ambi will be executed
+- "yt_api_key.txt", this file must contain a valid Youtube API key
+
 The server use the port 80, on Linux based system the access to port 80 needs root privilege.

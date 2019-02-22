@@ -9,7 +9,7 @@ with YT_API;
 
 package Room is
 
-   type T_Room is tagged private;
+   type T_Room is tagged limited private;
 
    type T_Room_Class_Access is access all T_Room'Class;
 
@@ -27,6 +27,9 @@ package Room is
 
    procedure Set_Room_Sync_Task (This : in out T_Room; Sync_Task : in T_Room_Sync_Task_Access);
 
+   procedure Lock (This : in out T_Room);
+   procedure Unlock (This : in out T_Room);
+
    procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean;
@@ -41,6 +44,9 @@ package Room is
    procedure Set_Video_Search_Results
      (This : in out T_Room; Video_Search_Results : in YT_API.T_Video_Search_Results);
 
+   procedure Set_Client_Display_Player
+     (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean);
+
    function Get_Current_Video (This : in T_Room) return YT_API.T_Video;
 
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
@@ -51,20 +57,30 @@ package Room is
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Playlist.Video_Vectors.Vector;
 
+   function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Boolean;
+
 private
 
-   type T_Room is tagged record
+   procedure Update_No_Player_Clients (This : in out T_Room);
+
+   protected type T_Mutex is
+      entry Seize;
+      procedure Release;
+   private
+      Owned : Boolean := False;
+   end T_Mutex;
+
+   type T_Room is tagged limited record
       Video_Search_Results : YT_API.T_Video_Search_Results;
-
-      Room_Current_Video : YT_API.T_Video :=
+      Room_Current_Video   : YT_API.T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
-      Room_Playlist      : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
-
+      Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
-
-      Client_List       : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
-      Client_ID_Counter : Integer := 0;
+      Room_Mutex                : T_Mutex;
+      Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
+      Client_ID_Counter         : Integer := 0;
    end record;
 
 end Room;

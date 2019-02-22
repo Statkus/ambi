@@ -50,6 +50,14 @@ package body Client is
    end Set_Playlist;
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Display_Player
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Display_Player (This : in out T_Client; Display : in Boolean) is
+   begin
+      This.Display_Player := Display;
+   end Set_Display_Player;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Session_ID
    -------------------------------------------------------------------------------------------------
    function Get_Session_ID (This : in T_Client) return AWS.Session.ID is (This.Session_ID);
@@ -65,5 +73,10 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    function Get_Playlist (This : in T_Client) return Playlist.Video_Vectors.Vector is
      (This.Client_Playlist);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Display_Player
+   -------------------------------------------------------------------------------------------------
+   function Get_Display_Player (This : in T_Client) return Boolean is (This.Display_Player);
 
 end Client;

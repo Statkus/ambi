@@ -19,10 +19,8 @@ function ajaxGetXmlRequest(url, reloadPage = false) {
   ajaxGetRequest(url, ajaxXmlActions, reloadPage);
 }
 
-function ajaxGetRequestNoCallback(url) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.open("GET", url);
-  xhttp.send();
+function ajaxGetRequestNoCallback(url, reloadPage = false) {
+  ajaxGetRequest(url, function() {}, reloadPage);
 }
 
 function ajaxXmlActions(xhttp) {

@@ -36,7 +36,7 @@ package body Callback is
 
       Response : AWS.Response.Data;
    begin
-      Current_Room_Mutex.Seize;
+      Current_Room.Lock;
 
       if URI = "/" then
          if not Current_Room.Is_Registered (Session_ID) then
@@ -57,6 +57,8 @@ package body Callback is
             Response := Search_Button_Callback (Request);
          elsif URI = "/onclick$search_results_list" then
             Response := Search_Result_Callback (Request);
+         elsif URI = "/onclick$player_display_checkbox" then
+            Response := Player_Display_Checkbox_Callback (Request);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_playlist" then
@@ -72,7 +74,7 @@ package body Callback is
          Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
       end if;
 
-      Current_Room_Mutex.Release;
+      Current_Room.Unlock;
 
       return Response;
    end Ambi_Callback;
@@ -84,6 +86,7 @@ package body Callback is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
       Translations : Templates_Parser.Translate_Table (1 .. 4);
+      YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
    begin
       Put_Line ("Video to play: "
         & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
@@ -97,8 +100,18 @@ package body Callback is
       Translations (3) := Templates_Parser.Assoc
         ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
 
-      Translations (4) := Templates_Parser.Assoc
-        ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
+      if Current_Room.Get_Client_Display_Player (Session_ID) then
+         YT_Player_Translations (1) := Templates_Parser.Assoc
+           ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
+
+         Translations (4) := Templates_Parser.Assoc
+           ("YOUTUBE_PLAYER_SCRIPT",
+            To_String
+              (Templates_Parser.Parse ("javascripts/youtube_player.tjs", YT_Player_Translations)));
+      else
+         Translations (4) := Templates_Parser.Assoc
+           ("YOUTUBE_PLAYER_SCRIPT", "");
+      end if;
 
       return AWS.Response.Build
         (AWS.MIME.Text_HTML, To_String (Templates_Parser.Parse ("html/ambi.thtml", Translations)));
@@ -145,6 +158,20 @@ package body Callback is
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Search_Result_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Player_Display_Checkbox_Callback
+   -------------------------------------------------------------------------------------------------
+   function Player_Display_Checkbox_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data is
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Checked    : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+   begin
+      Current_Room.Set_Client_Display_Player (Session_ID, Checked);
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Player_Display_Checkbox_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
@@ -258,19 +285,5 @@ package body Callback is
 
       return Templates_Parser.Parse ("xml/ajax_xml_response.txml", Translations);
    end Pack_AJAX_XML_Response;
-
-   protected body Mutex is
-
-      entry Seize when not Owned is
-      begin
-         Owned := True;
-      end Seize;
-
-      procedure Release is
-      begin
-         Owned := False;
-      end Release;
-
-   end Mutex;
 
 end Callback;

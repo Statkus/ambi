@@ -5,9 +5,7 @@ with YT_API;
 
 package Client is
 
-   type T_Client_ID is new Natural;
-
-   type T_Client is tagged private;
+   type T_Client is tagged limited private;
 
    type T_Client_Class_Access is access all T_Client'Class;
 
@@ -24,18 +22,23 @@ package Client is
    procedure Set_Playlist
      (This : in out T_Client; Client_Playlist : in Playlist.Video_Vectors.Vector);
 
+   procedure Set_Display_Player (This : in out T_Client; Display : in Boolean);
+
    function Get_Session_ID (This : in T_Client) return AWS.Session.ID;
 
    function Get_Current_Video (This : in T_Client) return YT_API.T_Video;
 
    function Get_Playlist (This : in T_Client) return Playlist.Video_Vectors.Vector;
 
+   function Get_Display_Player (This : in T_Client) return Boolean;
+
 private
 
-   type T_Client is tagged record
+   type T_Client is tagged limited record
       Session_ID           : AWS.Session.ID;
       Client_Current_Video : YT_API.T_Video;
       Client_Playlist      : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
+      Display_Player       : Boolean := True;
    end record;
 
 end Client;

@@ -43,6 +43,8 @@ package body Room is
 
                Playlist_Empty := True;
             end if;
+
+            This.Update_No_Player_Clients;
          end loop;
       end loop;
    end T_Room_Sync_Task;
@@ -51,6 +53,22 @@ package body Room is
    -- Client_Compare
    -------------------------------------------------------------------------------------------------
    function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
+
+   -------------------------------------------------------------------------------------------------
+   -- Lock
+   -------------------------------------------------------------------------------------------------
+   procedure Lock (This : in out T_Room) is
+   begin
+      This.Room_Mutex.Seize;
+   end Lock;
+
+   -------------------------------------------------------------------------------------------------
+   -- Unlock
+   -------------------------------------------------------------------------------------------------
+   procedure Unlock (This : in out T_Room) is
+   begin
+      This.Room_Mutex.Release;
+   end Unlock;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Room_Sync_Task
@@ -163,6 +181,29 @@ package body Room is
    end Set_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Client_Display_Player
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Client_Display_Player
+     (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            Client_Vectors.Element (Client_List_Cursor).Set_Display_Player (Display);
+
+            if not Display then
+               Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Room_Playlist);
+               Client_Vectors.Element (Client_List_Cursor).Set_Current_Video
+                 (This.Room_Current_Video);
+            end if;
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Set_Client_Display_Player;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Current_Video
    -------------------------------------------------------------------------------------------------
    function Get_Current_Video (This : in T_Room) return YT_API.T_Video is (This.Room_Current_Video);
@@ -208,5 +249,56 @@ package body Room is
 
       return Client_Vectors.Element (Client_List_Cursor).Get_Playlist;
    end Get_Client_Playlist;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Client_Display_Player
+   -------------------------------------------------------------------------------------------------
+   function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Boolean is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
+            exit;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      return Client_Vectors.Element (Client_List_Cursor).Get_Display_Player;
+   end Get_Client_Display_Player;
+
+   -------------------------------------------------------------------------------------------------
+   -- Update_No_Player_Clients
+   -------------------------------------------------------------------------------------------------
+   procedure Update_No_Player_Clients (This : in out T_Room) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Room_Current_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Room_Playlist);
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Update_No_Player_Clients;
+
+   -------------------------------------------------------------------------------------------------
+   -- T_Mutex
+   -------------------------------------------------------------------------------------------------
+   protected body T_Mutex is
+
+      entry Seize when not Owned is
+      begin
+         Owned := True;
+      end Seize;
+
+      procedure Release is
+      begin
+         Owned := False;
+      end Release;
+
+   end T_Mutex;
 
 end Room;

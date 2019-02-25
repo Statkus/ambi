@@ -24,6 +24,8 @@ package Client is
 
    procedure Set_Display_Player (This : in out T_Client; Display : in Boolean);
 
+   procedure Set_Sync_With_Room (This : in out T_Client; Sync : in Boolean);
+
    function Get_Session_ID (This : in T_Client) return AWS.Session.ID;
 
    function Get_Current_Video (This : in T_Client) return YT_API.T_Video;
@@ -32,6 +34,10 @@ package Client is
 
    function Get_Display_Player (This : in T_Client) return Boolean;
 
+   function Get_Sync_With_Room (This : in T_Client) return Boolean;
+
+   function Has_Nothing_To_Play (This : in T_Client) return Boolean;
+
 private
 
    type T_Client is tagged limited record
@@ -39,6 +45,8 @@ private
       Client_Current_Video : YT_API.T_Video;
       Client_Playlist      : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
       Display_Player       : Boolean := True;
+      Sync_With_Room       : Boolean := False;
+      Nothing_To_Play      : Boolean := True;
    end record;
 
 end Client;

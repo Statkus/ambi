@@ -24,6 +24,7 @@ private
    function Search_Result_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Player_Display_Checkbox_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data;
+   function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Current_Room_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
@@ -37,6 +38,6 @@ private
 
    SERVER_ADDRESS : Unbounded_String;
 
-   Current_Room       : Room.T_Room_Class_Access;
+   Current_Room : Room.T_Room_Class_Access;
 
 end Callback;

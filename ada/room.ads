@@ -36,16 +36,16 @@ package Room is
 
    procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video);
 
-   procedure Remove_First_Client_Playlist_Video
-     (This : in out T_Room; Session_ID : in AWS.Session.ID);
-
-   procedure Set_Current_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
+   procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    procedure Set_Video_Search_Results
      (This : in out T_Room; Video_Search_Results : in YT_API.T_Video_Search_Results);
 
    procedure Set_Client_Display_Player
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean);
+
+   procedure Set_Client_Sync_With_Room
+     (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean);
 
    function Get_Current_Video (This : in T_Room) return YT_API.T_Video;
 
@@ -60,9 +60,18 @@ package Room is
    function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
 
+   function Get_Client_Sync_With_Room (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Boolean;
+
+   function Client_Has_Nothing_To_Play (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Boolean;
+
 private
 
    procedure Update_No_Player_Clients (This : in out T_Room);
+
+   function Find_Client_From_Session_ID (This : in T_Room; Session_ID : in AWS.Session.ID)
+     return Client.T_Client_Class_Access;
 
    protected type T_Mutex is
       entry Seize;
@@ -78,7 +87,8 @@ private
       Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
-      Room_Mutex                : T_Mutex;
+      Room_Current_Video_Mutex  : T_Mutex;
+      Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
       Client_ID_Counter         : Integer := 0;
    end record;

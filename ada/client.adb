@@ -1,3 +1,5 @@
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
 package body Client is
 
    -------------------------------------------------------------------------------------------------
@@ -13,7 +15,12 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Set_Current_Video (This : in out T_Client) is
    begin
-      This.Client_Current_Video := Playlist.Video_Vectors.Element (This.Client_Playlist.First);
+      if not This.Client_Playlist.Is_Empty then
+         This.Client_Current_Video := Playlist.Video_Vectors.Element (This.Client_Playlist.First);
+         This.Nothing_To_Play := False;
+      else
+         This.Nothing_To_Play := True;
+      end if;
    end Set_Current_Video;
 
    -------------------------------------------------------------------------------------------------
@@ -22,6 +29,7 @@ package body Client is
    procedure Set_Current_Video (This : in out T_Client; Video : in YT_API.T_Video) is
    begin
       This.Client_Current_Video := Video;
+      This.Nothing_To_Play      := To_String (Video.Video_Title) = "no video played";
    end Set_Current_Video;
 
    -------------------------------------------------------------------------------------------------
@@ -37,7 +45,9 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Remove_First_Playlist_Video (This : in out T_Client) is
    begin
-      This.Client_Playlist.Delete_First;
+      if not This.Client_Playlist.Is_Empty then
+         This.Client_Playlist.Delete_First;
+      end if;
    end Remove_First_Playlist_Video;
 
    -------------------------------------------------------------------------------------------------
@@ -56,6 +66,14 @@ package body Client is
    begin
       This.Display_Player := Display;
    end Set_Display_Player;
+
+   -------------------------------------------------------------------------------------------------
+   -- Set_Sync_With_Room
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Sync_With_Room (This : in out T_Client; Sync : in Boolean) is
+   begin
+      This.Sync_With_Room := Sync;
+   end Set_Sync_With_Room;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Session_ID
@@ -78,5 +96,15 @@ package body Client is
    -- Get_Display_Player
    -------------------------------------------------------------------------------------------------
    function Get_Display_Player (This : in T_Client) return Boolean is (This.Display_Player);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Sync_With_Room
+   -------------------------------------------------------------------------------------------------
+   function Get_Sync_With_Room (This : in T_Client) return Boolean is (This.Sync_With_Room);
+
+   -------------------------------------------------------------------------------------------------
+   -- Has_Nothing_To_Play
+   -------------------------------------------------------------------------------------------------
+   function Has_Nothing_To_Play (This : in T_Client) return Boolean is (This.Nothing_To_Play);
 
 end Client;

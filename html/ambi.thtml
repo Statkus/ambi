@@ -17,6 +17,11 @@
          <label for="player_display_checkbox">Player</label>
       </div>
 
+      <div>
+         <input type="checkbox" id="player_sync_checkbox" value="sync_player" style="display:@_DISPLAY_SYNC_CHECKBOX_@" onclick="ajaxGetRequestNoCallback ('/onclick$player_sync_checkbox?checked=' + this.checked, true)">
+         <label for="player_sync_checkbox" style="display:@_DISPLAY_SYNC_CHECKBOX_@">Sync with room</label>
+      </div>
+
       <div id="search_results_list"></div>
 
       <div id="player"></div>
@@ -27,7 +32,7 @@
 
       <script>
          // State of the Youtube player
-         var playerState = "no_player";
+         var playerState = "@_PLAYER_STATE_@";
 
          // WebSocket to update playlist and current room video for all clients
          var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");

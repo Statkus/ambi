@@ -10,7 +10,7 @@ function onYouTubeIframeAPIReady() {
     height: '360',
     width: '640',
     videoId: '@_VIDEO_ID_@',
-    playerVars: { controls:1, showinfo: 0, rel: 0, showsearch: 0, iv_load_policy: 3, modestbranding: 1, enablejsapi: 1 },
+    playerVars: { controls:@_PLAYER_CONTROL_@, showinfo: 0, rel: 0, showsearch: 0, iv_load_policy: 3, modestbranding: 1, enablejsapi: 1 },
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange,
@@ -29,9 +29,11 @@ function onPlayerStateChange(event) {
     player.stopVideo();
     playerState = "end";
 
-    if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-      ajaxGetXmlRequest ("/next_video", true);
-    }
+    ajaxGetXmlRequest ("/next_video", true);
+  }
+  else if (@_PLAYER_CONTROL_@ == 0 && event.data == YT.PlayerState.PAUSED) {
+    // Do not allow the client to pause the player when room sync is enabled
+    event.target.playVideo();
   }
 }
 
@@ -39,7 +41,5 @@ function onPlayerError(event) {
   player.stopVideo();
   playerState = "error";
 
-  if (document.getElementById("playlist").innerHTML != "<ul></ul>") {
-    ajaxGetXmlRequest ("/next_video", true);
-  }
+  ajaxGetXmlRequest ("/next_video", true);
 }

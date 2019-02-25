@@ -59,6 +59,8 @@ package body Callback is
             Response := Search_Result_Callback (Request);
          elsif URI = "/onclick$player_display_checkbox" then
             Response := Player_Display_Checkbox_Callback (Request);
+         elsif URI = "/onclick$player_sync_checkbox" then
+            Response := Player_Sync_Checkbox_Callback (Request);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_playlist" then
@@ -85,32 +87,50 @@ package body Callback is
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 4);
-      YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
+      Translations : Templates_Parser.Translate_Table (1 .. 6);
+      YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 2);
    begin
       Put_Line ("Video to play: "
         & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
 
-      Translations (1) := Templates_Parser.Assoc
+      -- Sync checkbox displaying and player state
+      if Current_Room.Get_Client_Display_Player (Session_ID) then
+         Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "block");
+         Translations (5) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
+      else
+         Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "none");
+         Translations (5) := Templates_Parser.Assoc ("PLAYER_STATE", "no_player");
+      end if;
+
+      -- Current room video title
+      Translations (2) := Templates_Parser.Assoc
         ("ROOM_VIDEO", To_String (Current_Room.Get_Current_Video.Video_Title));
 
-      Translations (2) := Templates_Parser.Assoc
+      -- Client playlist
+      Translations (3) := Templates_Parser.Assoc
         ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
 
-      Translations (3) := Templates_Parser.Assoc
-        ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+      -- Server address for WebSocket
+      Translations (4) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
 
-      if Current_Room.Get_Client_Display_Player (Session_ID) then
+      -- Player script
+      if Current_Room.Get_Client_Display_Player (Session_ID)
+        and not Current_Room.Client_Has_Nothing_To_Play (Session_ID) then
          YT_Player_Translations (1) := Templates_Parser.Assoc
            ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
-         Translations (4) := Templates_Parser.Assoc
+         if Current_Room.Get_Client_Sync_With_Room (Session_ID) then
+            YT_Player_Translations (2) := Templates_Parser.Assoc ("PLAYER_CONTROL", "0");
+         else
+            YT_Player_Translations (2) := Templates_Parser.Assoc ("PLAYER_CONTROL", "1");
+         end if;
+
+         Translations (6) := Templates_Parser.Assoc
            ("YOUTUBE_PLAYER_SCRIPT",
             To_String
               (Templates_Parser.Parse ("javascripts/youtube_player.tjs", YT_Player_Translations)));
       else
-         Translations (4) := Templates_Parser.Assoc
-           ("YOUTUBE_PLAYER_SCRIPT", "");
+         Translations (6) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
       end if;
 
       return AWS.Response.Build
@@ -174,13 +194,25 @@ package body Callback is
    end Player_Display_Checkbox_Callback;
 
    -------------------------------------------------------------------------------------------------
+   -- Player_Sync_Checkbox_Callback
+   -------------------------------------------------------------------------------------------------
+   function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
+      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Sync       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+   begin
+      Current_Room.Set_Client_Sync_With_Room (Session_ID, Sync);
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Player_Sync_Checkbox_Callback;
+
+   -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
    -------------------------------------------------------------------------------------------------
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
    begin
-      Current_Room.Set_Current_Client_Video (Session_ID);
-      Current_Room.Remove_First_Client_Playlist_Video (Session_ID);
+      Current_Room.Next_Client_Video (Session_ID);
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));

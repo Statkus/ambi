@@ -144,7 +144,7 @@ package body Room is
    -- Next_Client_Video
    -------------------------------------------------------------------------------------------------
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID) is
-      Current_Client : Client.T_Client_Class_Access :=
+      Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_ID (Session_ID);
    begin
       if Current_Client.Get_Sync_With_Room then
@@ -175,7 +175,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Set_Client_Display_Player
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean) is
-      Current_Client : Client.T_Client_Class_Access :=
+      Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_ID (Session_ID);
    begin
       Current_Client.Set_Display_Player (Display);
@@ -194,7 +194,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Set_Client_Sync_With_Room
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean) is
-      Current_Client : Client.T_Client_Class_Access :=
+      Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_ID (Session_ID);
    begin
       Current_Client.Set_Sync_With_Room (Sync);
@@ -249,7 +249,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Client_Has_Nothing_To_Play (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean is
-      Current_Client : Client.T_Client_Class_Access :=
+      Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_ID (Session_ID);
       Nothing_To_Play : Boolean := False;
    begin

@@ -66,7 +66,7 @@ package body Callback is
          elsif URI = "/get_playlist" then
             Response := Get_Playlist_Callback (Request);
          elsif URI = "/get_current_room_video" then
-            Response := Get_Current_Room_Video_Callback (Request);
+            Response := Get_Current_Room_Video_Callback;
          else
             Put_Line ("Not supported request: '" & URI & "'");
             Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
@@ -166,9 +166,7 @@ package body Callback is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Item_Number : constant Integer := Integer'Value (AWS.Parameters.Get (Parameters, "item"));
 
-      Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
-
-      Rcp : AWS.Net.WebSocket.Registry.Recipient :=
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       Current_Room.Add_Video_To_Playlists
@@ -231,8 +229,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Room_Video_Callback
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Room_Video_Callback (Request : in AWS.Status.Data)
-     return AWS.Response.Data is
+   function Get_Current_Room_Video_Callback return AWS.Response.Data is
    begin
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("current_room_video", To_String (Current_Room.Get_Current_Video.Video_Title)));
@@ -302,7 +299,6 @@ package body Callback is
       Translations : Templates_Parser.Translate_Table (1 .. 2);
 
       Replace_Fields : Unbounded_String;
-      Response       : Unbounded_String;
    begin
       -- Pack <replace> fields
       -- For now, only one field at a time is supported

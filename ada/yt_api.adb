@@ -117,8 +117,8 @@ package body YT_API is
    -- Parse_Duration
    -------------------------------------------------------------------------------------------------
    function Parse_Duration (Duration_String : in String) return Natural is
-      Minutes_Pattern : GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)M");
-      Seconds_Pattern : GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)S");
+      Minutes_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)M");
+      Seconds_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)S");
       Result  : GNAT.Regpat.Match_Array (0 .. 1);
 
       Minutes : Natural := 0;

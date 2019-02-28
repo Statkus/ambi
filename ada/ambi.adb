@@ -14,7 +14,6 @@ with YT_API;
 procedure Ambi is
    Config_File : File_Type;
    Ambi_Server : AWS.Server.HTTP;
-   Ch          : Character;
 begin
    GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
 
@@ -43,8 +42,8 @@ begin
    -- Launch Websocket server
    AWS.Net.WebSocket.Registry.Control.Start;
 
-   Put_Line ("Press any key to quit.");
-   Get_Immediate (Ch);
+   Put_Line ("Press Q key to quit.");
+   AWS.Server.Wait (AWS.Server.Q_Key_Pressed);
 
    AWS.Net.WebSocket.Registry.Control.Shutdown;
    AWS.Server.Shutdown (Ambi_Server);

@@ -27,7 +27,7 @@ private
    function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
-   function Get_Current_Room_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
+   function Get_Current_Room_Video_Callback return AWS.Response.Data;
 
    function Build_Search_Result (Video_Search_Results : in YT_API.T_Video_Search_Results)
      return String;

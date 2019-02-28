@@ -3,12 +3,16 @@ with "json_ada";
 
 project Ambi is
 
-  for Main use ("ambi.adb");
+   for Main use ("ambi.adb");
 
-  for Source_Dirs use ("ada");
+   for Source_Dirs use ("ada");
 
-  for Object_Dir use "obj";
+   for Object_Dir use "obj";
 
-  for Exec_Dir use ".";
+   for Exec_Dir use ".";
+
+   package Compiler is
+      for Default_Switches ("Ada") use ("-O", "-gnato", "-gnatwa", "-gnatwh", "-gnatwl", "-gnatwt");
+   end Compiler;
 
 end Ambi;

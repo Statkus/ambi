@@ -1,5 +1,7 @@
 with "aws";
+with "gnadelite";
 with "json_ada";
+with "morzhol";
 
 project Ambi is
 

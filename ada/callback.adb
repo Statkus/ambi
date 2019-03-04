@@ -21,9 +21,10 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Create_Room
    -------------------------------------------------------------------------------------------------
-   procedure Create_Room is
+   procedure Create_Room (DB : in not null Database.T_Database_Class_Access) is
    begin
       Current_Room := new Room.T_Room;
+      Current_Room.Set_Database (DB);
       Current_Room.Set_Room_Sync_Task (new Room.T_Room_Sync_Task (Current_Room));
    end Create_Room;
 
@@ -65,6 +66,8 @@ package body Callback is
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_playlist" then
             Response := Get_Playlist_Callback (Request);
+         elsif URI = "/get_historic" then
+            Response := Get_Historic_Callback;
          elsif URI = "/get_current_room_video" then
             Response := Get_Current_Room_Video_Callback;
          else
@@ -108,7 +111,7 @@ package body Callback is
 
       -- Client playlist
       Translations (3) := Templates_Parser.Assoc
-        ("PLAYLIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
+        ("VIDEO_LIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
 
       -- Server address for WebSocket
       Translations (4) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
@@ -213,7 +216,7 @@ package body Callback is
       Current_Room.Next_Client_Video (Session_ID);
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
+          ("video_list", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
    end Next_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -223,8 +226,17 @@ package body Callback is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
    begin
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("playlist", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
+          ("video_list", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
    end Get_Playlist_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Historic_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Historic_Callback return AWS.Response.Data is
+   begin
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("video_list", Build_Historic (Current_Room.Get_Historic)));
+   end Get_Historic_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Room_Video_Callback
@@ -249,7 +261,7 @@ package body Callback is
            ("ITEM_ID", Trim (Result_Index'Img, Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", To_String (Video_Search_Results (Result_Index).Video_Image_URL));
+           ("IMAGE_URL", To_String (Video_Search_Results (Result_Index).Video_Thumbnail));
 
          Translations (3) := Templates_Parser.Assoc
            ("VIDEO_TITLE", To_String (Video_Search_Results (Result_Index).Video_Title));
@@ -279,7 +291,7 @@ package body Callback is
              (Integer'Image (Playlist.Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Image_URL);
+           ("IMAGE_URL", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Thumbnail);
 
          Translations (3) := Templates_Parser.Assoc
            ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Title);
@@ -295,6 +307,41 @@ package body Callback is
       return To_String (Response);
    end Build_Playlist;
 
+   -------------------------------------------------------------------------------------------------
+   -- Build_Historic
+   -------------------------------------------------------------------------------------------------
+   function Build_Historic (Historic : in Playlist.Video_Vectors.Vector) return String is
+      Translations : Templates_Parser.Translate_Table (1 .. 3);
+
+      Response : Unbounded_String := To_Unbounded_String ("<ul>");
+
+      Historic_Cursor : Playlist.Video_Vectors.Cursor := Historic.Last;
+   begin
+      while Playlist.Video_Vectors.Has_Element (Historic_Cursor) loop
+         Translations (1) := Templates_Parser.Assoc
+           ("ITEM_ID", Trim
+             (Integer'Image (Playlist.Video_Vectors.To_Index (Historic_Cursor)), Ada.Strings.Left));
+
+         Translations (2) := Templates_Parser.Assoc
+           ("IMAGE_URL", Playlist.Video_Vectors.Element (Historic_Cursor).Video_Thumbnail);
+
+         Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Historic_Cursor).Video_Title);
+
+         Append (Response, To_String
+           (Templates_Parser.Parse ("html/historic_item.thtml", Translations)));
+
+         Historic_Cursor := Playlist.Video_Vectors.Previous (Historic_Cursor);
+      end loop;
+
+      Append (Response, "</ul>");
+
+      return To_String (Response);
+   end Build_Historic;
+
+   -------------------------------------------------------------------------------------------------
+   -- Pack_AJAX_XML_Response
+   -------------------------------------------------------------------------------------------------
    function Pack_AJAX_XML_Response (Placeholder : in String; Value : in String) return String is
       Translations : Templates_Parser.Translate_Table (1 .. 2);
 

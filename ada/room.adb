@@ -40,6 +40,9 @@ package body Room is
                -- If the playlist is not empty, select the next video
                This.Room_Current_Video := Playlist.Video_Vectors.Element (This.Room_Playlist.First);
                This.Room_Playlist.Delete_First;
+
+               -- Add the current video to the historic
+               This.DB.Add_To_Historic (This.Room_Current_Video);
             else
                -- The playlist is empty, go back at waiting for the start of a new playlist
                This.Room_Current_Video_Active := False;
@@ -62,9 +65,19 @@ package body Room is
    function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Database
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Database
+     (This : in out T_Room; DB : in not null Database.T_Database_Class_Access) is
+   begin
+      This.DB := DB;
+   end Set_Database;
+
+   -------------------------------------------------------------------------------------------------
    -- Set_Room_Sync_Task
    -------------------------------------------------------------------------------------------------
-   procedure Set_Room_Sync_Task (This : in out T_Room; Sync_Task : in T_Room_Sync_Task_Access) is
+   procedure Set_Room_Sync_Task
+     (This : in out T_Room; Sync_Task : in not null T_Room_Sync_Task_Access) is
    begin
       This.Room_Sync_Task := Sync_Task;
    end Set_Room_Sync_Task;
@@ -121,9 +134,12 @@ package body Room is
    procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      -- Add the video to all the clients playlist
+      -- Add the video to all the clients playlist except if they don't have player
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
+         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
+            Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
+         end if;
+
          Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
       end loop;
 
@@ -134,10 +150,15 @@ package body Room is
          This.Room_Current_Video := Video;
 
          This.Room_Sync_Task.Start_Room_Playlist;
+
+         -- Add the current video to the historic
+         This.DB.Add_To_Historic (Video);
       else
          This.Room_Playlist.Append (Video);
       end if;
       This.Room_Current_Video_Mutex.Release;
+
+      This.Update_No_Player_Clients;
    end Add_Video_To_Playlists;
 
    -------------------------------------------------------------------------------------------------
@@ -218,6 +239,12 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results is
      (This.Video_Search_Results);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Historic
+   -------------------------------------------------------------------------------------------------
+   function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector is
+     (This.DB.Get_Historic);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video

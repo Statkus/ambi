@@ -82,7 +82,7 @@ package body YT_API is
          Video_Search_Results (Video_Search_Results_Index).Video_Title :=
            To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
 
-         Video_Search_Results (Video_Search_Results_Index).Video_Image_URL :=
+         Video_Search_Results (Video_Search_Results_Index).Video_Thumbnail :=
            To_Unbounded_String
              (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
 

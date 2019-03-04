@@ -1,0 +1,4 @@
+<li id="historic_item_@_ITEM_ID_@" value="@_ITEM_ID_@" onclick="addHistoricToPlaylist(this)">
+   <img src="@_IMAGE_URL_@">
+   @_VIDEO_TITLE_@
+</li>

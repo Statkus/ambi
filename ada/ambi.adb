@@ -6,14 +6,16 @@ with AWS.Net.Websocket.Registry.Control;
 with AWS.Server;
 
 with Callback;
+with Database;
 with YT_API;
 
 ----------------------------------------------------------------------------------------------------
 -- Ambi
 ----------------------------------------------------------------------------------------------------
 procedure Ambi is
-   Config_File : File_Type;
-   Ambi_Server : AWS.Server.HTTP;
+   Config_File   : File_Type;
+   Ambi_Database : constant Database.T_Database_Class_Access := new Database.T_Database;
+   Ambi_Server   : AWS.Server.HTTP;
 begin
    GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
 
@@ -27,8 +29,11 @@ begin
    YT_API.Set_YT_API_Key (Get_Line (Config_File));
    Close (Config_File);
 
+   -- Open or create the ambi database
+   Ambi_Database.Open;
+
    -- Create the room
-   Callback.Create_Room;
+   Callback.Create_Room (Ambi_Database);
 
    -- Launch the server on port 80
    AWS.Server.Start
@@ -47,4 +52,6 @@ begin
 
    AWS.Net.WebSocket.Registry.Control.Shutdown;
    AWS.Server.Shutdown (Ambi_Server);
+
+   Ambi_Database.Close;
 end Ambi;

@@ -8,9 +8,9 @@ package YT_API is
    MAX_VIDEO_SEARCH_RESULTS : constant := 5;
 
    type T_Video is record
-      Video_ID           : Unbounded_String;
-      Video_Title        : Unbounded_String;
-      Video_Image_URL    : Unbounded_String;
+      Video_ID        : Unbounded_String;
+      Video_Title     : Unbounded_String;
+      Video_Thumbnail : Unbounded_String;
    end record;
 
    type T_Video_Search_Results is array (1 .. MAX_VIDEO_SEARCH_RESULTS) of T_Video;

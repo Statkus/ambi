@@ -4,6 +4,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with AWS.Session;
 
 with Client;
+with Database;
 with Playlist;
 with YT_API;
 
@@ -25,7 +26,11 @@ package Room is
    package Client_Vectors is new Ada.Containers.Vectors
      (Natural, Client.T_Client_Class_Access, Client_Compare);
 
-   procedure Set_Room_Sync_Task (This : in out T_Room; Sync_Task : in T_Room_Sync_Task_Access);
+   procedure Set_Database
+     (This : in out T_Room; DB : in not null Database.T_Database_Class_Access);
+
+   procedure Set_Room_Sync_Task
+     (This : in out T_Room; Sync_Task : in not null T_Room_Sync_Task_Access);
 
    procedure Lock (This : in out T_Room);
    procedure Unlock (This : in out T_Room);
@@ -50,6 +55,8 @@ package Room is
    function Get_Current_Video (This : in T_Room) return YT_API.T_Video;
 
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
+
+   function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector;
 
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
      return YT_API.T_Video;
@@ -91,6 +98,7 @@ private
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
       Client_ID_Counter         : Integer := 0;
+      DB                        : Database.T_Database_Class_Access;
    end record;
 
 end Room;

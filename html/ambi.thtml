@@ -28,11 +28,19 @@
 
       <p>Current room video: <div id="current_room_video">@_ROOM_VIDEO_@</div></p>
 
-      <div id="playlist">@_PLAYLIST_@</div>
+      <div>
+         <button onclick="showPlaylist()">Playlist</button>
+         <button onclick="showHistoric()">Historic</button>
+      </div>
+
+      <div id="video_list">@_VIDEO_LIST_@</div>
 
       <script>
          // State of the Youtube player
          var playerState = "@_PLAYER_STATE_@";
+
+         // State of the video list
+         var videoListState = "playlist";
 
          // WebSocket to update playlist and current room video for all clients
          var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");
@@ -43,11 +51,16 @@
                   ajaxGetXmlRequest ("/next_video", true);
                }
                else {
-                  ajaxGetXmlRequest ("/get_playlist");
+                  if (videoListState == "playlist") {
+                     ajaxGetXmlRequest ("/get_playlist");
+                  }
                }
             }
             else if (event.data == "update_room_current_video_request") {
-               if (playerState == "no_player") {
+               if (videoListState == "historic") {
+                  ajaxGetXmlRequest ("/get_historic");
+               }
+               else if (playerState == "no_player" && videoListState == "playlist") {
                   ajaxGetXmlRequest ("/get_playlist");
                }
 
@@ -61,6 +74,24 @@
             document.getElementById("search_results_list").innerHTML = "";
 
             ajaxGetRequestNoCallback ("/onclick$search_results_list?item=" + String(elm.getAttribute('value')));
+         }
+
+         function showPlaylist() {
+            if (videoListState != "playlist") {
+               ajaxGetXmlRequest ("/get_playlist");
+               videoListState = "playlist";
+            }
+         }
+
+         function showHistoric() {
+            if (videoListState != "historic") {
+               ajaxGetXmlRequest ("/get_historic");
+               videoListState = "historic";
+            }
+         }
+
+         function addHistoricToPlaylist(elm) {
+            console.log(elm.getAttribute('value'));
          }
       </script>
 

@@ -58,6 +58,8 @@ package Room is
 
    function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector;
 
+   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
+
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
      return YT_API.T_Video;
 

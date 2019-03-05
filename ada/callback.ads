@@ -25,6 +25,8 @@ private
    function Player_Display_Checkbox_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data;
    function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
+   function Add_Historic_To_Playlist_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data;
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Historic_Callback return AWS.Response.Data;

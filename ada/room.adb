@@ -134,16 +134,7 @@ package body Room is
    procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      -- Add the video to all the clients playlist except if they don't have player
-      while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
-            Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
-         end if;
-
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
-      end loop;
-
-      -- Also add the video to the room playlist for room sync
+      -- Add the video to the room playlist for room sync
       This.Room_Current_Video_Mutex.Seize;
       if This.Room_Playlist.Is_Empty and not This.Room_Current_Video_Active then
          This.Room_Current_Video_Active := True;
@@ -158,7 +149,22 @@ package body Room is
       end if;
       This.Room_Current_Video_Mutex.Release;
 
-      This.Update_No_Player_Clients;
+      -- Add the video to all the clients playlist
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player
+           or Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
+            -- If the client is sync with the room (sync player or no player) then sync it
+            This.Room_Current_Video_Mutex.Seize;
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Room_Current_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Room_Playlist);
+            This.Room_Current_Video_Mutex.Release;
+         else
+            -- Otherwise only add the video to the playlist client
+            Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
    end Add_Video_To_Playlists;
 
    -------------------------------------------------------------------------------------------------
@@ -245,6 +251,12 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector is
      (This.DB.Get_Historic);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Historic_Item
+   -------------------------------------------------------------------------------------------------
+   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video is
+     (This.DB.Get_Historic.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video

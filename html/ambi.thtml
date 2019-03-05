@@ -10,15 +10,15 @@
 
    <body>
       <input id="search_input" type="text" value="">
-      <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest ('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
+      <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
 
       <div>
-         <input type="checkbox" id="player_display_checkbox" value="display_player" checked onclick="ajaxGetRequestNoCallback ('/onclick$player_display_checkbox?checked=' + this.checked, true)">
+         <input type="checkbox" id="player_display_checkbox" value="display_player" checked onclick="ajaxGetRequestNoCallback('/onclick$player_display_checkbox?checked=' + this.checked, true)">
          <label for="player_display_checkbox">Player</label>
       </div>
 
       <div>
-         <input type="checkbox" id="player_sync_checkbox" value="sync_player" style="display:@_DISPLAY_SYNC_CHECKBOX_@" onclick="ajaxGetRequestNoCallback ('/onclick$player_sync_checkbox?checked=' + this.checked, true)">
+         <input type="checkbox" id="player_sync_checkbox" value="sync_player" style="display:@_DISPLAY_SYNC_CHECKBOX_@" onclick="ajaxGetRequestNoCallback('/onclick$player_sync_checkbox?checked=' + this.checked, true)">
          <label for="player_sync_checkbox" style="display:@_DISPLAY_SYNC_CHECKBOX_@">Sync with room</label>
       </div>
 
@@ -76,6 +76,11 @@
             ajaxGetRequestNoCallback ("/onclick$search_results_list?item=" + String(elm.getAttribute('value')));
          }
 
+         // Function called when an item of historic is clicked
+         function addHistoricToPlaylist(elm) {
+            ajaxGetRequestNoCallback ("/onclick$historic?item=" + String(elm.getAttribute('value')));
+         }
+
          function showPlaylist() {
             if (videoListState != "playlist") {
                ajaxGetXmlRequest ("/get_playlist");
@@ -88,10 +93,6 @@
                ajaxGetXmlRequest ("/get_historic");
                videoListState = "historic";
             }
-         }
-
-         function addHistoricToPlaylist(elm) {
-            console.log(elm.getAttribute('value'));
          }
       </script>
 

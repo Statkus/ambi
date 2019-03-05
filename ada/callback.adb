@@ -62,6 +62,8 @@ package body Callback is
             Response := Player_Display_Checkbox_Callback (Request);
          elsif URI = "/onclick$player_sync_checkbox" then
             Response := Player_Sync_Checkbox_Callback (Request);
+         elsif URI = "/onclick$historic" then
+            Response := Add_Historic_To_Playlist_Callback (Request);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_playlist" then
@@ -165,7 +167,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Search_Result_Callback
    -------------------------------------------------------------------------------------------------
-   function Search_Result_Callback(Request : in AWS.Status.Data) return AWS.Response.Data is
+   function Search_Result_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Item_Number : constant Integer := Integer'Value (AWS.Parameters.Get (Parameters, "item"));
 
@@ -206,6 +208,25 @@ package body Callback is
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Player_Sync_Checkbox_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_Historic_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_Historic_To_Playlist_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data is
+      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Item_Number : constant Integer := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
+   begin
+      Current_Room.Add_Video_To_Playlists
+        (Current_Room.Get_Historic_Item (Item_Number));
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Add_Historic_To_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback

@@ -25,4 +25,4 @@ stop-server-image:
 	docker stop $(CONTAINER_NAME)
 
 remove-server-image:
-	docker rm $(IMAGE_NAME)
+	docker rmi $(IMAGE_NAME)

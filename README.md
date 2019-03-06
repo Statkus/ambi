@@ -2,8 +2,8 @@
 
 ## Installation (tested on Ubuntu 18.04)
 
-- First you need to build and install Ada Web Server with SSL support and json-ada:
-  - apt install git make gcc gnat gpr gprbuild libssl-dev
+- First you need to build and install Ada Web Server with SSL support, json-ada and GNADELite:
+  - apt install git make gcc gnat gpr gprbuild libssl-dev libsqlite3-dev
   - git clone --recurse-submodules https://github.com/AdaCore/aws.git
   - cd aws
   - make SOCKET=openssl setup NETLIB=ipv6
@@ -12,6 +12,14 @@
   - cd ../
   - git clone https://github.com/Statkus/json-ada.git
   - cd json-ada
+  - make
+  - make install
+  - cd ../
+  - git clone --recurse-submodules https://github.com/Statkus/gnadelite.git
+  - cd gnadelite
+  - make
+  - make install
+  - cd external-libs/morzhol
   - make
   - make install
 

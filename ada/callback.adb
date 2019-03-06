@@ -56,20 +56,26 @@ package body Callback is
             Response := Javascripts_Callback (Request);
          elsif URI = "/onclick$search_button" then
             Response := Search_Button_Callback (Request);
-         elsif URI = "/onclick$search_results_list" then
-            Response := Search_Result_Callback (Request);
+         elsif URI = "/onclick$search_results" then
+            Response := Search_Results_Callback (Request);
          elsif URI = "/onclick$player_display_checkbox" then
             Response := Player_Display_Checkbox_Callback (Request);
          elsif URI = "/onclick$player_sync_checkbox" then
             Response := Player_Sync_Checkbox_Callback (Request);
          elsif URI = "/onclick$historic" then
             Response := Add_Historic_To_Playlist_Callback (Request);
+         elsif URI = "/onclick$likes" then
+            Response := Add_Likes_To_Playlist_Callback (Request);
+         elsif URI = "/onclick$add_to_likes" then
+            Response := Add_To_Likes_Callback (Request);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_playlist" then
             Response := Get_Playlist_Callback (Request);
          elsif URI = "/get_historic" then
             Response := Get_Historic_Callback;
+         elsif URI = "/get_likes" then
+            Response := Get_Likes_Callback;
          elsif URI = "/get_current_room_video" then
             Response := Get_Current_Room_Video_Callback;
          else
@@ -161,15 +167,15 @@ package body Callback is
       Current_Room.Set_Video_Search_Results (YT_API.Get_Video_Search_Results (Search_Input));
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("search_results_list", Build_Search_Result (Current_Room.Get_Video_Search_Results)));
+          ("search_results", Build_Search_Results (Current_Room.Get_Video_Search_Results)));
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Search_Result_Callback
+   -- Search_Results_Callback
    -------------------------------------------------------------------------------------------------
-   function Search_Result_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
+   function Search_Results_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Item_Number : constant Integer := Integer'Value (AWS.Parameters.Get (Parameters, "item"));
+      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
@@ -180,7 +186,7 @@ package body Callback is
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
-   end Search_Result_Callback;
+   end Search_Results_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Player_Display_Checkbox_Callback
@@ -215,7 +221,7 @@ package body Callback is
    function Add_Historic_To_Playlist_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Item_Number : constant Integer := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
@@ -227,6 +233,45 @@ package body Callback is
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Add_Historic_To_Playlist_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_Likes_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_Likes_To_Playlist_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data is
+      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
+   begin
+      Current_Room.Add_Video_To_Playlists
+        (Current_Room.Get_Likes_Item (Item_Number));
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Add_Likes_To_Playlist_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_To_Likes_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_To_Likes_Callback (Request : in AWS.Status.Data)
+     return AWS.Response.Data is
+      Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
+      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
+   begin
+      Current_Room.Add_Like
+        (Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number));
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_likes_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Add_To_Likes_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
@@ -260,6 +305,15 @@ package body Callback is
    end Get_Historic_Callback;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Likes_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Likes_Callback return AWS.Response.Data is
+   begin
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("video_list", Build_Likes (Current_Room.Get_Likes)));
+   end Get_Likes_Callback;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Current_Room_Video_Callback
    -------------------------------------------------------------------------------------------------
    function Get_Current_Room_Video_Callback return AWS.Response.Data is
@@ -269,9 +323,9 @@ package body Callback is
    end Get_Current_Room_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Build_Search_Result
+   -- Build_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Build_Search_Result (Video_Search_Results : in YT_API.T_Video_Search_Results)
+   function Build_Search_Results (Video_Search_Results : in YT_API.T_Video_Search_Results)
      return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
 
@@ -288,13 +342,13 @@ package body Callback is
            ("VIDEO_TITLE", To_String (Video_Search_Results (Result_Index).Video_Title));
 
          Append (Response, To_String
-           (Templates_Parser.Parse ("html/search_results_list_item.thtml", Translations)));
+           (Templates_Parser.Parse ("html/search_results_item.thtml", Translations)));
       end loop;
 
       Append (Response, "</ul>");
 
       return To_String (Response);
-   end Build_Search_Result;
+   end Build_Search_Results;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Playlist
@@ -359,6 +413,38 @@ package body Callback is
 
       return To_String (Response);
    end Build_Historic;
+
+   -------------------------------------------------------------------------------------------------
+   -- Build_Likes
+   -------------------------------------------------------------------------------------------------
+   function Build_Likes (Likes : in Playlist.Video_Vectors.Vector) return String is
+      Translations : Templates_Parser.Translate_Table (1 .. 3);
+
+      Response : Unbounded_String := To_Unbounded_String ("<ul>");
+
+      Likes_Cursor : Playlist.Video_Vectors.Cursor := Likes.Last;
+   begin
+      while Playlist.Video_Vectors.Has_Element (Likes_Cursor) loop
+         Translations (1) := Templates_Parser.Assoc
+           ("ITEM_ID", Trim
+             (Integer'Image (Playlist.Video_Vectors.To_Index (Likes_Cursor)), Ada.Strings.Left));
+
+         Translations (2) := Templates_Parser.Assoc
+           ("IMAGE_URL", Playlist.Video_Vectors.Element (Likes_Cursor).Video_Thumbnail);
+
+         Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Likes_Cursor).Video_Title);
+
+         Append (Response, To_String
+           (Templates_Parser.Parse ("html/likes_item.thtml", Translations)));
+
+         Likes_Cursor := Playlist.Video_Vectors.Previous (Likes_Cursor);
+      end loop;
+
+      Append (Response, "</ul>");
+
+      return To_String (Response);
+   end Build_Likes;
 
    -------------------------------------------------------------------------------------------------
    -- Pack_AJAX_XML_Response

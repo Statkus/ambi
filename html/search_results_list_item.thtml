@@ -1,4 +1,0 @@
-<li id="search_result_item_@_ITEM_ID_@" value="@_ITEM_ID_@" onclick="select_result_item(this)">
-   <img src="@_IMAGE_URL_@">
-   @_VIDEO_TITLE_@
-</li>

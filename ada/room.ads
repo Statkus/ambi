@@ -41,6 +41,8 @@ package Room is
 
    procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video);
 
+   procedure Add_Like (This : in out T_Room; Video : in YT_API.T_Video);
+
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    procedure Set_Video_Search_Results
@@ -60,11 +62,19 @@ package Room is
 
    function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
 
+   function Get_Likes (This : in T_Room) return Playlist.Video_Vectors.Vector;
+
+   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
+
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
      return YT_API.T_Video;
 
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Playlist.Video_Vectors.Vector;
+
+   function Get_Client_Playlist_Item
+     (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
+     return YT_API.T_Video;
 
    function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;

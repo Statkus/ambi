@@ -158,6 +158,14 @@ package body Room is
    end Add_Video_To_Playlists;
 
    -------------------------------------------------------------------------------------------------
+   -- Add_Like
+   -------------------------------------------------------------------------------------------------
+   procedure Add_Like (This : in out T_Room; Video : in YT_API.T_Video) is
+   begin
+      This.DB.Add_To_Likes (Video);
+   end Add_Like;
+
+   -------------------------------------------------------------------------------------------------
    -- Next_Client_Video
    -------------------------------------------------------------------------------------------------
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID) is
@@ -243,6 +251,18 @@ package body Room is
      (This.DB.Get_Historic.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Likes
+   -------------------------------------------------------------------------------------------------
+   function Get_Likes (This : in T_Room) return Playlist.Video_Vectors.Vector is
+     (This.DB.Get_Likes);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Likes_Item
+   -------------------------------------------------------------------------------------------------
+   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video is
+     (This.DB.Get_Likes.Element (Item_Number));
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video
    -------------------------------------------------------------------------------------------------
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
@@ -254,6 +274,14 @@ package body Room is
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Playlist.Video_Vectors.Vector is
        (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Client_Playlist_Item
+   -------------------------------------------------------------------------------------------------
+   function Get_Client_Playlist_Item
+     (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
+     return YT_API.T_Video is
+       (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Display_Player

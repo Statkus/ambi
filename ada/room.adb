@@ -32,27 +32,25 @@ package body Room is
             exit when Playlist_Empty;
 
             -- Wait for the duration of the current video
-            delay Duration (YT_API.Get_Video_Duration (This.Room_Current_Video));
+            delay Duration (YT_API.Get_Video_Duration (This.Get_Video));
 
-            This.Room_Current_Video_Mutex.Seize;
-
-            if not This.Room_Playlist.Is_Empty then
+            if not This.Get_Playlist_Is_Empty then
                -- If the playlist is not empty, select the next video
-               This.Room_Current_Video := Playlist.Video_Vectors.Element (This.Room_Playlist.First);
-               This.Room_Playlist.Delete_First;
+               This.Set_Video (This.Get_Playlist_First);
+               This.Playlist_Delete_First;
 
                -- Add the current video to the historic
-               This.DB.Add_To_Historic (This.Room_Current_Video);
+               This.DB.Add_To_Historic (This.Get_Video);
             else
                -- The playlist is empty, go back at waiting for the start of a new playlist
                This.Room_Current_Video_Active := False;
-               This.Room_Current_Video.Video_Title := To_Unbounded_String ("no video played");
-               This.Room_Current_Video.Video_ID := To_Unbounded_String ("");
+               This.Set_Video
+                 ((Video_ID        => To_Unbounded_String (""),
+                   Video_Title     => To_Unbounded_String ("no video played"),
+                   Video_Thumbnail => To_Unbounded_String ("")));
 
                Playlist_Empty := True;
             end if;
-
-            This.Room_Current_Video_Mutex.Release;
 
             This.Update_No_Player_Clients;
          end loop;
@@ -111,12 +109,8 @@ package body Room is
       This.Client_List.Append (new Client.T_Client);
       This.Client_List.Last_Element.Set_Session_ID (Session_ID);
 
-      This.Room_Current_Video_Mutex.Seize;
-
-      This.Client_List.Last_Element.Set_Playlist (This.Room_Playlist);
-      This.Client_List.Last_Element.Set_Current_Video (This.Room_Current_Video);
-
-      This.Room_Current_Video_Mutex.Release;
+      This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
+      This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
 
       Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", internal ID:"
         & Integer'Image (AWS.Session.Get (This.Client_List.Last_Element.Get_Session_ID, "ID")));
@@ -135,29 +129,25 @@ package body Room is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
       -- Add the video to the room playlist for room sync
-      This.Room_Current_Video_Mutex.Seize;
-      if This.Room_Playlist.Is_Empty and not This.Room_Current_Video_Active then
+      if This.Get_Playlist_Is_Empty and not This.Room_Current_Video_Active then
          This.Room_Current_Video_Active := True;
-         This.Room_Current_Video := Video;
-
-         This.Room_Sync_Task.Start_Room_Playlist;
+         This.Set_Video (Video);
 
          -- Add the current video to the historic
          This.DB.Add_To_Historic (Video);
+
+         This.Room_Sync_Task.Start_Room_Playlist;
       else
-         This.Room_Playlist.Append (Video);
+         This.Playlist_Append (Video);
       end if;
-      This.Room_Current_Video_Mutex.Release;
 
       -- Add the video to all the clients playlist
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player
            or Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
             -- If the client is sync with the room (sync player or no player) then sync it
-            This.Room_Current_Video_Mutex.Seize;
-            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Room_Current_Video);
-            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Room_Playlist);
-            This.Room_Current_Video_Mutex.Release;
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Get_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          else
             -- Otherwise only add the video to the playlist client
             Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
@@ -176,10 +166,8 @@ package body Room is
    begin
       if Current_Client.Get_Sync_With_Room then
          -- Synchronized the client playlist and current video with the room ones
-         This.Room_Current_Video_Mutex.Seize;
-         Current_Client.Set_Playlist (This.Room_Playlist);
-         Current_Client.Set_Current_Video (This.Room_Current_Video);
-         This.Room_Current_Video_Mutex.Release;
+         Current_Client.Set_Current_Video (This.Get_Video);
+         Current_Client.Set_Playlist (This.Get_Playlist);
       else
          -- Set the first client video in the playlist as the current client video and remove
          -- it from the playlist
@@ -209,10 +197,8 @@ package body Room is
 
       if not Display then
          -- Synchronized the client playlist and current video with the room ones
-         This.Room_Current_Video_Mutex.Seize;
-         Current_Client.Set_Playlist (This.Room_Playlist);
-         Current_Client.Set_Current_Video (This.Room_Current_Video);
-         This.Room_Current_Video_Mutex.Release;
+         Current_Client.Set_Current_Video (This.Get_Video);
+         Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
    end Set_Client_Display_Player;
 
@@ -228,17 +214,15 @@ package body Room is
 
       if Sync then
          -- Synchronized the client playlist and current video with the room ones
-         This.Room_Current_Video_Mutex.Seize;
-         Current_Client.Set_Playlist (This.Room_Playlist);
-         Current_Client.Set_Current_Video (This.Room_Current_Video);
-         This.Room_Current_Video_Mutex.Release;
+         Current_Client.Set_Current_Video (This.Get_Video);
+         Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
    end Set_Client_Sync_With_Room;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Video
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in T_Room) return YT_API.T_Video is (This.Room_Current_Video);
+   function Get_Current_Video (This : in out T_Room) return YT_API.T_Video is (This.Get_Video);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
@@ -286,14 +270,14 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Client_Has_Nothing_To_Play
    -------------------------------------------------------------------------------------------------
-   function Client_Has_Nothing_To_Play (This : in T_Room; Session_ID : in AWS.Session.ID)
+   function Client_Has_Nothing_To_Play (This : in out T_Room; Session_ID : in AWS.Session.ID)
      return Boolean is
       Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_ID (Session_ID);
       Nothing_To_Play : Boolean := False;
    begin
       if Current_Client.Get_Sync_With_Room then
-         if To_String (This.Room_Current_Video.Video_Title) = "no video played" then
+         if To_String (This.Get_Video.Video_Title) = "no video played" then
             Nothing_To_Play := True;
          end if;
       else
@@ -311,10 +295,8 @@ package body Room is
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
-            This.Room_Current_Video_Mutex.Seize;
-            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Room_Current_Video);
-            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Room_Playlist);
-            This.Room_Current_Video_Mutex.Release;
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Get_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          end if;
 
          Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
@@ -340,6 +322,88 @@ package body Room is
 
       return Client_To_Find;
    end Find_Client_From_Session_ID;
+
+   -------------------------------------------------------------------------------------------------
+   -- Set_Video
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Video (This : in out T_Room; Video : in YT_API.T_Video) is
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Current_Video := Video;
+      This.Room_Video_Playlist_Mutex.Release;
+   end Set_Video;
+
+   -------------------------------------------------------------------------------------------------
+   -- Playlist_Append
+   -------------------------------------------------------------------------------------------------
+   procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video) is
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Playlist.Append (Video);
+      This.Room_Video_Playlist_Mutex.Release;
+   end Playlist_Append;
+
+   -------------------------------------------------------------------------------------------------
+   -- Playlist_Delete_First
+   -------------------------------------------------------------------------------------------------
+   procedure Playlist_Delete_First (This : in out T_Room) is
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Playlist.Delete_First;
+      This.Room_Video_Playlist_Mutex.Release;
+   end Playlist_Delete_First;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video
+   -------------------------------------------------------------------------------------------------
+   function Get_Video (This : in out T_Room) return YT_API.T_Video is
+      Video : YT_API.T_Video;
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      Video := This.Room_Current_Video;
+      This.Room_Video_Playlist_Mutex.Release;
+
+      return Video;
+   end Get_Video;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist (This : in out T_Room) return Playlist.Video_Vectors.Vector is
+      Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      Room_Playlist := This.Room_Playlist;
+      This.Room_Video_Playlist_Mutex.Release;
+
+      return Room_Playlist;
+   end Get_Playlist;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist_First
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist_First (This : in out T_Room) return YT_API.T_Video is
+      Video : YT_API.T_Video;
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      Video := Playlist.Video_Vectors.Element (This.Room_Playlist.First);
+      This.Room_Video_Playlist_Mutex.Release;
+
+      return Video;
+   end Get_Playlist_First;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist_Is_Empty
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean is
+      Is_Empty : Boolean;
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      Is_Empty := This.Room_Playlist.Is_Empty;
+      This.Room_Video_Playlist_Mutex.Release;
+
+      return Is_Empty;
+   end Get_Playlist_Is_Empty;
 
    -------------------------------------------------------------------------------------------------
    -- T_Mutex

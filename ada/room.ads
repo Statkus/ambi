@@ -52,7 +52,7 @@ package Room is
    procedure Set_Client_Sync_With_Room
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean);
 
-   function Get_Current_Video (This : in T_Room) return YT_API.T_Video;
+   function Get_Current_Video (This : in out T_Room) return YT_API.T_Video;
 
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
 
@@ -72,7 +72,7 @@ package Room is
    function Get_Client_Sync_With_Room (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
 
-   function Client_Has_Nothing_To_Play (This : in T_Room; Session_ID : in AWS.Session.ID)
+   function Client_Has_Nothing_To_Play (This : in out T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
 
 private
@@ -81,6 +81,15 @@ private
 
    function Find_Client_From_Session_ID (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Client.T_Client_Class_Access;
+
+   -- Accessors protected by mutex
+   procedure Set_Video (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Playlist_Delete_First (This : in out T_Room);
+   function Get_Video (This : in out T_Room) return YT_API.T_Video;
+   function Get_Playlist (This : in out T_Room) return Playlist.Video_Vectors.Vector;
+   function Get_Playlist_First (This : in out T_Room) return YT_API.T_Video;
+   function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
 
    protected type T_Mutex is
       entry Seize;
@@ -96,7 +105,7 @@ private
       Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
-      Room_Current_Video_Mutex  : T_Mutex;
+      Room_Video_Playlist_Mutex : T_Mutex;
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
       Client_ID_Counter         : Integer := 0;

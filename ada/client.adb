@@ -16,7 +16,7 @@ package body Client is
    procedure Set_Current_Video (This : in out T_Client) is
    begin
       if not This.Client_Playlist.Is_Empty then
-         This.Client_Current_Video := Playlist.Video_Vectors.Element (This.Client_Playlist.First);
+         This.Client_Current_Video := Video_Vectors.Element (This.Client_Playlist.First);
          This.Nothing_To_Play := False;
       else
          This.Nothing_To_Play := True;
@@ -54,7 +54,7 @@ package body Client is
    -- Set_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Set_Playlist
-     (This : in out T_Client; Client_Playlist : in Playlist.Video_Vectors.Vector) is
+     (This : in out T_Client; Client_Playlist : in Video_Vectors.Vector) is
    begin
       This.Client_Playlist := Client_Playlist;
    end Set_Playlist;
@@ -89,7 +89,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in T_Client) return Playlist.Video_Vectors.Vector is
+   function Get_Playlist (This : in T_Client) return Video_Vectors.Vector is
      (This.Client_Playlist);
 
    -------------------------------------------------------------------------------------------------

@@ -60,23 +60,23 @@
                }
                else {
                   if (videoListState == "playlist") {
-                     ajaxGetXmlRequest ("/get_playlist");
+                     ajaxGetXmlRequest ("/get_video_list?source=playlist");
                   }
                }
             }
             else if (event.data == "update_room_current_video_request") {
                if (videoListState == "historic") {
-                  ajaxGetXmlRequest ("/get_historic");
+                  ajaxGetXmlRequest ("/get_video_list?source=historic");
                }
                else if (playerState == "no_player" && videoListState == "playlist") {
-                  ajaxGetXmlRequest ("/get_playlist");
+                  ajaxGetXmlRequest ("/get_video_list?source=playlist");
                }
 
                ajaxGetXmlRequest ("/get_current_room_video");
             }
             else if (event.data == "update_likes_request") {
                if (videoListState == "likes") {
-                  ajaxGetXmlRequest ("/get_likes");
+                  ajaxGetXmlRequest ("/get_video_list?source=likes");
                }
             }
          }
@@ -99,21 +99,21 @@
          function showPlaylist() {
             if (videoListState != "playlist") {
                videoListState = "playlist";
-               ajaxGetXmlRequest ("/get_playlist");
+               ajaxGetXmlRequest ("/get_video_list?source=playlist");
             }
          }
 
          function showHistoric() {
             if (videoListState != "historic") {
                videoListState = "historic";
-               ajaxGetXmlRequest ("/get_historic");
+               ajaxGetXmlRequest ("/get_video_list?source=historic");
             }
          }
 
          function showLikes() {
             if (videoListState != "likes") {
                videoListState = "likes";
-               ajaxGetXmlRequest ("/get_likes");
+               ajaxGetXmlRequest ("/get_video_list?source=likes");
             }
          }
       </script>

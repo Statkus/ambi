@@ -4,9 +4,10 @@ with Ada.Text_IO;       use Ada.Text_IO;
 with AWS.MIME;
 with AWS.Net.Websocket.Registry;
 with AWS.Parameters;
-with AWS.Session;
 
 with Templates_Parser;
+
+with Video_List; use Video_List;
 
 package body Callback is
 
@@ -66,12 +67,8 @@ package body Callback is
             Response := Player_Sync_Checkbox_Callback (Request);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
-         elsif URI = "/get_playlist" then
-            Response := Get_Playlist_Callback (Request);
-         elsif URI = "/get_historic" then
-            Response := Get_Historic_Callback;
-         elsif URI = "/get_likes" then
-            Response := Get_Likes_Callback;
+         elsif URI = "/get_video_list" then
+            Response := Get_Video_List_Callback (Request);
          elsif URI = "/get_current_room_video" then
             Response := Get_Current_Room_Video_Callback;
          else
@@ -115,7 +112,7 @@ package body Callback is
 
       -- Client playlist
       Translations (3) := Templates_Parser.Assoc
-        ("VIDEO_LIST", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID)));
+        ("VIDEO_LIST", Build_Video_List (Session_ID, Playlist));
 
       -- Server address for WebSocket
       Translations (4) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
@@ -184,12 +181,10 @@ package body Callback is
               (Current_Room.Get_Video_Search_Results (Item_Number));
 
          when Historic =>
-            Current_Room.Add_Video_To_Playlists
-              (Current_Room.Get_Historic_Item (Item_Number));
+            Current_Room.Add_Video_To_Playlists (Current_Room.Get_Historic_Item (Item_Number));
 
          when Likes =>
-            Current_Room.Add_Video_To_Playlists
-              (Current_Room.Get_Likes_Item (Item_Number));
+            Current_Room.Add_Video_To_Playlists (Current_Room.Get_Likes_Item (Item_Number));
       end case;
 
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
@@ -209,8 +204,7 @@ package body Callback is
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      Current_Room.Add_Like
-        (Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number));
+      Current_Room.Add_Like (Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number));
 
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_likes_request");
 
@@ -253,36 +247,21 @@ package body Callback is
       Current_Room.Next_Client_Video (Session_ID);
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("video_list", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
+        ("video_list", Build_Video_List (Session_ID, Playlist)));
    end Next_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Playlist_Callback
+   -- Get_Video_List_Callback
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
+   function Get_Video_List_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
+      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Source     : constant T_Video_List_Source :=
+        T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
    begin
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("video_list", Build_Playlist (Current_Room.Get_Client_Playlist (Session_ID))));
-   end Get_Playlist_Callback;
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Historic_Callback
-   -------------------------------------------------------------------------------------------------
-   function Get_Historic_Callback return AWS.Response.Data is
-   begin
-      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("video_list", Build_Historic (Current_Room.Get_Historic)));
-   end Get_Historic_Callback;
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Likes_Callback
-   -------------------------------------------------------------------------------------------------
-   function Get_Likes_Callback return AWS.Response.Data is
-   begin
-      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("video_list", Build_Likes (Current_Room.Get_Likes)));
-   end Get_Likes_Callback;
+        ("video_list", Build_Video_List (Session_ID, Source)));
+   end Get_Video_List_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Room_Video_Callback
@@ -322,100 +301,66 @@ package body Callback is
    end Build_Search_Results;
 
    -------------------------------------------------------------------------------------------------
-   -- Build_Playlist
+   -- Build_Video_List
    -------------------------------------------------------------------------------------------------
-   function Build_Playlist (Current_Playlist : in Playlist.Video_Vectors.Vector) return String is
+   function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)
+     return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
 
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
 
-      Playlist_Cursor : Playlist.Video_Vectors.Cursor := Current_Playlist.First;
+      Videos      : Video_Vectors.Vector;
+      List_Cursor : Video_Vectors.Cursor;
    begin
-      while Playlist.Video_Vectors.Has_Element (Playlist_Cursor) loop
+      case Source is
+         when Playlist =>
+            Videos := Current_Room.Get_Client_Playlist (Session_ID);
+            List_Cursor := Videos.First;
+         when Historic =>
+            Videos := Current_Room.Get_Historic;
+            List_Cursor := Videos.Last;
+         when Likes =>
+            Videos := Current_Room.Get_Likes;
+            List_Cursor := Videos.Last;
+      end case;
+
+      while Video_Vectors.Has_Element (List_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
            ("ITEM_ID", Trim
-             (Integer'Image (Playlist.Video_Vectors.To_Index (Playlist_Cursor)), Ada.Strings.Left));
+             (Integer'Image (Video_Vectors.To_Index (List_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Thumbnail);
+           ("IMAGE_URL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
 
          Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Playlist_Cursor).Video_Title);
+           ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
-         Append (Response, To_String
-           (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
+         case Source is
+            when Playlist =>
+               Append (Response, To_String
+                 (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
 
-         Playlist_Cursor := Playlist.Video_Vectors.Next (Playlist_Cursor);
+               List_Cursor := Video_Vectors.Next (List_Cursor);
+
+            when Historic =>
+               Append (Response, To_String
+                 (Templates_Parser.Parse ("html/historic_item.thtml", Translations)));
+
+               List_Cursor := Video_Vectors.Previous (List_Cursor);
+
+            when Likes =>
+               Append (Response, To_String
+                 (Templates_Parser.Parse ("html/likes_item.thtml", Translations)));
+
+               List_Cursor := Video_Vectors.Previous (List_Cursor);
+         end case;
+
       end loop;
 
       Append (Response, "</ul>");
 
       return To_String (Response);
-   end Build_Playlist;
-
-   -------------------------------------------------------------------------------------------------
-   -- Build_Historic
-   -------------------------------------------------------------------------------------------------
-   function Build_Historic (Current_Historic : in Playlist.Video_Vectors.Vector) return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 3);
-
-      Response : Unbounded_String := To_Unbounded_String ("<ul>");
-
-      Historic_Cursor : Playlist.Video_Vectors.Cursor := Current_Historic.Last;
-   begin
-      while Playlist.Video_Vectors.Has_Element (Historic_Cursor) loop
-         Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim
-             (Integer'Image (Playlist.Video_Vectors.To_Index (Historic_Cursor)), Ada.Strings.Left));
-
-         Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Playlist.Video_Vectors.Element (Historic_Cursor).Video_Thumbnail);
-
-         Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Historic_Cursor).Video_Title);
-
-         Append (Response, To_String
-           (Templates_Parser.Parse ("html/historic_item.thtml", Translations)));
-
-         Historic_Cursor := Playlist.Video_Vectors.Previous (Historic_Cursor);
-      end loop;
-
-      Append (Response, "</ul>");
-
-      return To_String (Response);
-   end Build_Historic;
-
-   -------------------------------------------------------------------------------------------------
-   -- Build_Likes
-   -------------------------------------------------------------------------------------------------
-   function Build_Likes (Current_Likes : in Playlist.Video_Vectors.Vector) return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 3);
-
-      Response : Unbounded_String := To_Unbounded_String ("<ul>");
-
-      Likes_Cursor : Playlist.Video_Vectors.Cursor := Current_Likes.Last;
-   begin
-      while Playlist.Video_Vectors.Has_Element (Likes_Cursor) loop
-         Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim
-             (Integer'Image (Playlist.Video_Vectors.To_Index (Likes_Cursor)), Ada.Strings.Left));
-
-         Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Playlist.Video_Vectors.Element (Likes_Cursor).Video_Thumbnail);
-
-         Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", Playlist.Video_Vectors.Element (Likes_Cursor).Video_Title);
-
-         Append (Response, To_String
-           (Templates_Parser.Parse ("html/likes_item.thtml", Translations)));
-
-         Likes_Cursor := Playlist.Video_Vectors.Previous (Likes_Cursor);
-      end loop;
-
-      Append (Response, "</ul>");
-
-      return To_String (Response);
-   end Build_Likes;
+   end Build_Video_List;
 
    -------------------------------------------------------------------------------------------------
    -- Pack_AJAX_XML_Response

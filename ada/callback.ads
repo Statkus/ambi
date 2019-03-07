@@ -1,10 +1,10 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with AWS.Response;
+with AWS.Session;
 with AWS.Status;
 
 with Database;
-with Playlist;
 with Room;
 with YT_API;
 
@@ -19,6 +19,7 @@ package Callback is
 private
 
    type T_Add_To_Playlist_Source is (Search_Results, Historic, Likes);
+   type T_Video_List_Source is (Playlist, Historic, Likes);
 
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Javascripts_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
@@ -29,16 +30,13 @@ private
      return AWS.Response.Data;
    function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
-   function Get_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
-   function Get_Historic_Callback return AWS.Response.Data;
-   function Get_Likes_Callback return AWS.Response.Data;
+   function Get_Video_List_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Current_Room_Video_Callback return AWS.Response.Data;
 
    function Build_Search_Results (Video_Search_Results : in YT_API.T_Video_Search_Results)
      return String;
-   function Build_Playlist (Current_Playlist : in Playlist.Video_Vectors.Vector) return String;
-   function Build_Historic (Current_Historic : in Playlist.Video_Vectors.Vector) return String;
-   function Build_Likes (Current_Likes : in Playlist.Video_Vectors.Vector) return String;
+   function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)
+     return String;
 
    function Pack_AJAX_XML_Response (Placeholder : in String; Value : in String) return String;
 

@@ -1,7 +1,7 @@
 with DB;
 with DB.SQLite;
 
-with Playlist;
+with Video_List; use Video_List;
 with YT_API;
 
 package Database is
@@ -13,8 +13,8 @@ package Database is
    procedure Open (This : in out T_Database);
    procedure Close (This : in out T_Database);
 
-   function Get_Historic (This : in T_Database) return Playlist.Video_Vectors.Vector;
-   function Get_Likes (This : in T_Database) return Playlist.Video_Vectors.Vector;
+   function Get_Historic (This : in T_Database) return Video_Vectors.Vector;
+   function Get_Likes (This : in T_Database) return Video_Vectors.Vector;
 
    procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video);
    procedure Add_To_Likes (This : in out T_Database; Video : in YT_API.T_Video);
@@ -28,8 +28,8 @@ private
 
    type T_Database is tagged limited record
       DB_Handle : DB.SQLite.Handle;
-      Historic  : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
-      Likes     : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
+      Historic  : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Likes     : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
    end record;
 
 end Database;

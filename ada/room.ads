@@ -5,7 +5,7 @@ with AWS.Session;
 
 with Client;
 with Database;
-with Playlist;
+with Video_List; use Video_List;
 with YT_API;
 
 package Room is
@@ -58,11 +58,11 @@ package Room is
 
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
 
-   function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector;
+   function Get_Historic (This : in T_Room) return Video_Vectors.Vector;
 
    function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
 
-   function Get_Likes (This : in T_Room) return Playlist.Video_Vectors.Vector;
+   function Get_Likes (This : in T_Room) return Video_Vectors.Vector;
 
    function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
 
@@ -70,7 +70,7 @@ package Room is
      return YT_API.T_Video;
 
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Playlist.Video_Vectors.Vector;
+     return Video_Vectors.Vector;
 
    function Get_Client_Playlist_Item
      (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
@@ -97,7 +97,7 @@ private
    procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video);
    procedure Playlist_Delete_First (This : in out T_Room);
    function Get_Video (This : in out T_Room) return YT_API.T_Video;
-   function Get_Playlist (This : in out T_Room) return Playlist.Video_Vectors.Vector;
+   function Get_Playlist (This : in out T_Room) return Video_Vectors.Vector;
    function Get_Playlist_First (This : in out T_Room) return YT_API.T_Video;
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
 
@@ -112,7 +112,7 @@ private
       Video_Search_Results : YT_API.T_Video_Search_Results;
       Room_Current_Video   : YT_API.T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
-      Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
+      Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
       Room_Video_Playlist_Mutex : T_Mutex;

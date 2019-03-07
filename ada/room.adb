@@ -241,7 +241,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Historic
    -------------------------------------------------------------------------------------------------
-   function Get_Historic (This : in T_Room) return Playlist.Video_Vectors.Vector is
+   function Get_Historic (This : in T_Room) return Video_Vectors.Vector is
      (This.DB.Get_Historic);
 
    -------------------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Likes
    -------------------------------------------------------------------------------------------------
-   function Get_Likes (This : in T_Room) return Playlist.Video_Vectors.Vector is
+   function Get_Likes (This : in T_Room) return Video_Vectors.Vector is
      (This.DB.Get_Likes);
 
    -------------------------------------------------------------------------------------------------
@@ -272,7 +272,7 @@ package body Room is
    -- Get_Client_Playlist
    -------------------------------------------------------------------------------------------------
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Playlist.Video_Vectors.Vector is
+     return Video_Vectors.Vector is
        (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist);
 
    -------------------------------------------------------------------------------------------------
@@ -397,8 +397,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in out T_Room) return Playlist.Video_Vectors.Vector is
-      Room_Playlist : Playlist.Video_Vectors.Vector := Playlist.Video_Vectors.Empty_Vector;
+   function Get_Playlist (This : in out T_Room) return Video_Vectors.Vector is
+      Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       Room_Playlist := This.Room_Playlist;
@@ -414,7 +414,7 @@ package body Room is
       Video : YT_API.T_Video;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
-      Video := Playlist.Video_Vectors.Element (This.Room_Playlist.First);
+      Video := Video_Vectors.Element (This.Room_Playlist.First);
       This.Room_Video_Playlist_Mutex.Release;
 
       return Video;

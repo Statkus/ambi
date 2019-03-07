@@ -100,10 +100,19 @@ package body Room is
    -- Add_Client
    -------------------------------------------------------------------------------------------------
    procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
+      -- Remove all expired sessions
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID) then
+            This.Client_List.Delete (Client_List_Cursor);
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
       -- Set a parameter to this session ID to register it, the parameter is a unique ID
-      AWS.Session.Set (Session_ID, "ID", This.Client_ID_Counter);
-      This.Client_ID_Counter := This.Client_ID_Counter + 1;
+      AWS.Session.Set (Session_ID, "ID", AWS.Session.Image (Session_ID));
 
       -- Add the new client to the list and set his session ID
       This.Client_List.Append (new Client.T_Client);
@@ -112,8 +121,8 @@ package body Room is
       This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
       This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
 
-      Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", internal ID:"
-        & Integer'Image (AWS.Session.Get (This.Client_List.Last_Element.Get_Session_ID, "ID")));
+      Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", number of clients: "
+        & AWS.Session.Length'Img);
    end Add_Client;
 
    -------------------------------------------------------------------------------------------------

@@ -45,13 +45,16 @@ package body Callback is
             Current_Room.Add_Client (Session_ID);
          end if;
 
-         Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
+         Put_Line ("Client: " & AWS.Session.Image (Session_ID)
            & ", request: '" & URI & "'");
 
          Response := Room_Callback (Request);
       elsif Current_Room.Is_Registered (Session_ID) then
-         Put_Line ("Client ID:" & Integer'Image (AWS.Session.Get (Session_ID, "ID"))
+         Put_Line ("Client: " & AWS.Session.Image (Session_ID)
            & ", request: '" & URI & "'");
+
+         -- Update the session life start time
+         AWS.Session.Touch (Session_ID);
 
          if Index (URI, "/javascripts/") > 0 then
             Response := Javascripts_Callback (Request);

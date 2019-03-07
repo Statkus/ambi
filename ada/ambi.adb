@@ -4,6 +4,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 with AWS.Net.Websocket.Registry.Control;
 with AWS.Server;
+with AWS.Session;
 
 with Callback;
 with Database;
@@ -46,6 +47,9 @@ begin
 
    -- Launch Websocket server
    AWS.Net.WebSocket.Registry.Control.Start;
+
+   -- Set sessions lifetime to 2 hours
+   AWS.Session.Set_Lifetime (7200.0);
 
    Put_Line ("Press Q key to quit.");
    AWS.Server.Wait (AWS.Server.Q_Key_Pressed);

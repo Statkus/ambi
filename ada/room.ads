@@ -122,7 +122,6 @@ private
       Room_Video_Playlist_Mutex : T_Mutex;
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
-      Client_ID_Counter         : Integer := 0;
       DB                        : Database.T_Database_Class_Access;
    end record;
 

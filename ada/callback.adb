@@ -59,8 +59,8 @@ package body Callback is
             Response := Search_Button_Callback (Request);
          elsif URI = "/onclick$add_to_playlist" then
             Response := Add_To_Playlist_Callback (Request);
-         elsif URI = "/onclick$add_to_likes" then
-            Response := Add_To_Likes_Callback (Request);
+         elsif URI = "/onclick$add_remove_like" then
+            Response := Add_Remove_Like_Callback (Request);
          elsif URI = "/onclick$player_display_checkbox" then
             Response := Player_Display_Checkbox_Callback (Request);
          elsif URI = "/onclick$player_sync_checkbox" then
@@ -187,29 +187,53 @@ package body Callback is
             Current_Room.Add_Video_To_Playlists (Current_Room.Get_Likes_Item (Item_Number));
       end case;
 
-      AWS.Net.WebSocket.Registry.Send (Rcp, "update_client_playlist_request");
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Add_To_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Add_To_Likes_Callback
+   -- Add_Remove_Like_Callback
    -------------------------------------------------------------------------------------------------
-   function Add_To_Likes_Callback (Request : in AWS.Status.Data)
+   function Add_Remove_Like_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data is
       Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
+      Source      : constant T_Video_List_Source :=
+        T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
+      Like_Value  : constant T_Like := T_Like'Value (AWS.Parameters.Get (Parameters, "like"));
       Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+
+      Video_To_Add_Remove : YT_API.T_Video;
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      Current_Room.Add_Like (Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number));
+      case Source is
+         when Playlist =>
+           Video_To_Add_Remove := Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number);
+         when Historic => Video_To_Add_Remove := Current_Room.Get_Historic_Item (Item_Number);
+         when Likes    => Video_To_Add_Remove := Current_Room.Get_Likes_Item (Item_Number);
+      end case;
 
+      case Like_Value is
+         when Like   => Current_Room.Add_Like (Video_To_Add_Remove);
+         when Unlike => Current_Room.Remove_Like (Video_To_Add_Remove);
+      end case;
+
+      -- Send update request only if the video lists are not empty
+      if not Current_Room.Get_Client_Playlist (Session_ID).Is_Empty then
+         AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
+      end if;
+      if not Current_Room.Get_Historic.Is_Empty then
+         AWS.Net.WebSocket.Registry.Send (Rcp, "update_historic_request");
+      end if;
+
+      -- Likes list is always updated as a video has been added or removed
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_likes_request");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
-   end Add_To_Likes_Callback;
+   end Add_Remove_Like_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Player_Display_Checkbox_Callback
@@ -246,8 +270,7 @@ package body Callback is
    begin
       Current_Room.Next_Client_Video (Session_ID);
 
-      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-        ("video_list", Build_Video_List (Session_ID, Playlist)));
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Next_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -305,7 +328,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)
      return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 3);
+      Translations : Templates_Parser.Translate_Table (1 .. 4);
 
       Response : Unbounded_String := To_Unbounded_String ("<ul>");
 
@@ -334,6 +357,14 @@ package body Callback is
 
          Translations (3) := Templates_Parser.Assoc
            ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
+
+         if Source = Likes then
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "Unlike");
+         elsif Current_Room.Is_Video_Liked (Video_Vectors.Element (List_Cursor)) then
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "Unlike");
+         else
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "Like");
+         end if;
 
          case Source is
             when Playlist =>

@@ -20,12 +20,13 @@ private
 
    type T_Add_To_Playlist_Source is (Search_Results, Historic, Likes);
    type T_Video_List_Source is (Playlist, Historic, Likes);
+   type T_Like is (Like, Unlike);
 
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Javascripts_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Add_To_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
-   function Add_To_Likes_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
+   function Add_Remove_Like_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Player_Display_Checkbox_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data;
    function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;

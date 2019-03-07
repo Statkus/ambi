@@ -43,6 +43,8 @@ package Room is
 
    procedure Add_Like (This : in out T_Room; Video : in YT_API.T_Video);
 
+   procedure Remove_Like (This : in out T_Room; Video : in YT_API.T_Video);
+
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    procedure Set_Video_Search_Results
@@ -65,6 +67,8 @@ package Room is
    function Get_Likes (This : in T_Room) return Video_Vectors.Vector;
 
    function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
+
+   function Is_Video_Liked (This : in T_Room; Video : in YT_API.T_Video) return Boolean;
 
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
      return YT_API.T_Video;

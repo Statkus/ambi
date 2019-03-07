@@ -1,4 +1,4 @@
-<li id="search_results_item_@_ITEM_ID_@" name="search_results" value="@_ITEM_ID_@" onclick="addToPlaylist(this)">
-   <img src="@_IMAGE_URL_@">
+<li id="search_results_item_@_ITEM_ID_@">
+   <img src="@_IMAGE_URL_@" name="search_results" value="@_ITEM_ID_@" onclick="addToPlaylist(this)">
    @_VIDEO_TITLE_@
 </li>

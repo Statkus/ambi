@@ -29,7 +29,7 @@ function onPlayerStateChange(event) {
     player.stopVideo();
     playerState = "end";
 
-    ajaxGetXmlRequest ("/next_video", true);
+    ajaxGetRequestNoCallback ("/next_video", true);
   }
   else if (@_PLAYER_CONTROL_@ == 0 && event.data == YT.PlayerState.PAUSED) {
     // Do not allow the client to pause the player when room sync is enabled
@@ -41,5 +41,5 @@ function onPlayerError(event) {
   player.stopVideo();
   playerState = "error";
 
-  ajaxGetXmlRequest ("/next_video", true);
+  ajaxGetRequestNoCallback ("/next_video", true);
 }

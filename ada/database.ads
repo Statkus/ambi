@@ -13,13 +13,14 @@ package Database is
    procedure Open (This : in out T_Database);
    procedure Close (This : in out T_Database);
 
+   procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video);
+   procedure Add_To_Likes (This : in out T_Database; Video : in YT_API.T_Video);
+   procedure Remove_From_Likes (This : in out T_Database; Video : in YT_API.T_Video);
+
    function Get_Historic (This : in T_Database) return Video_Vectors.Vector;
    function Get_Likes (This : in T_Database) return Video_Vectors.Vector;
 
-   procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video);
-   procedure Add_To_Likes (This : in out T_Database; Video : in YT_API.T_Video);
-
-   procedure Remove_From_Likes (This : in out T_Database; Video : in YT_API.T_Video);
+   function Is_Video_Liked (This : in T_Database; Video : in YT_API.T_Video) return Boolean;
 
 private
 

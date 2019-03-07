@@ -166,6 +166,14 @@ package body Room is
    end Add_Like;
 
    -------------------------------------------------------------------------------------------------
+   -- Remove_Like
+   -------------------------------------------------------------------------------------------------
+   procedure Remove_Like (This : in out T_Room; Video : in YT_API.T_Video) is
+   begin
+      This.DB.Remove_From_Likes (Video);
+   end Remove_Like;
+
+   -------------------------------------------------------------------------------------------------
    -- Next_Client_Video
    -------------------------------------------------------------------------------------------------
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID) is
@@ -261,6 +269,12 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video is
      (This.DB.Get_Likes.Element (Item_Number));
+
+   -------------------------------------------------------------------------------------------------
+   -- Is_Video_Liked
+   -------------------------------------------------------------------------------------------------
+   function Is_Video_Liked (This : in T_Room; Video : in YT_API.T_Video) return Boolean is
+     (This.DB.Is_Video_Liked (Video));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video

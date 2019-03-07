@@ -54,14 +54,24 @@
          var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");
 
          ambiSocket.onmessage = function (event) {
-            if (event.data == "update_client_playlist_request") {
+            if (event.data == "update_playlist_request") {
                if (playerState == "end" || playerState == "error") {
-                  ajaxGetXmlRequest ("/next_video", true);
+                  ajaxGetRequestNoCallback ("/next_video", true);
                }
                else {
                   if (videoListState == "playlist") {
                      ajaxGetXmlRequest ("/get_video_list?source=playlist");
                   }
+               }
+            }
+            else if (event.data == "update_historic_request") {
+               if (videoListState == "historic") {
+                  ajaxGetXmlRequest ("/get_video_list?source=historic");
+               }
+            }
+            else if (event.data == "update_likes_request") {
+               if (videoListState == "likes") {
+                  ajaxGetXmlRequest ("/get_video_list?source=likes");
                }
             }
             else if (event.data == "update_room_current_video_request") {
@@ -73,11 +83,6 @@
                }
 
                ajaxGetXmlRequest ("/get_current_room_video");
-            }
-            else if (event.data == "update_likes_request") {
-               if (videoListState == "likes") {
-                  ajaxGetXmlRequest ("/get_video_list?source=likes");
-               }
             }
          }
 
@@ -91,9 +96,9 @@
             ajaxGetRequestNoCallback ("/onclick$add_to_playlist?source=" + String(elm.getAttribute('name')) + "&item=" + String(elm.getAttribute('value')));
          }
 
-         // Function called when a like button is clicked
-         function addToLikes(elm) {
-            ajaxGetRequestNoCallback ("/onclick$add_to_likes?source=" + String(elm.getAttribute('name')) + "&item=" + String(elm.getAttribute('value')));
+         // Function called when a like/unlike button is clicked
+         function addRemoveLike(elm) {
+            ajaxGetRequestNoCallback ("/onclick$add_remove_like?source=" + String(elm.getAttribute('name')) + "&like=" + String(elm.innerHTML) + "&item=" + String(elm.getAttribute('value')));
          }
 
          function showPlaylist() {

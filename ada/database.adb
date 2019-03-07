@@ -28,18 +28,6 @@ package body Database is
    end Close;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Historic
-   -------------------------------------------------------------------------------------------------
-   function Get_Historic (This : in T_Database) return Video_Vectors.Vector is
-     (This.Historic);
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Likes
-   -------------------------------------------------------------------------------------------------
-   function Get_Likes (This : in T_Database) return Video_Vectors.Vector is
-     (This.Likes);
-
-   -------------------------------------------------------------------------------------------------
    -- Add_To_Historic
    -------------------------------------------------------------------------------------------------
    procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video) is
@@ -84,9 +72,56 @@ package body Database is
    -- Remove_From_Likes
    -------------------------------------------------------------------------------------------------
    procedure Remove_From_Likes (This : in out T_Database; Video : in YT_API.T_Video) is
+      Likes_Cursor        : Video_Vectors.Cursor := This.Likes.First;
+      Video_Already_Liked : Boolean := False;
    begin
-      null;
+      while Video_Vectors.Has_Element (Likes_Cursor) loop
+         if Video_Vectors.Element (Likes_Cursor).Video_ID = Video.Video_ID then
+            Video_Already_Liked := True;
+            exit;
+         end if;
+
+         Likes_Cursor := Video_Vectors.Next (Likes_Cursor);
+      end loop;
+
+      if Video_Already_Liked then
+         DB.SQLite.Execute (This.DB_Handle, "DELETE FROM likes WHERE video_id = '"
+           & To_String (Video.Video_ID) & "';");
+
+         This.Likes.Delete (Likes_Cursor);
+      end if;
    end Remove_From_Likes;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Historic
+   -------------------------------------------------------------------------------------------------
+   function Get_Historic (This : in T_Database) return Video_Vectors.Vector is
+     (This.Historic);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Likes
+   -------------------------------------------------------------------------------------------------
+   function Get_Likes (This : in T_Database) return Video_Vectors.Vector is
+     (This.Likes);
+
+   -------------------------------------------------------------------------------------------------
+   -- Is_Video_Liked
+   -------------------------------------------------------------------------------------------------
+   function Is_Video_Liked (This : in T_Database; Video : in YT_API.T_Video) return Boolean is
+      DB_Iterator   : DB.SQLite.Iterator;
+
+      Liked       : Boolean := False;
+   begin
+      DB.SQLite.Prepare_Select
+        (This.DB_Handle, DB_Iterator, "SELECT * FROM likes WHERE video_id = '"
+         & To_String (Video.Video_ID) & "';");
+
+      Liked := DB.SQLite.More (DB_Iterator);
+
+      DB.SQLite.End_Select (DB_Iterator);
+
+      return Liked;
+   end Is_Video_Liked;
 
    -------------------------------------------------------------------------------------------------
    -- Read_Historic_In_DB

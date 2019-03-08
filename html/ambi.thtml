@@ -6,11 +6,16 @@
 
       <script src="/javascripts/xml_actions.js" type="text/javascript"></script>
       <script src="/javascripts/ajax_get_handler.js" type="text/javascript"></script>
+      <script src="/javascripts/search_bar_autocomplete.js" type="text/javascript"></script>
    </head>
 
    <body>
-      <input id="search_input" type="text" value="">
-      <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
+      <div>
+         <input id="search_input" type="text" value="" autocomplete="off">
+         <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
+      </div>
+
+      <div id="search_results"></div>
 
       <div>
          <input type="checkbox" id="player_display_checkbox" value="display_player" checked onclick="ajaxGetRequestNoCallback('/onclick$player_display_checkbox?checked=' + this.checked, true)">
@@ -21,8 +26,6 @@
          <input type="checkbox" id="player_sync_checkbox" value="sync_player" style="display:@_DISPLAY_SYNC_CHECKBOX_@" onclick="ajaxGetRequestNoCallback('/onclick$player_sync_checkbox?checked=' + this.checked, true)">
          <label for="player_sync_checkbox" style="display:@_DISPLAY_SYNC_CHECKBOX_@">Sync with room</label>
       </div>
-
-      <div id="search_results"></div>
 
       <div id="player"></div>
 
@@ -37,6 +40,9 @@
       <div id="video_list">@_VIDEO_LIST_@</div>
 
       <script>
+         // Function to autocomplete search input
+         autocomplete();
+
          // State of the Youtube player
          var playerState = "@_PLAYER_STATE_@";
 
@@ -88,7 +94,7 @@
 
          // Function called when an item of search_results or video_list is clicked
          function addToPlaylist(elm) {
-            if (elm.getAttribute('name') == "search_results") {
+            if (elm.getAttribute("name") == "search_results") {
                document.getElementById("search_input").value = "";
                document.getElementById("search_results").innerHTML = "";
             }

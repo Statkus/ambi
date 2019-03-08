@@ -121,8 +121,8 @@ package body Room is
       This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
       This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
 
-      Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", number of clients: "
-        & AWS.Session.Length'Img);
+      Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", number of clients:"
+        & This.Client_List.Length'Img);
    end Add_Client;
 
    -------------------------------------------------------------------------------------------------

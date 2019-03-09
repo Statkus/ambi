@@ -58,6 +58,8 @@ package body Callback is
 
          if Index (URI, "/javascripts/") > 0 then
             Response := Javascripts_Callback (Request);
+         elsif Index (URI, "/css/") > 0 then
+            Response := CSS_Callback (Request);
          elsif URI = "/onclick$search_button" then
             Response := Search_Button_Callback (Request);
          elsif URI = "/onclick$add_to_playlist" then
@@ -152,6 +154,15 @@ package body Callback is
    begin
       return AWS.Response.File (AWS.MIME.Text_Javascript, URI (URI'First + 1 .. URI'Last));
    end Javascripts_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- CSS_Callback
+   -------------------------------------------------------------------------------------------------
+   function CSS_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
+      URI : constant String := AWS.Status.URI (Request);
+   begin
+      return AWS.Response.File (AWS.MIME.Text_CSS, URI (URI'First + 1 .. URI'Last));
+   end CSS_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Search_Button_Callback

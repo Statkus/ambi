@@ -1,0 +1,37 @@
+body {
+  background-color: rgb(70, 70, 70);
+  font: 16px Arial;
+  color: white;
+}
+
+input[type=button] {
+  cursor: pointer;
+}
+
+#search_bar {
+  position: relative;
+  display: inline-block;
+}
+
+.autocomplete-items {
+  position: absolute;
+  z-index: 99;
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: rgba(30, 30, 30, 0.95);
+}
+
+.autocomplete-items div:hover {
+  background-color: rgba(50, 50, 50);
+}
+
+/*when navigating through the items using the arrow keys:*/
+.autocomplete-active {
+  background-color: DodgerBlue !important; 
+}

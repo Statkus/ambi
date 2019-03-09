@@ -40,14 +40,14 @@ function autocomplete() {
       if (e.keyCode == 40) {
         // If the down arrow key is pressed
         currentFocus++;
+        addActive(autocompleteItems);
 	    autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
-        //addActive(x);
       }
       else if (e.keyCode == 38) {
         // If the up arrow key is pressed
         currentFocus--;
+        addActive(autocompleteItems);
 	    autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
-        //addActive(x);
       }
       else if (e.keyCode == 13) {
         // If the enter key is pressed
@@ -67,23 +67,24 @@ function autocomplete() {
       closeSearchResults();
   });
 
-  //function addActive(x) {
-  //  /*a function to classify an item as "active":*/
-  //  if (!x) return false;
-  //  /*start by removing the "active" class on all items:*/
-  //  removeActive(x);
-  //  if (currentFocus >= x.length) currentFocus = 0;
-  //  if (currentFocus < 0) currentFocus = (x.length - 1);
-  //  /*add class "autocomplete-active":*/
-  //  x[currentFocus].classList.add("autocomplete-active");
-  //}
+  function addActive(x) {
+    removeActive(x);
 
-  //function removeActive(x) {
-  //  /*a function to remove the "active" class from all autocomplete items:*/
-  //  for (var i = 0; i < x.length; i++) {
-  //    x[i].classList.remove("autocomplete-active");
-  //  }
-  //}
+    if (currentFocus >= x.length) {
+      currentFocus = 0;
+    }
+    else if (currentFocus < 0) {
+      currentFocus = (x.length - 1);
+    }
+
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+
+  function removeActive(x) {
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
 }
 
 function displayAutocompletionResults(results) {

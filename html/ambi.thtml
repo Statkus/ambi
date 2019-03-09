@@ -7,11 +7,13 @@
       <script src="/javascripts/xml_actions.js" type="text/javascript"></script>
       <script src="/javascripts/ajax_get_handler.js" type="text/javascript"></script>
       <script src="/javascripts/search_bar_autocomplete.js" type="text/javascript"></script>
+
+      <link rel="stylesheet" href="/css/room.css">
    </head>
 
    <body>
-      <div>
-         <input id="search_input" type="text" value="" autocomplete="off">
+      <div id="search_bar">
+         <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
          <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
       </div>
 

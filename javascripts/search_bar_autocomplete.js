@@ -18,8 +18,8 @@ function autocomplete() {
 
     // Create a DIV element that will contain the items (autocompleted values)
     autocompleteItems = document.createElement("DIV");
-    autocompleteItems.setAttribute("id", "autocomplete-list");
-    autocompleteItems.setAttribute("class", "autocomplete-items");
+    autocompleteItems.setAttribute("id", "autocomplete_list");
+    autocompleteItems.setAttribute("class", "autocomplete_items");
 
     // Append the DIV element as a child of the container of the search bar
     this.parentNode.appendChild(autocompleteItems);
@@ -32,7 +32,7 @@ function autocomplete() {
 
   // Select autocompletion item with keyboard
   autocompleteSource.addEventListener("keydown", function(e) {
-    var autocompleteItems = document.getElementById("autocomplete-list");
+    var autocompleteItems = document.getElementById("autocomplete_list");
 
     if (autocompleteItems) {
       autocompleteItems = autocompleteItems.getElementsByTagName("div");
@@ -77,12 +77,12 @@ function autocomplete() {
       currentFocus = (x.length - 1);
     }
 
-    x[currentFocus].classList.add("autocomplete-active");
+    x[currentFocus].classList.add("autocomplete_active");
   }
 
   function removeActive(x) {
     for (var i = 0; i < x.length; i++) {
-      x[i].classList.remove("autocomplete-active");
+      x[i].classList.remove("autocomplete_active");
     }
   }
 }
@@ -110,22 +110,16 @@ function displayAutocompletionResults(results) {
     });
 
     // Add the item to the list
-    document.getElementById("autocomplete-list").appendChild(resultItem);
+    document.getElementById("autocomplete_list").appendChild(resultItem);
   }
 }
 
 function closeAutocompletionResults() {
-  var x = document.getElementsByClassName("autocomplete-items");
-
-  for (var i = 0; i < x.length; i++) {
-    x[i].parentNode.removeChild(x[i]);
+  if (document.getElementById("autocomplete_list")) {
+    document.getElementById("autocomplete_list").innerHTML = "";
   }
 }
 
 function closeSearchResults() {
-  var x = document.getElementById("search_results");
-
-  for (var i = 0; i < x.childNodes.length; i++) {
-    x.removeChild(x.childNodes[i]);
-  }
+  document.getElementById("search_results").innerHTML = "";
 }

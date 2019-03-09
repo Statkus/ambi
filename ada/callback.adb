@@ -316,7 +316,7 @@ package body Callback is
      return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
 
-      Response : Unbounded_String := To_Unbounded_String ("<ul>");
+      Response : Unbounded_String;
    begin
       for Result_Index in Video_Search_Results'Range loop
          Translations (1) := Templates_Parser.Assoc
@@ -331,8 +331,6 @@ package body Callback is
          Append (Response, To_String
            (Templates_Parser.Parse ("html/search_results_item.thtml", Translations)));
       end loop;
-
-      Append (Response, "</ul>");
 
       return To_String (Response);
    end Build_Search_Results;

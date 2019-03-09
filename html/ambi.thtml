@@ -15,9 +15,9 @@
       <div id="search_bar">
          <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
          <input id="search_button" type="button" value="Watch" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);">
+         <div id="search_results"></div>
       </div>
 
-      <div id="search_results"></div>
 
       <div>
          <input type="checkbox" id="player_display_checkbox" value="display_player" checked onclick="ajaxGetRequestNoCallback('/onclick$player_display_checkbox?checked=' + this.checked, true)">

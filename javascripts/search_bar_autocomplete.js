@@ -4,25 +4,17 @@ function autocomplete() {
 
   // Display of the autocompletion
   autocompleteSource.addEventListener("input", function(e) {
-    var autocompleteItems;
+    var autocompleteItems = document.getElementById("search_results");
     var currentInput = this.value;
 
-    // Close any already open lists of autocompleted values
-    closeAutocompletionResults();
+    // Close any already open search results list
+    document.getElementById("search_results").innerHTML = "";
 
     if (!currentInput) {
       return false;
     }
 
     currentFocus = -1;
-
-    // Create a DIV element that will contain the items (autocompleted values)
-    autocompleteItems = document.createElement("DIV");
-    autocompleteItems.setAttribute("id", "autocomplete_list");
-    autocompleteItems.setAttribute("class", "autocomplete_items");
-
-    // Append the DIV element as a child of the container of the search bar
-    this.parentNode.appendChild(autocompleteItems);
 
     // Get autocompletion results
 	var s = document.createElement("script");
@@ -32,7 +24,7 @@ function autocomplete() {
 
   // Select autocompletion item with keyboard
   autocompleteSource.addEventListener("keydown", function(e) {
-    var autocompleteItems = document.getElementById("autocomplete_list");
+    var autocompleteItems = document.getElementById("search_results");
 
     if (autocompleteItems) {
       autocompleteItems = autocompleteItems.getElementsByTagName("div");
@@ -56,15 +48,23 @@ function autocomplete() {
         if (currentFocus > -1) {
           // Simulate a click on the selected item
           autocompleteItems[currentFocus].click();
+          currentFocus = -1;
         }
+      }
+      else if (e.keyCode == 27) {
+        // If the escape key is pressed
+        e.preventDefault();
+
+        document.getElementById("search_results").innerHTML = "";
+        currentFocus = -1;
       }
     }
   });
 
-  // Close autocompletion and search results lists when the document is clicked
+  // Close search results list when the document is clicked
   document.addEventListener("click", function (e) {
-      closeAutocompletionResults();
-      closeSearchResults();
+      document.getElementById("search_results").innerHTML = "";
+      currentFocus = -1;
   });
 
   function addActive(x) {
@@ -77,12 +77,12 @@ function autocomplete() {
       currentFocus = (x.length - 1);
     }
 
-    x[currentFocus].classList.add("autocomplete_active");
+    x[currentFocus].classList.add("search_results_active");
   }
 
   function removeActive(x) {
     for (var i = 0; i < x.length; i++) {
-      x[i].classList.remove("autocomplete_active");
+      x[i].classList.remove("search_results_active");
     }
   }
 }
@@ -106,20 +106,10 @@ function displayAutocompletionResults(results) {
         autocompleteSource.value = this.getAttribute("value");
         ajaxGetXmlRequest('/onclick$search_button?search_input=' + autocompleteSource.value);
 
-        closeAutocompletionResults();
+        document.getElementById("search_results").innerHTML = "";
     });
 
     // Add the item to the list
-    document.getElementById("autocomplete_list").appendChild(resultItem);
+    document.getElementById("search_results").appendChild(resultItem);
   }
-}
-
-function closeAutocompletionResults() {
-  if (document.getElementById("autocomplete_list")) {
-    document.getElementById("autocomplete_list").innerHTML = "";
-  }
-}
-
-function closeSearchResults() {
-  document.getElementById("search_results").innerHTML = "";
 }

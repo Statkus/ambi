@@ -104,7 +104,7 @@ package body Callback is
 
       -- Sync checkbox displaying and player state
       if Current_Room.Get_Client_Display_Player (Session_ID) then
-         Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "block");
+         Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "inline-block");
          Translations (5) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
       else
          Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "none");

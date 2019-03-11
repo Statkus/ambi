@@ -1,4 +1,4 @@
-<div id="search_results_item_@_ITEM_ID_@" class="search_video_list" name="search_results" value="@_ITEM_ID_@" onclick="addToPlaylist(this)">
+<div id="search_results_item_@_ITEM_ID_@" name="search_results" value="@_ITEM_ID_@" onclick="addToPlaylist(this)">
    <img src="@_IMAGE_URL_@">
    @_VIDEO_TITLE_@
 </div>

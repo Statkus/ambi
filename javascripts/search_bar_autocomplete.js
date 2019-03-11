@@ -24,22 +24,26 @@ function autocomplete() {
 
   // Select autocompletion item with keyboard
   autocompleteSource.addEventListener("keydown", function(e) {
-    var autocompleteItems = document.getElementById("search_results");
+    var autocompleteItems = document.getElementById("search_results").getElementsByTagName("div");
 
-    if (autocompleteItems) {
-      autocompleteItems = autocompleteItems.getElementsByTagName("div");
-
+    if (autocompleteItems.length > 0) {
       if (e.keyCode == 40) {
         // If the down arrow key is pressed
         currentFocus++;
         addActive(autocompleteItems);
-	    autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
+
+        if (autocompleteItems[currentFocus].getElementsByTagName("img").length == 0) {
+          autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
+        }
       }
       else if (e.keyCode == 38) {
         // If the up arrow key is pressed
         currentFocus--;
         addActive(autocompleteItems);
-	    autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
+
+        if (autocompleteItems[currentFocus].getElementsByTagName("img").length == 0) {
+          autocompleteSource.value = autocompleteItems[currentFocus].getAttribute("value");
+        }
       }
       else if (e.keyCode == 13) {
         // If the enter key is pressed

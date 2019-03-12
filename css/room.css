@@ -1,6 +1,7 @@
 body {
   background-color: rgb(70, 70, 70);
-  font: 16px Arial;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 16px;
   color: white;
 }
 
@@ -30,10 +31,21 @@ button {
   padding: 10px;
   cursor: pointer;
   background-color: rgba(30, 30, 30, 0.95);
+  border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+#search_results div span {
+  text-align: left;
+  line-height: 90px;
+  position: absolute;
+  width: 472px;
+  height: 90px;
+  padding-left: 8px;
+  overflow: hidden;
 }
 
 #search_results div:hover {
-  background-color: rgba(50, 50, 50);
+  background-color: rgb(50, 50, 50);
 }
 
 .search_results_active {
@@ -110,4 +122,85 @@ input:checked + .slider:before {
 
 .slider:before {
   border-radius: 50%;
+}
+
+/* Video list buttons ****************************************************************************/
+#video_list_buttons {
+  display: inline-block;
+  background-color: rgb(30, 30, 30);
+  width: 600px;
+}
+
+#video_list_buttons button {
+  background-color: inherit;
+  color: inherit;
+  float: left;
+  width: 33.33%;
+  border: 1px solid rgb(70, 70, 70);
+  outline: none;
+  padding: 14px 16px;
+}
+
+#video_list_buttons button:hover {
+  background-color: rgb(50, 50, 50);
+}
+
+#video_list_buttons button.active {
+  background-color: rgb(100, 100, 100);
+}
+
+/* Video list ************************************************************************************/
+#video_list {
+  width: 600px;
+}
+
+#video_list div {
+  padding: 10px;
+  background-color: rgb(30, 30, 30);
+  border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+#video_list div:hover {
+  background-color: rgb(50, 50, 50);
+}
+
+#video_list div img.clickable:hover {
+  cursor: pointer;
+}
+
+#video_list div span {
+  text-align: left;
+  line-height: 90px;
+  position: absolute;
+  width: 352px;
+  height: 90px;
+  padding-left: 8px;
+  overflow: hidden;
+}
+
+.add_playlist_buttons {
+  background-color: inherit;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  position: absolute;
+  width: 360px;
+  height: 90px;
+  overflow: hidden;
+  border: none;
+  outline: none;
+}
+
+.like_buttons {
+  background-color: rgb(200, 70, 70);
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  float: right;
+  width: 100px;
+  height: 90px;
+  border: none;
+  outline: none;
+  border-radius: 20px;
 }

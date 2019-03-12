@@ -342,7 +342,7 @@ package body Callback is
      return String is
       Translations : Templates_Parser.Translate_Table (1 .. 4);
 
-      Response : Unbounded_String := To_Unbounded_String ("<ul>");
+      Response : Unbounded_String;
 
       Videos      : Video_Vectors.Vector;
       List_Cursor : Video_Vectors.Cursor;
@@ -399,8 +399,6 @@ package body Callback is
          end case;
 
       end loop;
-
-      Append (Response, "</ul>");
 
       return To_String (Response);
    end Build_Video_List;

@@ -42,10 +42,10 @@
 
       <p>Current room video: <span id="current_room_video">@_ROOM_VIDEO_@</span></p>
 
-      <div class="video_list_buttons">
-         <button onclick="showPlaylist()">Playlist</button>
-         <button onclick="showHistoric()">Historic</button>
-         <button onclick="showLikes()">Likes</button>
+      <div id="video_list_buttons">
+         <button id="playlist_button" class="video_list_button" onclick="showPlaylist()">Playlist</button>
+         <button id="historic_button" class="video_list_button" onclick="showHistoric()">Historic</button>
+         <button id="likes_button" class="video_list_button" onclick="showLikes()">Likes</button>
       </div>
 
       <div id="video_list">@_VIDEO_LIST_@</div>
@@ -66,6 +66,9 @@
 
          // State of the video list
          var videoListState = "playlist";
+
+         // Simulate a click on the playlist button
+         document.getElementById("playlist_button").click();
 
          // WebSocket to update playlist and current room video for all clients
          var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");
@@ -119,6 +122,12 @@
          }
 
          function showPlaylist() {
+            var videoListButtons = document.getElementsByClassName("video_list_button");
+            for (var i = 0; i < videoListButtons.length; i++) {
+               videoListButtons[i].className = videoListButtons[i].className.replace(" active", "");
+            }
+
+            document.getElementById("playlist_button").className += " active";
             if (videoListState != "playlist") {
                videoListState = "playlist";
                ajaxGetXmlRequest ("/get_video_list?source=playlist");
@@ -126,6 +135,12 @@
          }
 
          function showHistoric() {
+            var videoListButtons = document.getElementsByClassName("video_list_button");
+            for (var i = 0; i < videoListButtons.length; i++) {
+               videoListButtons[i].className = videoListButtons[i].className.replace(" active", "");
+            }
+
+            document.getElementById("historic_button").className += " active";
             if (videoListState != "historic") {
                videoListState = "historic";
                ajaxGetXmlRequest ("/get_video_list?source=historic");
@@ -133,6 +148,12 @@
          }
 
          function showLikes() {
+            var videoListButtons = document.getElementsByClassName("video_list_button");
+            for (var i = 0; i < videoListButtons.length; i++) {
+               videoListButtons[i].className = videoListButtons[i].className.replace(" active", "");
+            }
+
+            document.getElementById("likes_button").className += " active";
             if (videoListState != "likes") {
                videoListState = "likes";
                ajaxGetXmlRequest ("/get_video_list?source=likes");

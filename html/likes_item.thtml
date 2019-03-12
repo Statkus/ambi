@@ -1,5 +1,5 @@
-<li id="likes_item_@_ITEM_ID_@">
-   <img src="@_IMAGE_URL_@" name="likes" value="@_ITEM_ID_@" onclick="addToPlaylist(this)">
-   @_VIDEO_TITLE_@
-   <button name="likes" value="@_ITEM_ID_@" onclick="addRemoveLike(this)">@_LIKE_@</button>
-</li>
+<div id="likes_item_@_ITEM_ID_@">
+   <img src="@_IMAGE_URL_@" class="clickable" onclick="document.getElementById('likes_to_playlist_button_@_ITEM_ID_@').click()">
+   <button id="likes_to_playlist_button_@_ITEM_ID_@" name="likes" value="@_ITEM_ID_@" class="add_playlist_buttons" onclick="addToPlaylist(this)">@_VIDEO_TITLE_@</button>
+   <button name="likes" value="@_ITEM_ID_@" class="like_buttons" onclick="addRemoveLike(this)">@_LIKE_@</button>
+</div>

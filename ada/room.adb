@@ -42,14 +42,24 @@ package body Room is
                -- Add the current video to the historic
                This.DB.Add_To_Historic (This.Get_Video);
             else
-               -- The playlist is empty, go back at waiting for the start of a new playlist
-               This.Room_Current_Video_Active := False;
-               This.Set_Video
-                 ((Video_ID        => To_Unbounded_String (""),
-                   Video_Title     => To_Unbounded_String ("no video played"),
-                   Video_Thumbnail => To_Unbounded_String ("")));
+               if This.Is_Client_Sync then
+                  -- There is at least one client sync with the room, play a video following
+                  -- Youtube suggestion
+                  This.Set_Video (YT_API.Get_Video_Related (This.Get_Video));
 
-               Playlist_Empty := True;
+                  -- Add the current video to the historic
+                  This.DB.Add_To_Historic (This.Get_Video);
+               else
+                  -- The playlist is empty and there is no sync client, go back at waiting for the
+                  -- start of a new playlist
+                  This.Room_Current_Video_Active := False;
+                  This.Set_Video
+                    ((Video_ID        => To_Unbounded_String (""),
+                      Video_Title     => To_Unbounded_String ("no video played"),
+                      Video_Thumbnail => To_Unbounded_String ("")));
+
+                  Playlist_Empty := True;
+               end if;
             end if;
 
             This.Update_No_Player_Clients;
@@ -362,10 +372,9 @@ package body Room is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
       Client_To_Find     : Client.T_Client_Class_Access := null;
    begin
-      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+      while Client_Vectors.Has_Element (Client_List_Cursor) and Client_To_Find = null loop
          if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
             Client_To_Find:= Client_Vectors.Element (Client_List_Cursor);
-            exit;
          end if;
 
          Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
@@ -373,6 +382,24 @@ package body Room is
 
       return Client_To_Find;
    end Find_Client_From_Session_ID;
+
+   -------------------------------------------------------------------------------------------------
+   -- Is_Client_Sync
+   -------------------------------------------------------------------------------------------------
+   function Is_Client_Sync (This : in T_Room) return Boolean is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+      Client_Sync        : Boolean := False;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) and not Client_Sync loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
+            Client_Sync := True;
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      return Client_Sync;
+   end Is_Client_Sync;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Video

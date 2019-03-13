@@ -96,6 +96,8 @@ private
    function Find_Client_From_Session_ID (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Client.T_Client_Class_Access;
 
+   function Is_Client_Sync (This : in T_Room) return Boolean;
+
    -- Accessors protected by mutex
    procedure Set_Video (This : in out T_Room; Video : in YT_API.T_Video);
    procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video);

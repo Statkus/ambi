@@ -40,6 +40,17 @@ package body YT_API is
    end Get_Video_Duration;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Video_Related
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Related (Video : in T_Video) return T_Video is
+   begin
+      Put_Line ("YT API query: " & Get_Video_Related_Request (To_String (Video.Video_ID)));
+
+      return Parse_Video_Related_Result (AWS.Response.Message_Body
+        (AWS.Client.Get (URL => Get_Video_Related_Request (To_String (Video.Video_ID)))));
+   end Get_Video_Related;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Search_Request
    -------------------------------------------------------------------------------------------------
    function Get_Search_Request (Search_Input : in String) return String is
@@ -60,6 +71,18 @@ package body YT_API is
         & "&id=" & Video_ID
         & "&part=contentDetails";
    end Get_Video_Request;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video_Related_Request
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Related_Request (Video_ID : in String) return String is
+   begin
+      return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
+        & "&relatedToVideoId=" & Video_ID
+        & "&maxResult=1"
+        & "&part=snippet&videoDefinition=any&type=video&order=relevance&safeSearch=none"
+        & "&videoEmbeddable=true&videoSyndicated=true";
+   end Get_Video_Related_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
@@ -112,6 +135,32 @@ package body YT_API is
 
       return Duration;
    end Parse_Video_Duration_Result;
+
+   -------------------------------------------------------------------------------------------------
+   -- Parse_Video_Related_Result
+   -------------------------------------------------------------------------------------------------
+   function Parse_Video_Related_Result (Search_Result : in String) return T_Video is
+      JSON_String_Response : aliased String := Search_Result;
+
+      JSON_Stream    : JSON.Streams.Stream'Class :=
+        JSON.Streams.Create_Stream (JSON_String_Response'Access);
+      JSON_Allocator : Types.Memory_Allocator;
+      JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
+      Item           : constant Types.JSON_Value := JSON_Result.Get ("items") (1);
+
+      Video_Related : T_Video;
+   begin
+      Video_Related.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
+
+      Video_Related.Video_Title :=
+        To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
+
+      Video_Related.Video_Thumbnail :=
+        To_Unbounded_String
+          (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
+
+      return Video_Related;
+   end Parse_Video_Related_Result;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Duration

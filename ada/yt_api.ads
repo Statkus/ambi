@@ -28,6 +28,8 @@ package YT_API is
 
    function Get_Video_Duration (Video : in T_Video) return Natural;
 
+   function Get_Video_Related (Video : in T_Video) return T_Video;
+
 private
 
    package Types is new JSON.Types (Long_Integer, Long_Float); use Types;
@@ -35,9 +37,12 @@ private
 
    function Get_Search_Request (Search_Input : in String) return String;
    function Get_Video_Request (Video_ID : in String) return String;
+   function Get_Video_Related_Request (Video_ID : in String) return String;
 
    function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results;
    function Parse_Video_Duration_Result (Search_Result : in String) return Natural;
+   function Parse_Video_Related_Result (Search_Result : in String) return T_Video;
+
    function Parse_Duration (Duration_String : in String) return Natural;
 
    YT_API_KEY : Unbounded_String;

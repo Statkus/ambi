@@ -204,3 +204,18 @@ input:checked + .slider:before {
   outline: none;
   border-radius: 20px;
 }
+
+/* Back to top link *******************************************************************************/
+#back_to_top_link {
+  background-color: rgb(130, 130, 130);
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-decoration: inherit;
+  width: 100px;
+  text-align: center;
+  position: fixed;
+  bottom: 10px;
+  left: 620px;
+  border-radius: 20px;
+}

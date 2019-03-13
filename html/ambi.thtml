@@ -50,6 +50,8 @@
 
       <div id="video_list">@_VIDEO_LIST_@</div>
 
+      <a id="back_to_top_link" href="#top">Back to top</a>
+
       <script>
          // Function to autocomplete search input
          autocomplete();

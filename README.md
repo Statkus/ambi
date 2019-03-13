@@ -1,5 +1,7 @@
 # Ambi
 
+From an original idea available here: https://github.com/valladiervictor/ambi
+
 ## Installation (tested on Ubuntu 18.04)
 
 - First you need to build and install Ada Web Server with SSL support, json-ada and GNADELite:

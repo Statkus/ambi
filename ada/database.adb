@@ -31,11 +31,21 @@ package body Database is
    -- Add_To_Historic
    -------------------------------------------------------------------------------------------------
    procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video) is
+      Title       : constant String := To_String (Video.Video_Title);
+      Video_Title : Unbounded_String;
    begin
+      for C of Title loop
+         if Character'Pos (C) = 39 then
+            Append (Video_Title, "''");
+         else
+            Append (Video_Title, C);
+         end if;
+      end loop;
+
       DB.SQLite.Execute (This.DB_Handle,
         "INSERT INTO historic (video_id, video_title, video_thumbnail) VALUES ('"
         & To_String (Video.Video_ID) & "', '"
-        & To_String (Video.Video_Title) & "', '"
+        & To_String (Video_Title) & "', '"
         & To_String (Video.Video_Thumbnail) & "');");
 
       This.Historic.Append (Video);
@@ -47,6 +57,9 @@ package body Database is
    procedure Add_To_Likes (This : in out T_Database; Video : in YT_API.T_Video) is
       Likes_Cursor        : Video_Vectors.Cursor := This.Likes.First;
       Video_Already_Liked : Boolean := False;
+
+      Title       : constant String := To_String (Video.Video_Title);
+      Video_Title : Unbounded_String;
    begin
       while Video_Vectors.Has_Element (Likes_Cursor) loop
          if Video_Vectors.Element (Likes_Cursor).Video_ID = Video.Video_ID then
@@ -58,10 +71,18 @@ package body Database is
       end loop;
 
       if not Video_Already_Liked then
+         for C of Title loop
+            if Character'Pos (C) = 39 then
+               Append (Video_Title, "''");
+            else
+               Append (Video_Title, C);
+            end if;
+         end loop;
+
          DB.SQLite.Execute (This.DB_Handle,
            "INSERT INTO likes (video_id, video_title, video_thumbnail) VALUES ('"
            & To_String (Video.Video_ID) & "', '"
-           & To_String (Video.Video_Title) & "', '"
+           & To_String (Video_Title) & "', '"
            & To_String (Video.Video_Thumbnail) & "');");
 
          This.Likes.Append (Video);

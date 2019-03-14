@@ -4,6 +4,7 @@ with AWS.Session; use AWS.Session;
 with Ada.Text_IO; use Ada.Text_IO;
 
 with Client; use Client;
+with YT_API;
 
 package body Room is
 
@@ -46,7 +47,7 @@ package body Room is
                   -- There is at least one client sync with the room, play a video following
                   -- Youtube suggestion
                   This.Set_Video
-                    (This.Select_Random_Video (YT_API.Get_Video_Related (This.Get_Video)));
+                    (This.Select_Random_Video (YT_API.Get_Videos_Related (This.Get_Video)));
 
                   -- Add the current video to the historic
                   This.DB.Add_To_Historic (This.Get_Video);
@@ -216,7 +217,7 @@ package body Room is
    -- Set_Video_Search_Results
    -------------------------------------------------------------------------------------------------
    procedure Set_Video_Search_Results
-     (This : in out T_Room; Video_Search_Results : in YT_API.T_Video_Search_Results) is
+     (This : in out T_Room; Video_Search_Results : in Video_Vectors.Vector) is
    begin
       This.Video_Search_Results := Video_Search_Results;
    end Set_Video_Search_Results;
@@ -263,8 +264,14 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results is
+   function Get_Video_Search_Results (This : in T_Room) return Video_Vectors.Vector is
      (This.Video_Search_Results);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video_Search_Results_Item
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Search_Results_Item (This : in T_Room; Item_Number : in Natural)
+     return T_Video is (This.Video_Search_Results.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Historic
@@ -408,7 +415,8 @@ package body Room is
    function Select_Random_Video (This : in T_Room; Videos : in Video_Vectors.Vector)
      return T_Video is
       Video_Index : Natural := Natural'First;
-      Video       : T_Video;
+      Video       : T_Video :=
+        (Video_Title => To_Unbounded_String ("no video played"), others => <>);
    begin
       if Natural (Videos.Length) > 0 then
          Video_Index :=

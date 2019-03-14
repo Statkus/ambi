@@ -7,20 +7,9 @@ with Video_List; use Video_List;
 
 package YT_API is
 
-   MAX_VIDEO_SEARCH_RESULTS : constant := 5;
-
-   type T_Video_Search_Results is array (1 .. MAX_VIDEO_SEARCH_RESULTS) of T_Video;
-
-   type T_Video_Search_List_Response is record
-      Next_Page_Token      : Unbounded_String;
-      Total_Results        : Integer;
-      Results_Per_Page     : Integer;
-      Video_Search_Results : T_Video_Search_Results;
-   end record;
-
    procedure Set_YT_API_Key (Key : in String);
 
-   function Get_Video_Search_Results (Search_Input : in String) return T_Video_Search_Results;
+   function Get_Video_Search_Results (Search_Input : in String) return Video_Vectors.Vector;
 
    function Get_Video_Duration (Video : in T_Video) return Natural;
 
@@ -35,13 +24,14 @@ private
    function Get_Video_Request (Video_ID : in String) return String;
    function Get_Videos_Related_Request (Video_ID : in String) return String;
 
-   function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results;
+   function Parse_Video_Search_Results (Search_Results : in String) return Video_Vectors.Vector;
    function Parse_Video_Duration_Result (Search_Result : in String) return Natural;
-   function Parse_Videos_Related_Result (Search_Result : in String) return Video_Vectors.Vector;
 
    function Parse_Duration (Duration_String : in String) return Natural;
 
    YT_API_KEY : Unbounded_String;
    YT_API_URL : constant String := "https://www.googleapis.com/youtube/v3/";
+
+   MAX_VIDEO_SEARCH_RESULTS : constant String := "10";
 
 end YT_API;

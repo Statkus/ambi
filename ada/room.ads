@@ -7,7 +7,6 @@ with AWS.Session;
 with Client;
 with Database;
 with Video_List; use Video_List;
-with YT_API;
 
 package Room is
 
@@ -49,7 +48,7 @@ package Room is
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    procedure Set_Video_Search_Results
-     (This : in out T_Room; Video_Search_Results : in YT_API.T_Video_Search_Results);
+     (This : in out T_Room; Video_Search_Results : in Video_Vectors.Vector);
 
    procedure Set_Client_Display_Player
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean);
@@ -59,7 +58,10 @@ package Room is
 
    function Get_Current_Video (This : in out T_Room) return T_Video;
 
-   function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
+   function Get_Video_Search_Results (This : in T_Room) return Video_Vectors.Vector;
+
+   function Get_Video_Search_Results_Item (This : in T_Room; Item_Number : in Natural)
+     return T_Video;
 
    function Get_Historic (This : in T_Room) return Video_Vectors.Vector;
 
@@ -118,7 +120,7 @@ private
    end T_Mutex;
 
    type T_Room is tagged limited record
-      Video_Search_Results : YT_API.T_Video_Search_Results;
+      Video_Search_Results : Video_Vectors.Vector;
       Room_Current_Video   : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
       Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;

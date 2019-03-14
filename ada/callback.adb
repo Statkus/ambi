@@ -7,7 +7,7 @@ with AWS.Parameters;
 
 with Templates_Parser;
 
-with Video_List; use Video_List;
+with YT_API;
 
 package body Callback is
 
@@ -192,7 +192,7 @@ package body Callback is
       case Source is
          when Search_Results =>
             Current_Room.Add_Video_To_Playlists
-              (Current_Room.Get_Video_Search_Results (Item_Number));
+              (Current_Room.Get_Video_Search_Results_Item (Item_Number));
 
          when Historic =>
             Current_Room.Add_Video_To_Playlists (Current_Room.Get_Historic_Item (Item_Number));
@@ -312,24 +312,28 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Build_Search_Results (Video_Search_Results : in YT_API.T_Video_Search_Results)
-     return String is
+   function Build_Search_Results (Video_Search_Results : in Video_Vectors.Vector) return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
 
       Response : Unbounded_String;
+
+      List_Cursor : Video_Vectors.Cursor := Video_Search_Results.First;
    begin
-      for Result_Index in Video_Search_Results'Range loop
+      while Video_Vectors.Has_Element (List_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim (Result_Index'Img, Ada.Strings.Left));
+           ("ITEM_ID", Trim
+             (Integer'Image (Video_Vectors.To_Index (List_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", To_String (Video_Search_Results (Result_Index).Video_Thumbnail));
+           ("IMAGE_URL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
 
          Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", To_String (Video_Search_Results (Result_Index).Video_Title));
+           ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
          Append (Response, To_String
            (Templates_Parser.Parse ("html/search_results_item.thtml", Translations)));
+
+         List_Cursor := Video_Vectors.Next (List_Cursor);
       end loop;
 
       return To_String (Response);

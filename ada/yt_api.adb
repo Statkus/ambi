@@ -20,7 +20,7 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results (Search_Input : in String) return T_Video_Search_Results is
+   function Get_Video_Search_Results (Search_Input : in String) return Video_Vectors.Vector is
    begin
       Put_Line ("YT API query: " & Get_Search_Request (Search_Input));
 
@@ -44,10 +44,10 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector is
    begin
-      Put_Line ("YT API query: " & Get_Video_Related_Request (To_String (Video.Video_ID)));
+      Put_Line ("YT API query: " & Get_Videos_Related_Request (To_String (Video.Video_ID)));
 
-      return Parse_Video_Related_Result (AWS.Response.Message_Body
-        (AWS.Client.Get (URL => Get_Video_Related_Request (To_String (Video.Video_ID)))));
+      return Parse_Video_Search_Results (AWS.Response.Message_Body
+        (AWS.Client.Get (URL => Get_Videos_Related_Request (To_String (Video.Video_ID)))));
    end Get_Videos_Related;
 
    -------------------------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ package body YT_API is
    begin
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&q=" & Search_Input
-        & "&maxResult=" & MAX_VIDEO_SEARCH_RESULTS'Img
+        & "&maxResults=" & MAX_VIDEO_SEARCH_RESULTS
         & "&part=snippet&videoDefinition=any&type=video&order=relevance&safeSearch=none"
         & "&videoEmbeddable=true&videoSyndicated=true";
    end Get_Search_Request;
@@ -79,7 +79,7 @@ package body YT_API is
    begin
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&relatedToVideoId=" & Video_ID
-        & "&maxResult=5"
+        & "&maxResults=" & MAX_VIDEO_SEARCH_RESULTS
         & "&part=snippet&videoDefinition=any&type=video&order=relevance&safeSearch=none"
         & "&videoEmbeddable=true&videoSyndicated=true";
    end Get_Videos_Related_Request;
@@ -87,7 +87,7 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results is
+   function Parse_Video_Search_Results (Search_Results : in String) return Video_Vectors.Vector is
       JSON_String_Response : aliased String := Search_Results;
 
       JSON_Stream    : JSON.Streams.Stream'Class :=
@@ -95,24 +95,22 @@ package body YT_API is
       JSON_Allocator : Types.Memory_Allocator;
       JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
 
-      Video_Search_Results       : T_Video_Search_Results;
-      Video_Search_Results_Index : Integer := Video_Search_Results'First;
+      Video         : T_Video;
+      Videos_Result : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
    begin
       for Item of JSON_Result.Get ("items") loop
-         Video_Search_Results (Video_Search_Results_Index).Video_ID :=
-           To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
+         Video.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
 
-         Video_Search_Results (Video_Search_Results_Index).Video_Title :=
-           To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
+         Video.Video_Title := To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
 
-         Video_Search_Results (Video_Search_Results_Index).Video_Thumbnail :=
+         Video.Video_Thumbnail :=
            To_Unbounded_String
              (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
 
-         Video_Search_Results_Index := Video_Search_Results_Index + 1;
+         Videos_Result.Append (Video);
       end loop;
 
-      return Video_Search_Results;
+      return Videos_Result;
    end Parse_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
@@ -135,35 +133,6 @@ package body YT_API is
 
       return Duration;
    end Parse_Video_Duration_Result;
-
-   -------------------------------------------------------------------------------------------------
-   -- Parse_Videos_Related_Result
-   -------------------------------------------------------------------------------------------------
-   function Parse_Videos_Related_Result (Search_Result : in String) return Video_Vectors.Vector is
-      JSON_String_Response : aliased String := Search_Result;
-
-      JSON_Stream    : JSON.Streams.Stream'Class :=
-        JSON.Streams.Create_Stream (JSON_String_Response'Access);
-      JSON_Allocator : Types.Memory_Allocator;
-      JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
-
-      Video          : T_Video;
-      Videos_Related : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
-   begin
-      for Item of JSON_Result.Get ("items") loop
-         Video.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
-
-         Video.Video_Title := To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
-
-         Video.Video_Thumbnail :=
-           To_Unbounded_String
-             (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
-
-         Videos_Related.Append (Video);
-      end loop;
-
-      return Videos_Related;
-   end Parse_Videos_Related_Result;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Duration

@@ -216,10 +216,9 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Set_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   procedure Set_Video_Search_Results
-     (This : in out T_Room; Video_Search_Results : in Video_Vectors.Vector) is
+   procedure Set_Video_Search_Results (This : in out T_Room; Search_Input : in String) is
    begin
-      This.Video_Search_Results := Video_Search_Results;
+      This.Video_Search_Results := YT_API.Get_Video_Search_Results (Search_Input);
    end Set_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------

@@ -7,8 +7,6 @@ with AWS.Parameters;
 
 with Templates_Parser;
 
-with YT_API;
-
 package body Callback is
 
    -------------------------------------------------------------------------------------------------
@@ -169,9 +167,8 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Parameters   : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Search_Input : constant String := AWS.Parameters.Get (Parameters, "search_input");
    begin
-      Current_Room.Set_Video_Search_Results (YT_API.Get_Video_Search_Results (Search_Input));
+      Current_Room.Set_Video_Search_Results (AWS.Parameters.Get (Parameters, "search_input"));
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("search_results", Build_Search_Results (Current_Room.Get_Video_Search_Results)));

@@ -47,8 +47,7 @@ package Room is
 
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
-   procedure Set_Video_Search_Results
-     (This : in out T_Room; Video_Search_Results : in Video_Vectors.Vector);
+   procedure Set_Video_Search_Results (This : in out T_Room; Search_Input : in String);
 
    procedure Set_Client_Display_Player
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean);

@@ -1,5 +1,6 @@
 with Ada.Containers.Vectors;
 with Ada.Numerics.Float_Random;
+with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with AWS.Session;
@@ -36,6 +37,8 @@ package Room is
    procedure Unlock (This : in out T_Room);
 
    procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID);
+
+   procedure Set_Client_Last_Request_Time (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
    function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean;
 
@@ -100,6 +103,8 @@ private
 
    function Is_Client_Sync (This : in T_Room) return Boolean;
 
+   procedure Remove_Disconnected_Client (This : in out T_Room);
+
    function Select_Random_Video (This : in T_Room; Videos : in Video_Vectors.Vector) return T_Video;
 
    -- Accessors protected by mutex
@@ -128,6 +133,7 @@ private
       Room_Video_Playlist_Mutex : T_Mutex;
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
+      Last_Request_Time         : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       DB                        : Database.T_Database_Class_Access;
       RNG                       : Ada.Numerics.Float_Random.Generator;
    end record;

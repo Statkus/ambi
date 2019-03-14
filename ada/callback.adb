@@ -51,8 +51,9 @@ package body Callback is
          Put_Line ("Client: " & AWS.Session.Image (Session_ID)
            & ", request: '" & URI & "'");
 
-         -- Update the session life start time
+         -- Update the session life start time and client last request time
          AWS.Session.Touch (Session_ID);
+         Current_Room.Set_Client_Last_Request_Time (Session_ID);
 
          if Index (URI, "/javascripts/") > 0 then
             Response := Javascripts_Callback (Request);

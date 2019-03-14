@@ -1,12 +1,15 @@
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Unchecked_Deallocation;
+
 with AWS.Net.Websocket.Registry;
 with AWS.Session; use AWS.Session;
-
-with Ada.Text_IO; use Ada.Text_IO;
 
 with Client; use Client;
 with YT_API;
 
 package body Room is
+
+   procedure Free_Client is new Ada.Unchecked_Deallocation (T_Client'Class, T_Client_Class_Access);
 
    -------------------------------------------------------------------------------------------------
    -- T_Room_Sync_Task
@@ -29,11 +32,15 @@ package body Room is
          loop
             -- Send request to the clients, the current room video has changed
             AWS.Net.WebSocket.Registry.Send (Rcp, "update_room_current_video_request");
+            This.Last_Request_Time := Ada.Real_Time.Clock;
 
             exit when Playlist_Empty;
 
             -- Wait for the duration of the current video
             delay Duration (YT_API.Get_Video_Duration (This.Get_Video));
+
+            -- Remove all expired sessions
+            This.Remove_Disconnected_Client;
 
             if not This.Get_Playlist_Is_Empty then
                -- If the playlist is not empty, select the next video
@@ -112,16 +119,9 @@ package body Room is
    -- Add_Client
    -------------------------------------------------------------------------------------------------
    procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID) is
-      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
       -- Remove all expired sessions
-      while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID) then
-            This.Client_List.Delete (Client_List_Cursor);
-         end if;
-
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
-      end loop;
+      This.Remove_Disconnected_Client;
 
       -- Set a parameter to this session ID to register it, the parameter is a unique ID
       AWS.Session.Set (Session_ID, "ID", AWS.Session.Image (Session_ID));
@@ -136,6 +136,14 @@ package body Room is
       Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", number of clients:"
         & This.Client_List.Length'Img);
    end Add_Client;
+
+   -------------------------------------------------------------------------------------------------
+   -- Set_Client_Last_Request_Time
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Client_Last_Request_Time (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+   begin
+      This.Find_Client_From_Session_ID (Session_ID).Set_Last_Request_Time;
+   end Set_Client_Last_Request_Time;
 
    -------------------------------------------------------------------------------------------------
    -- Is_Registered
@@ -407,6 +415,31 @@ package body Room is
 
       return Client_Sync;
    end Is_Client_Sync;
+
+   -------------------------------------------------------------------------------------------------
+   -- Remove_Disconnected_Client
+   -------------------------------------------------------------------------------------------------
+   procedure Remove_Disconnected_Client (This : in out T_Room) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+      Client_To_Remove   : T_Client_Class_Access := null;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID)
+           or Ada.Real_Time.To_Duration
+             (This.Last_Request_Time
+              - Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time) > 120.0 then
+            Client_To_Remove := Client_Vectors.Element (Client_List_Cursor);
+            This.Client_List.Delete (Client_List_Cursor);
+
+            Put_Line ("Remove client: " & AWS.Session.Image (Client_To_Remove.Get_Session_ID)
+              & ", number of clients:" & This.Client_List.Length'Img);
+
+            Free_Client (Client_To_Remove);
+         end if;
+
+         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Remove_Disconnected_Client;
 
    -------------------------------------------------------------------------------------------------
    -- Select_Random_Video

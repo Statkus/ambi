@@ -1,3 +1,5 @@
+with Ada.Real_Time;
+
 with AWS.Session;
 
 with Video_List; use Video_List;
@@ -13,6 +15,8 @@ package Client is
    procedure Set_Current_Video (This : in out T_Client);
 
    procedure Set_Current_Video (This : in out T_Client; Video : in T_Video);
+
+   procedure Set_Last_Request_Time (This : in out T_Client);
 
    procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video);
 
@@ -37,6 +41,8 @@ package Client is
 
    function Has_Nothing_To_Play (This : in T_Client) return Boolean;
 
+   function Get_Last_Request_Time (This : in out T_Client) return Ada.Real_Time.Time;
+
 private
 
    type T_Client is tagged limited record
@@ -46,6 +52,7 @@ private
       Display_Player       : Boolean := True;
       Sync_With_Room       : Boolean := False;
       Nothing_To_Play      : Boolean := True;
+      Last_Request_Time    : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    end record;
 
 end Client;

@@ -33,6 +33,14 @@ package body Client is
    end Set_Current_Video;
 
    -------------------------------------------------------------------------------------------------
+   -- Set_Last_Request_Time
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Last_Request_Time (This : in out T_Client) is
+   begin
+      This.Last_Request_Time := Ada.Real_Time.Clock;
+   end Set_Last_Request_Time;
+
+   -------------------------------------------------------------------------------------------------
    -- Add_Video_To_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video) is
@@ -106,5 +114,11 @@ package body Client is
    -- Has_Nothing_To_Play
    -------------------------------------------------------------------------------------------------
    function Has_Nothing_To_Play (This : in T_Client) return Boolean is (This.Nothing_To_Play);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Last_Request_Time
+   -------------------------------------------------------------------------------------------------
+   function Get_Last_Request_Time (This : in out T_Client) return Ada.Real_Time.Time is
+     (This.Last_Request_Time);
 
 end Client;

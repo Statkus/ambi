@@ -96,7 +96,7 @@ package body Callback is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
       Translations : Templates_Parser.Translate_Table (1 .. 6);
-      YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 2);
+      YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
    begin
       Put_Line ("Video to play: "
         & To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_Title));
@@ -126,12 +126,6 @@ package body Callback is
         and not Current_Room.Client_Has_Nothing_To_Play (Session_ID) then
          YT_Player_Translations (1) := Templates_Parser.Assoc
            ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
-
-         if Current_Room.Get_Client_Sync_With_Room (Session_ID) then
-            YT_Player_Translations (2) := Templates_Parser.Assoc ("PLAYER_CONTROL", "0");
-         else
-            YT_Player_Translations (2) := Templates_Parser.Assoc ("PLAYER_CONTROL", "1");
-         end if;
 
          Translations (6) := Templates_Parser.Assoc
            ("YOUTUBE_PLAYER_SCRIPT",

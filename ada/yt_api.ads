@@ -3,15 +3,11 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with JSON.Parsers;
 with JSON.Types;
 
+with Video_List; use Video_List;
+
 package YT_API is
 
    MAX_VIDEO_SEARCH_RESULTS : constant := 5;
-
-   type T_Video is record
-      Video_ID        : Unbounded_String;
-      Video_Title     : Unbounded_String;
-      Video_Thumbnail : Unbounded_String;
-   end record;
 
    type T_Video_Search_Results is array (1 .. MAX_VIDEO_SEARCH_RESULTS) of T_Video;
 
@@ -28,7 +24,7 @@ package YT_API is
 
    function Get_Video_Duration (Video : in T_Video) return Natural;
 
-   function Get_Video_Related (Video : in T_Video) return T_Video;
+   function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector;
 
 private
 
@@ -37,11 +33,11 @@ private
 
    function Get_Search_Request (Search_Input : in String) return String;
    function Get_Video_Request (Video_ID : in String) return String;
-   function Get_Video_Related_Request (Video_ID : in String) return String;
+   function Get_Videos_Related_Request (Video_ID : in String) return String;
 
    function Parse_Video_Search_Results (Search_Results : in String) return T_Video_Search_Results;
    function Parse_Video_Duration_Result (Search_Result : in String) return Natural;
-   function Parse_Video_Related_Result (Search_Result : in String) return T_Video;
+   function Parse_Videos_Related_Result (Search_Result : in String) return Video_Vectors.Vector;
 
    function Parse_Duration (Duration_String : in String) return Natural;
 

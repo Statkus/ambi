@@ -30,7 +30,7 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    -- Add_To_Historic
    -------------------------------------------------------------------------------------------------
-   procedure Add_To_Historic (This : in out T_Database; Video : in YT_API.T_Video) is
+   procedure Add_To_Historic (This : in out T_Database; Video : in T_Video) is
       Title       : constant String := To_String (Video.Video_Title);
       Video_Title : Unbounded_String;
    begin
@@ -54,7 +54,7 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    -- Add_To_Likes
    -------------------------------------------------------------------------------------------------
-   procedure Add_To_Likes (This : in out T_Database; Video : in YT_API.T_Video) is
+   procedure Add_To_Likes (This : in out T_Database; Video : in T_Video) is
       Likes_Cursor        : Video_Vectors.Cursor := This.Likes.First;
       Video_Already_Liked : Boolean := False;
 
@@ -92,7 +92,7 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    -- Remove_From_Likes
    -------------------------------------------------------------------------------------------------
-   procedure Remove_From_Likes (This : in out T_Database; Video : in YT_API.T_Video) is
+   procedure Remove_From_Likes (This : in out T_Database; Video : in T_Video) is
       Likes_Cursor        : Video_Vectors.Cursor := This.Likes.First;
       Video_Already_Liked : Boolean := False;
    begin
@@ -128,7 +128,7 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    -- Is_Video_Liked
    -------------------------------------------------------------------------------------------------
-   function Is_Video_Liked (This : in T_Database; Video : in YT_API.T_Video) return Boolean is
+   function Is_Video_Liked (This : in T_Database; Video : in T_Video) return Boolean is
       DB_Iterator   : DB.SQLite.Iterator;
 
       Liked       : Boolean := False;
@@ -152,7 +152,7 @@ package body Database is
       DB_Row        : DB.String_Vectors.Vector;
       DB_Row_Cursor : DB.String_Vectors.Cursor;
 
-      Video : YT_API.T_Video;
+      Video : T_Video;
    begin
       DB.SQLite.Prepare_Select (This.DB_Handle, DB_Iterator, "SELECT * FROM historic");
 
@@ -183,7 +183,7 @@ package body Database is
       DB_Row        : DB.String_Vectors.Vector;
       DB_Row_Cursor : DB.String_Vectors.Cursor;
 
-      Video : YT_API.T_Video;
+      Video : T_Video;
    begin
       DB.SQLite.Prepare_Select (This.DB_Handle, DB_Iterator, "SELECT * FROM likes");
 

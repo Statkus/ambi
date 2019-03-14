@@ -1,12 +1,17 @@
 with Ada.Containers.Vectors;
-
-with YT_API;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Video_List is
 
-   -- Dummy function to instantiate a vector, for now comparing YT_API.T_Video records is useless
-   function Video_Compare (Left, Right : YT_API.T_Video) return Boolean;
+   type T_Video is record
+      Video_ID        : Unbounded_String;
+      Video_Title     : Unbounded_String;
+      Video_Thumbnail : Unbounded_String;
+   end record;
 
-   package Video_Vectors is new Ada.Containers.Vectors (Natural, YT_API.T_Video, Video_Compare);
+   -- Dummy function to instantiate a vector, for now comparing T_Video records is useless
+   function Video_Compare (Left, Right : in T_Video) return Boolean;
+
+   package Video_Vectors is new Ada.Containers.Vectors (Natural, T_Video, Video_Compare);
 
 end Video_List;

@@ -1,7 +1,6 @@
 with AWS.Session;
 
 with Video_List; use Video_List;
-with YT_API;
 
 package Client is
 
@@ -13,9 +12,9 @@ package Client is
 
    procedure Set_Current_Video (This : in out T_Client);
 
-   procedure Set_Current_Video (This : in out T_Client; Video : in YT_API.T_Video);
+   procedure Set_Current_Video (This : in out T_Client; Video : in T_Video);
 
-   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in YT_API.T_Video);
+   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video);
 
    procedure Remove_First_Playlist_Video (This : in out T_Client);
 
@@ -28,7 +27,7 @@ package Client is
 
    function Get_Session_ID (This : in T_Client) return AWS.Session.ID;
 
-   function Get_Current_Video (This : in T_Client) return YT_API.T_Video;
+   function Get_Current_Video (This : in T_Client) return T_Video;
 
    function Get_Playlist (This : in T_Client) return Video_Vectors.Vector;
 
@@ -42,7 +41,7 @@ private
 
    type T_Client is tagged limited record
       Session_ID           : AWS.Session.ID;
-      Client_Current_Video : YT_API.T_Video;
+      Client_Current_Video : T_Video;
       Client_Playlist      : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Display_Player       : Boolean := True;
       Sync_With_Room       : Boolean := False;

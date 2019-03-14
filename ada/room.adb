@@ -45,7 +45,8 @@ package body Room is
                if This.Is_Client_Sync then
                   -- There is at least one client sync with the room, play a video following
                   -- Youtube suggestion
-                  This.Set_Video (YT_API.Get_Video_Related (This.Get_Video));
+                  This.Set_Video
+                    (This.Select_Random_Video (YT_API.Get_Video_Related (This.Get_Video)));
 
                   -- Add the current video to the historic
                   This.DB.Add_To_Historic (This.Get_Video);
@@ -144,7 +145,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Add_Video_To_Playlists
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in T_Video) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
       -- Add the video to the room playlist for room sync
@@ -179,7 +180,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Add_Like
    -------------------------------------------------------------------------------------------------
-   procedure Add_Like (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Add_Like (This : in out T_Room; Video : in T_Video) is
    begin
       This.DB.Add_To_Likes (Video);
    end Add_Like;
@@ -187,7 +188,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Remove_Like
    -------------------------------------------------------------------------------------------------
-   procedure Remove_Like (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Remove_Like (This : in out T_Room; Video : in T_Video) is
    begin
       This.DB.Remove_From_Likes (Video);
    end Remove_Like;
@@ -257,7 +258,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Video
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in out T_Room) return YT_API.T_Video is (This.Get_Video);
+   function Get_Current_Video (This : in out T_Room) return T_Video is (This.Get_Video);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
@@ -274,7 +275,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Historic_Item
    -------------------------------------------------------------------------------------------------
-   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video is
+   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return T_Video is
      (This.DB.Get_Historic.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
@@ -286,20 +287,20 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Likes_Item
    -------------------------------------------------------------------------------------------------
-   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video is
+   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return T_Video is
      (This.DB.Get_Likes.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Is_Video_Liked
    -------------------------------------------------------------------------------------------------
-   function Is_Video_Liked (This : in T_Room; Video : in YT_API.T_Video) return Boolean is
+   function Is_Video_Liked (This : in T_Room; Video : in T_Video) return Boolean is
      (This.DB.Is_Video_Liked (Video));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video
    -------------------------------------------------------------------------------------------------
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return YT_API.T_Video is (This.Find_Client_From_Session_ID (Session_ID).Get_Current_Video);
+     return T_Video is (This.Find_Client_From_Session_ID (Session_ID).Get_Current_Video);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Playlist
@@ -313,7 +314,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Get_Client_Playlist_Item
      (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
-     return YT_API.T_Video is
+     return T_Video is
        (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
@@ -402,9 +403,29 @@ package body Room is
    end Is_Client_Sync;
 
    -------------------------------------------------------------------------------------------------
+   -- Select_Random_Video
+   -------------------------------------------------------------------------------------------------
+   function Select_Random_Video (This : in T_Room; Videos : in Video_Vectors.Vector)
+     return T_Video is
+      Video_Index : Natural := Natural'First;
+      Video       : T_Video;
+   begin
+      if Natural (Videos.Length) > 0 then
+         Video_Index :=
+           Natural (Ada.Numerics.Float_Random.Random (This.RNG) * (Float (Videos.Length) - 1.0));
+      end if;
+
+      if Video_Vectors.Has_Element (Videos.To_Cursor (Video_Index)) then
+         Video := Videos.Element (Video_Index);
+      end if;
+
+      return Video;
+   end Select_Random_Video;
+
+   -------------------------------------------------------------------------------------------------
    -- Set_Video
    -------------------------------------------------------------------------------------------------
-   procedure Set_Video (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Set_Video (This : in out T_Room; Video : in T_Video) is
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       This.Room_Current_Video := Video;
@@ -414,7 +435,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Playlist_Append
    -------------------------------------------------------------------------------------------------
-   procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video) is
+   procedure Playlist_Append (This : in out T_Room; Video : in T_Video) is
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       This.Room_Playlist.Append (Video);
@@ -434,8 +455,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Video
    -------------------------------------------------------------------------------------------------
-   function Get_Video (This : in out T_Room) return YT_API.T_Video is
-      Video : YT_API.T_Video;
+   function Get_Video (This : in out T_Room) return T_Video is
+      Video : T_Video;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       Video := This.Room_Current_Video;
@@ -460,8 +481,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist_First
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist_First (This : in out T_Room) return YT_API.T_Video is
-      Video : YT_API.T_Video;
+   function Get_Playlist_First (This : in out T_Room) return T_Video is
+      Video : T_Video;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       Video := Video_Vectors.Element (This.Room_Playlist.First);

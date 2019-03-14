@@ -218,7 +218,7 @@ package body Callback is
       Like_Value  : constant T_Like := T_Like'Value (AWS.Parameters.Get (Parameters, "like"));
       Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
-      Video_To_Add_Remove : YT_API.T_Video;
+      Video_To_Add_Remove : T_Video;
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");

@@ -1,4 +1,5 @@
 with Ada.Containers.Vectors;
+with Ada.Numerics.Float_Random;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with AWS.Session;
@@ -39,11 +40,11 @@ package Room is
 
    function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean;
 
-   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in T_Video);
 
-   procedure Add_Like (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Add_Like (This : in out T_Room; Video : in T_Video);
 
-   procedure Remove_Like (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Remove_Like (This : in out T_Room; Video : in T_Video);
 
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
@@ -56,29 +57,29 @@ package Room is
    procedure Set_Client_Sync_With_Room
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean);
 
-   function Get_Current_Video (This : in out T_Room) return YT_API.T_Video;
+   function Get_Current_Video (This : in out T_Room) return T_Video;
 
    function Get_Video_Search_Results (This : in T_Room) return YT_API.T_Video_Search_Results;
 
    function Get_Historic (This : in T_Room) return Video_Vectors.Vector;
 
-   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
+   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return T_Video;
 
    function Get_Likes (This : in T_Room) return Video_Vectors.Vector;
 
-   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return YT_API.T_Video;
+   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return T_Video;
 
-   function Is_Video_Liked (This : in T_Room; Video : in YT_API.T_Video) return Boolean;
+   function Is_Video_Liked (This : in T_Room; Video : in T_Video) return Boolean;
 
    function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return YT_API.T_Video;
+     return T_Video;
 
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Video_Vectors.Vector;
 
    function Get_Client_Playlist_Item
      (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
-     return YT_API.T_Video;
+     return T_Video;
 
    function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
@@ -98,13 +99,15 @@ private
 
    function Is_Client_Sync (This : in T_Room) return Boolean;
 
+   function Select_Random_Video (This : in T_Room; Videos : in Video_Vectors.Vector) return T_Video;
+
    -- Accessors protected by mutex
-   procedure Set_Video (This : in out T_Room; Video : in YT_API.T_Video);
-   procedure Playlist_Append (This : in out T_Room; Video : in YT_API.T_Video);
+   procedure Set_Video (This : in out T_Room; Video : in T_Video);
+   procedure Playlist_Append (This : in out T_Room; Video : in T_Video);
    procedure Playlist_Delete_First (This : in out T_Room);
-   function Get_Video (This : in out T_Room) return YT_API.T_Video;
+   function Get_Video (This : in out T_Room) return T_Video;
    function Get_Playlist (This : in out T_Room) return Video_Vectors.Vector;
-   function Get_Playlist_First (This : in out T_Room) return YT_API.T_Video;
+   function Get_Playlist_First (This : in out T_Room) return T_Video;
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
 
    protected type T_Mutex is
@@ -116,7 +119,7 @@ private
 
    type T_Room is tagged limited record
       Video_Search_Results : YT_API.T_Video_Search_Results;
-      Room_Current_Video   : YT_API.T_Video :=
+      Room_Current_Video   : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
       Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
@@ -125,6 +128,7 @@ private
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
       DB                        : Database.T_Database_Class_Access;
+      RNG                       : Ada.Numerics.Float_Random.Generator;
    end record;
 
 end Room;

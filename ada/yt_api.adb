@@ -40,15 +40,15 @@ package body YT_API is
    end Get_Video_Duration;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Video_Related
+   -- Get_Videos_Related
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Related (Video : in T_Video) return T_Video is
+   function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector is
    begin
       Put_Line ("YT API query: " & Get_Video_Related_Request (To_String (Video.Video_ID)));
 
       return Parse_Video_Related_Result (AWS.Response.Message_Body
         (AWS.Client.Get (URL => Get_Video_Related_Request (To_String (Video.Video_ID)))));
-   end Get_Video_Related;
+   end Get_Videos_Related;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Search_Request
@@ -73,16 +73,16 @@ package body YT_API is
    end Get_Video_Request;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Video_Related_Request
+   -- Get_Videos_Related_Request
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Related_Request (Video_ID : in String) return String is
+   function Get_Videos_Related_Request (Video_ID : in String) return String is
    begin
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&relatedToVideoId=" & Video_ID
-        & "&maxResult=1"
+        & "&maxResult=5"
         & "&part=snippet&videoDefinition=any&type=video&order=relevance&safeSearch=none"
         & "&videoEmbeddable=true&videoSyndicated=true";
-   end Get_Video_Related_Request;
+   end Get_Videos_Related_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
@@ -137,30 +137,33 @@ package body YT_API is
    end Parse_Video_Duration_Result;
 
    -------------------------------------------------------------------------------------------------
-   -- Parse_Video_Related_Result
+   -- Parse_Videos_Related_Result
    -------------------------------------------------------------------------------------------------
-   function Parse_Video_Related_Result (Search_Result : in String) return T_Video is
+   function Parse_Videos_Related_Result (Search_Result : in String) return Video_Vectors.Vector is
       JSON_String_Response : aliased String := Search_Result;
 
       JSON_Stream    : JSON.Streams.Stream'Class :=
         JSON.Streams.Create_Stream (JSON_String_Response'Access);
       JSON_Allocator : Types.Memory_Allocator;
       JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
-      Item           : constant Types.JSON_Value := JSON_Result.Get ("items") (1);
 
-      Video_Related : T_Video;
+      Video          : T_Video;
+      Videos_Related : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
    begin
-      Video_Related.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
+      for Item of JSON_Result.Get ("items") loop
+         Video.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
 
-      Video_Related.Video_Title :=
-        To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
+         Video.Video_Title := To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
 
-      Video_Related.Video_Thumbnail :=
-        To_Unbounded_String
-          (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
+         Video.Video_Thumbnail :=
+           To_Unbounded_String
+             (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
 
-      return Video_Related;
-   end Parse_Video_Related_Result;
+         Videos_Related.Append (Video);
+      end loop;
+
+      return Videos_Related;
+   end Parse_Videos_Related_Result;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Duration

@@ -26,7 +26,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Set_Current_Video
    -------------------------------------------------------------------------------------------------
-   procedure Set_Current_Video (This : in out T_Client; Video : in YT_API.T_Video) is
+   procedure Set_Current_Video (This : in out T_Client; Video : in T_Video) is
    begin
       This.Client_Current_Video := Video;
       This.Nothing_To_Play      := To_String (Video.Video_Title) = "no video played";
@@ -35,7 +35,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Add_Video_To_Playlist
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in YT_API.T_Video) is
+   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video) is
    begin
       This.Client_Playlist.Append (Video);
    end Add_Video_To_Playlist;
@@ -83,7 +83,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Video
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in T_Client) return YT_API.T_Video is
+   function Get_Current_Video (This : in T_Client) return T_Video is
      (This.Client_Current_Video);
 
    -------------------------------------------------------------------------------------------------

@@ -425,9 +425,10 @@ package body Room is
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID)
-           or Ada.Real_Time.To_Duration
-             (This.Last_Request_Time
-              - Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time) > 120.0 then
+           or (This.Last_Request_Time
+               > Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time
+               and then Ada.Real_Time.To_Duration (This.Last_Request_Time
+               - Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time) > 120.0) then
             Client_To_Remove := Client_Vectors.Element (Client_List_Cursor);
             This.Client_List.Delete (Client_List_Cursor);
 

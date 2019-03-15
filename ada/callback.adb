@@ -95,7 +95,7 @@ package body Callback is
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 6);
+      Translations : Templates_Parser.Translate_Table (1 .. 7);
       YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
    begin
       Put_Line ("Video to play: "
@@ -104,10 +104,10 @@ package body Callback is
       -- Sync checkbox displaying and player state
       if Current_Room.Get_Client_Display_Player (Session_ID) then
          Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "inline-block");
-         Translations (5) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
+         Translations (6) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
       else
          Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "none");
-         Translations (5) := Templates_Parser.Assoc ("PLAYER_STATE", "no_player");
+         Translations (6) := Templates_Parser.Assoc ("PLAYER_STATE", "no_player");
       end if;
 
       -- Current room video title
@@ -118,8 +118,15 @@ package body Callback is
       Translations (3) := Templates_Parser.Assoc
         ("VIDEO_LIST", Build_Video_List (Session_ID, Playlist));
 
+      -- Sync checkboxe value
+      if Current_Room.Get_Client_Sync_With_Room (Session_ID) then
+         Translations (4) := Templates_Parser.Assoc ("CLIENT_SYNC", True);
+      else
+         Translations (4) := Templates_Parser.Assoc ("CLIENT_SYNC", False);
+      end if;
+
       -- Server address for WebSocket
-      Translations (4) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+      Translations (5) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
 
       -- Player script
       if Current_Room.Get_Client_Display_Player (Session_ID)
@@ -127,12 +134,12 @@ package body Callback is
          YT_Player_Translations (1) := Templates_Parser.Assoc
            ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
-         Translations (6) := Templates_Parser.Assoc
+         Translations (7) := Templates_Parser.Assoc
            ("YOUTUBE_PLAYER_SCRIPT",
             To_String
               (Templates_Parser.Parse ("javascripts/youtube_player.tjs", YT_Player_Translations)));
       else
-         Translations (6) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
+         Translations (7) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
       end if;
 
       return AWS.Response.Build

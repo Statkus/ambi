@@ -59,12 +59,19 @@
          // State of the Youtube player
          var playerState = "@_PLAYER_STATE_@";
 
+         // Force checkboxes value to what the server expect from this client
          if (playerState == "no_player") {
             document.getElementById("player_display_checkbox").checked = false;
          }
          else {
             document.getElementById("player_display_checkbox").checked = true;
          }
+
+         @@IF@@ @_CLIENT_SYNC_@
+            document.getElementById("player_sync_checkbox").checked = true;
+         @@ELSE@@
+            document.getElementById("player_sync_checkbox").checked = false;
+         @@END_IF@@
 
          // State of the video list
          var videoListState = "playlist";

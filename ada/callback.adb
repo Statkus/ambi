@@ -99,7 +99,7 @@ package body Callback is
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 8);
+      Translations : Templates_Parser.Translate_Table (1 .. 10);
       YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
    begin
       Put_Line ("Video to play: "
@@ -146,8 +146,18 @@ package body Callback is
            ("YOUTUBE_PLAYER_SCRIPT",
             To_String
               (Templates_Parser.Parse ("javascripts/youtube_player.tjs", YT_Player_Translations)));
+
+         -- Current video like
+         Translations (9) := Templates_Parser.Assoc ("CLIENT_PLAYER", True);
+
+         if Current_Room.Is_Video_Liked (Current_Room.Get_Current_Client_Video (Session_ID)) then
+            Translations (10) := Templates_Parser.Assoc ("LIKE", "s");
+         else
+            Translations (10) := Templates_Parser.Assoc ("LIKE", "r");
+         end if;
       else
          Translations (8) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
+         Translations (9) := Templates_Parser.Assoc ("CLIENT_PLAYER", False);
       end if;
 
       return AWS.Response.Build
@@ -220,8 +230,8 @@ package body Callback is
      return AWS.Response.Data is
       Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Source      : constant T_Video_List_Source :=
-        T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
+      Source      : constant T_Like_Source :=
+        T_Like_Source'Value (AWS.Parameters.Get (Parameters, "source"));
       Liked       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "liked"));
       Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
@@ -231,6 +241,8 @@ package body Callback is
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       case Source is
+         when Current_Video =>
+           Video_To_Add_Remove := Current_Room.Get_Current_Client_Video (Session_ID);
          when Playlist =>
            Video_To_Add_Remove := Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number);
          when Historic => Video_To_Add_Remove := Current_Room.Get_Historic_Item (Item_Number);

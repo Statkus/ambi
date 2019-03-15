@@ -226,3 +226,8 @@ input:checked + .slider:before {
   left: 620px;
   border-radius: 20px;
 }
+
+/* Current video like button **********************************************************************/
+#current_video_like {
+  float: none !important;
+}

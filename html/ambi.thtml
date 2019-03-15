@@ -45,6 +45,9 @@
          @@IF@@ @_CLIENT_SYNC_@
             <button id="next_room_video_button" onclick="ajaxGetRequestNoCallback('/onclick$next_room_video')"><i class="fas fa-step-forward"></i></button>
          @@END_IF@@
+         @@IF@@ @_CLIENT_PLAYER_@
+            <button id="current_video_like" name="current_video" value="0" class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>
+         @@END_IF@@
       </p>
 
       <p>Clients sync: <span id="nb_clients_sync">@_NB_CLIENTS_SYNC_@</span></p>

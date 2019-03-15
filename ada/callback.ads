@@ -19,6 +19,7 @@ package Callback is
 private
 
    type T_Add_To_Playlist_Source is (Search_Results, Historic, Likes);
+   type T_Like_Source is (Current_Video, Playlist, Historic, Likes);
    type T_Video_List_Source is (Playlist, Historic, Likes);
 
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;

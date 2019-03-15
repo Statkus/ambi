@@ -15,7 +15,7 @@
    <body>
       <div id="search_bar">
          <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
-         <button onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fa fa-search"></i></button>
+         <button id="search_button" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fa fa-search"></i></button>
          <div id="search_results"></div>
       </div>
 

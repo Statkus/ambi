@@ -47,12 +47,14 @@ function autocomplete() {
       }
       else if (e.keyCode == 13) {
         // If the enter key is pressed
-        e.preventDefault();
-
         if (currentFocus > -1) {
           // Simulate a click on the selected item
           autocompleteItems[currentFocus].click();
           currentFocus = -1;
+        }
+        else {
+          // Simulate a click on the search button
+          document.getElementById("search_button").click();
         }
       }
       else if (e.keyCode == 27) {
@@ -62,6 +64,10 @@ function autocomplete() {
         document.getElementById("search_results").innerHTML = "";
         currentFocus = -1;
       }
+    }
+    else if (e.keyCode == 13) {
+      // If the enter key is pressed simulate a click on the search button
+      document.getElementById("search_button").click();
     }
   });
 

@@ -15,7 +15,7 @@
    <body>
       <div id="search_bar">
          <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
-         <button id="search_button" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fa fa-search"></i></button>
+         <button id="search_button" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fas fa-search"></i></button>
          <div id="search_results"></div>
       </div>
 
@@ -40,7 +40,14 @@
 
       <div id="player"></div>
 
-      <p>Current room video: <span id="current_room_video">@_ROOM_VIDEO_@</span></p>
+      <p>
+         Current room video: <span id="current_room_video">@_ROOM_VIDEO_@</span>
+         @@IF@@ @_CLIENT_SYNC_@
+            <button id="next_room_video_button" onclick="ajaxGetRequestNoCallback('/onclick$next_room_video')"><i class="fas fa-step-forward"></i></button>
+         @@END_IF@@
+      </p>
+
+      <p>Clients sync: <span id="nb_clients_sync">@_NB_CLIENTS_SYNC_@</span></p>
 
       <div id="video_list_buttons">
          <button id="playlist_button" class="video_list_button" onclick="showVideoList('playlist')">Playlist</button>
@@ -112,6 +119,9 @@
                }
 
                ajaxGetXmlRequest ("/get_current_room_video");
+            }
+            else if (event.data == "update_nb_clients_sync") {
+               ajaxGetXmlRequest ("/get_nb_clients_sync");
             }
          }
 

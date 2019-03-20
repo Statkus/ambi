@@ -69,12 +69,16 @@ package body Callback is
             Response := Player_Display_Checkbox_Callback (Request);
          elsif URI = "/onclick$player_sync_checkbox" then
             Response := Player_Sync_Checkbox_Callback (Request);
+         elsif URI = "/onclick$next_room_video" then
+            Response := Next_Room_Video_Callback;
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request);
          elsif URI = "/get_video_list" then
             Response := Get_Video_List_Callback (Request);
          elsif URI = "/get_current_room_video" then
             Response := Get_Current_Room_Video_Callback;
+         elsif URI = "/get_nb_clients_sync" then
+            Response := Get_Number_Clients_Sync_Callback;
          else
             Put_Line ("Not supported request: '" & URI & "'");
             Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
@@ -95,7 +99,7 @@ package body Callback is
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
 
-      Translations : Templates_Parser.Translate_Table (1 .. 7);
+      Translations : Templates_Parser.Translate_Table (1 .. 8);
       YT_Player_Translations : Templates_Parser.Translate_Table (1 .. 1);
    begin
       Put_Line ("Video to play: "
@@ -104,29 +108,33 @@ package body Callback is
       -- Sync checkbox displaying and player state
       if Current_Room.Get_Client_Display_Player (Session_ID) then
          Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "inline-block");
-         Translations (6) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
+         Translations (7) := Templates_Parser.Assoc ("PLAYER_STATE", "end");
       else
          Translations (1) := Templates_Parser.Assoc ("DISPLAY_SYNC_CHECKBOX", "none");
-         Translations (6) := Templates_Parser.Assoc ("PLAYER_STATE", "no_player");
+         Translations (7) := Templates_Parser.Assoc ("PLAYER_STATE", "no_player");
       end if;
 
       -- Current room video title
       Translations (2) := Templates_Parser.Assoc
         ("ROOM_VIDEO", To_String (Current_Room.Get_Current_Video.Video_Title));
 
-      -- Client playlist
+      -- Number of client sync
       Translations (3) := Templates_Parser.Assoc
+        ("NB_CLIENTS_SYNC", Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left));
+
+      -- Client playlist
+      Translations (4) := Templates_Parser.Assoc
         ("VIDEO_LIST", Build_Video_List (Session_ID, Playlist));
 
       -- Sync checkboxe value
       if Current_Room.Get_Client_Sync_With_Room (Session_ID) then
-         Translations (4) := Templates_Parser.Assoc ("CLIENT_SYNC", True);
+         Translations (5) := Templates_Parser.Assoc ("CLIENT_SYNC", True);
       else
-         Translations (4) := Templates_Parser.Assoc ("CLIENT_SYNC", False);
+         Translations (5) := Templates_Parser.Assoc ("CLIENT_SYNC", False);
       end if;
 
       -- Server address for WebSocket
-      Translations (5) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
+      Translations (6) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
 
       -- Player script
       if Current_Room.Get_Client_Display_Player (Session_ID)
@@ -134,12 +142,12 @@ package body Callback is
          YT_Player_Translations (1) := Templates_Parser.Assoc
            ("VIDEO_ID", To_String (Current_Room.Get_Current_Client_Video (Session_ID).Video_ID));
 
-         Translations (7) := Templates_Parser.Assoc
+         Translations (8) := Templates_Parser.Assoc
            ("YOUTUBE_PLAYER_SCRIPT",
             To_String
               (Templates_Parser.Parse ("javascripts/youtube_player.tjs", YT_Player_Translations)));
       else
-         Translations (7) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
+         Translations (8) := Templates_Parser.Assoc ("YOUTUBE_PLAYER_SCRIPT", "");
       end if;
 
       return AWS.Response.Build
@@ -256,8 +264,14 @@ package body Callback is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
       Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Checked    : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       Current_Room.Set_Client_Display_Player (Session_ID, Checked);
+
+      -- Send update request for the number of clients sync
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Player_Display_Checkbox_Callback;
@@ -269,11 +283,27 @@ package body Callback is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
       Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Sync       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       Current_Room.Set_Client_Sync_With_Room (Session_ID, Sync);
 
+      -- Send update request for the number of clients sync
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
+
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Player_Sync_Checkbox_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Next_Room_Video_Callback
+   -------------------------------------------------------------------------------------------------
+   function Next_Room_Video_Callback return AWS.Response.Data is
+   begin
+      Current_Room.Next_Room_Video;
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Next_Room_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
@@ -307,6 +337,15 @@ package body Callback is
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
           ("current_room_video", To_String (Current_Room.Get_Current_Video.Video_Title)));
    end Get_Current_Room_Video_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Number_Clients_Sync_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Number_Clients_Sync_Callback return AWS.Response.Data is
+   begin
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
+          ("nb_clients_sync", Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left)));
+   end Get_Number_Clients_Sync_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results

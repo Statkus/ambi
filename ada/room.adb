@@ -36,8 +36,12 @@ package body Room is
 
             exit when Playlist_Empty;
 
-            -- Wait for the duration of the current video
-            delay Duration (YT_API.Get_Video_Duration (This.Get_Video));
+            -- Wait for the duration of the current video or next room video entry
+            select
+               accept Next_Room_Video;
+            or
+               delay Duration (YT_API.Get_Video_Duration (This.Get_Video));
+            end select;
 
             -- Remove all expired sessions
             This.Remove_Disconnected_Client;
@@ -50,9 +54,9 @@ package body Room is
                -- Add the current video to the historic
                This.DB.Add_To_Historic (This.Get_Video);
             else
-               if This.Is_Client_Sync then
-                  -- There is at least one client sync with the room, play a video following
-                  -- Youtube suggestion
+               if This.Is_Client_Sync_And_Play then
+                  -- There is at least one client sync with the room with the player activated, play
+                  -- a video following Youtube suggestion
                   This.Set_Video
                     (This.Select_Random_Video (YT_API.Get_Videos_Related (This.Get_Video)));
 
@@ -182,7 +186,7 @@ package body Room is
             Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
          end if;
 
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+         Client_Vectors.Next (Client_List_Cursor);
       end loop;
    end Add_Video_To_Playlists;
 
@@ -201,6 +205,16 @@ package body Room is
    begin
       This.DB.Remove_From_Likes (Video);
    end Remove_Like;
+
+   -------------------------------------------------------------------------------------------------
+   -- Next_Room_Video
+   -------------------------------------------------------------------------------------------------
+   procedure Next_Room_Video (This : in out T_Room) is
+   begin
+      if This.Room_Current_Video_Active then
+         This.Room_Sync_Task.Next_Room_Video;
+      end if;
+   end Next_Room_Video;
 
    -------------------------------------------------------------------------------------------------
    -- Next_Client_Video
@@ -241,9 +255,13 @@ package body Room is
 
       if not Display then
          -- Synchronized the client playlist and current video with the room ones
+         Current_Client.Set_Sync_With_Room (True);
          Current_Client.Set_Current_Video (This.Get_Video);
          Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
+
+      -- Count number of sync clients
+      This.Number_Of_Clients_Sync := This.Count_Number_Of_Clients_Sync;
    end Set_Client_Display_Player;
 
    -------------------------------------------------------------------------------------------------
@@ -261,6 +279,9 @@ package body Room is
          Current_Client.Set_Current_Video (This.Get_Video);
          Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
+
+      -- Count number of sync clients
+      This.Number_Of_Clients_Sync := This.Count_Number_Of_Clients_Sync;
    end Set_Client_Sync_With_Room;
 
    -------------------------------------------------------------------------------------------------
@@ -364,6 +385,12 @@ package body Room is
    end Client_Has_Nothing_To_Play;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Number_Clients_Sync
+   -------------------------------------------------------------------------------------------------
+   function Get_Number_Clients_Sync (This : in T_Room) return Natural is
+     (This.Number_Of_Clients_Sync);
+
+   -------------------------------------------------------------------------------------------------
    -- Update_No_Player_Clients
    -------------------------------------------------------------------------------------------------
    procedure Update_No_Player_Clients (This : in out T_Room) is
@@ -375,9 +402,27 @@ package body Room is
             Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          end if;
 
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+         Client_Vectors.Next (Client_List_Cursor);
       end loop;
    end Update_No_Player_Clients;
+
+   -------------------------------------------------------------------------------------------------
+   -- Count_Number_Of_Clients_Sync
+   -------------------------------------------------------------------------------------------------
+   function Count_Number_Of_Clients_Sync (This : in T_Room) return Natural is
+      Client_List_Cursor     : Client_Vectors.Cursor := This.Client_List.First;
+      Number_Of_Clients_Sync : Natural := 0;
+   begin
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
+             Number_Of_Clients_Sync := Number_Of_Clients_Sync + 1;
+         end if;
+
+         Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+
+      return Number_Of_Clients_Sync;
+   end Count_Number_Of_Clients_Sync;
 
    -------------------------------------------------------------------------------------------------
    -- Find_Client_From_Session_ID
@@ -392,29 +437,30 @@ package body Room is
             Client_To_Find:= Client_Vectors.Element (Client_List_Cursor);
          end if;
 
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+         Client_Vectors.Next (Client_List_Cursor);
       end loop;
 
       return Client_To_Find;
    end Find_Client_From_Session_ID;
 
    -------------------------------------------------------------------------------------------------
-   -- Is_Client_Sync
+   -- Is_Client_Sync_And_Play
    -------------------------------------------------------------------------------------------------
-   function Is_Client_Sync (This : in T_Room) return Boolean is
-      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
-      Client_Sync        : Boolean := False;
+   function Is_Client_Sync_And_Play (This : in out T_Room) return Boolean is
+      Client_List_Cursor   : Client_Vectors.Cursor := This.Client_List.First;
+      Client_Sync_And_Play : Boolean := False;
    begin
-      while Client_Vectors.Has_Element (Client_List_Cursor) and not Client_Sync loop
-         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
-            Client_Sync := True;
+      while Client_Vectors.Has_Element (Client_List_Cursor) and not Client_Sync_And_Play loop
+         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room
+           and Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
+            Client_Sync_And_Play := True;
          end if;
 
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+         Client_Vectors.Next (Client_List_Cursor);
       end loop;
 
-      return Client_Sync;
-   end Is_Client_Sync;
+      return Client_Sync_And_Play;
+   end Is_Client_Sync_And_Play;
 
    -------------------------------------------------------------------------------------------------
    -- Remove_Disconnected_Client
@@ -422,6 +468,11 @@ package body Room is
    procedure Remove_Disconnected_Client (This : in out T_Room) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
       Client_To_Remove   : T_Client_Class_Access := null;
+
+      Number_Of_Clients_Sync : Natural := 0;
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID)
@@ -436,10 +487,21 @@ package body Room is
               & ", number of clients:" & This.Client_List.Length'Img);
 
             Free_Client (Client_To_Remove);
+
+            Client_List_Cursor := This.Client_List.First;
          end if;
 
-         Client_List_Cursor := Client_Vectors.Next (Client_List_Cursor);
+         Client_Vectors.Next (Client_List_Cursor);
       end loop;
+
+      Number_Of_Clients_Sync := This.Count_Number_Of_Clients_Sync;
+
+      if This.Number_Of_Clients_Sync /= Number_Of_Clients_Sync then
+         This.Number_Of_Clients_Sync := Number_Of_Clients_Sync;
+
+         -- Send update request for the number of clients sync
+         AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
+      end if;
    end Remove_Disconnected_Client;
 
    -------------------------------------------------------------------------------------------------

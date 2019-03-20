@@ -31,9 +31,11 @@ private
    function Player_Display_Checkbox_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data;
    function Player_Sync_Checkbox_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
+   function Next_Room_Video_Callback return AWS.Response.Data;
    function Next_Video_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Video_List_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Get_Current_Room_Video_Callback return AWS.Response.Data;
+   function Get_Number_Clients_Sync_Callback return AWS.Response.Data;
 
    function Build_Search_Results (Video_Search_Results : in Video_Vectors.Vector) return String;
    function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)

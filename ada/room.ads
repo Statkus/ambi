@@ -17,6 +17,7 @@ package Room is
 
    task type T_Room_Sync_Task (This : T_Room_Class_Access := null) is
       entry Start_Room_Playlist;
+      entry Next_Room_Video;
    end T_Room_Sync_Task;
 
    type T_Room_Sync_Task_Access is access T_Room_Sync_Task;
@@ -47,6 +48,8 @@ package Room is
    procedure Add_Like (This : in out T_Room; Video : in T_Video);
 
    procedure Remove_Like (This : in out T_Room; Video : in T_Video);
+
+   procedure Next_Room_Video (This : in out T_Room);
 
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
@@ -94,14 +97,18 @@ package Room is
    function Client_Has_Nothing_To_Play (This : in out T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
 
+   function Get_Number_Clients_Sync (This : in T_Room) return Natural;
+
 private
 
    procedure Update_No_Player_Clients (This : in out T_Room);
 
+   function Count_Number_Of_Clients_Sync (This : in T_Room) return Natural;
+
    function Find_Client_From_Session_ID (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Client.T_Client_Class_Access;
 
-   function Is_Client_Sync (This : in T_Room) return Boolean;
+   function Is_Client_Sync_And_Play (This : in out T_Room) return Boolean;
 
    procedure Remove_Disconnected_Client (This : in out T_Room);
 
@@ -133,6 +140,7 @@ private
       Room_Video_Playlist_Mutex : T_Mutex;
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
+      Number_Of_Clients_Sync    : Natural := 0;
       Last_Request_Time         : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       DB                        : Database.T_Database_Class_Access;
       RNG                       : Ada.Numerics.Float_Random.Generator;

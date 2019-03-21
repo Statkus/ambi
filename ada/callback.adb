@@ -222,7 +222,7 @@ package body Callback is
       Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Source      : constant T_Video_List_Source :=
         T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
-      Like_Value  : constant T_Like := T_Like'Value (AWS.Parameters.Get (Parameters, "like"));
+      Liked       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "liked"));
       Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
       Video_To_Add_Remove : T_Video;
@@ -237,10 +237,11 @@ package body Callback is
          when Likes    => Video_To_Add_Remove := Current_Room.Get_Likes_Item (Item_Number);
       end case;
 
-      case Like_Value is
-         when Like   => Current_Room.Add_Like (Video_To_Add_Remove);
-         when Unlike => Current_Room.Remove_Like (Video_To_Add_Remove);
-      end case;
+      if Liked then
+         Current_Room.Remove_Like (Video_To_Add_Remove);
+      else
+         Current_Room.Add_Like (Video_To_Add_Remove);
+      end if;
 
       -- Send update request only if the video lists are not empty
       if not Current_Room.Get_Client_Playlist (Session_ID).Is_Empty then
@@ -413,11 +414,11 @@ package body Callback is
            ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
          if Source = Likes then
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "Unlike");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
          elsif Current_Room.Is_Video_Liked (Video_Vectors.Element (List_Cursor)) then
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "Unlike");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
          else
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "Like");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "r");
          end if;
 
          case Source is

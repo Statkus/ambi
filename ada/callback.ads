@@ -20,7 +20,6 @@ private
 
    type T_Add_To_Playlist_Source is (Search_Results, Historic, Likes);
    type T_Video_List_Source is (Playlist, Historic, Likes);
-   type T_Like is (Like, Unlike);
 
    function Room_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Javascripts_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;

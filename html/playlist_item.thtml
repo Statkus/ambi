@@ -1,5 +1,5 @@
 <div id="playlist_item_@_ITEM_ID_@">
    <img src="@_IMAGE_URL_@">
    <span>@_VIDEO_TITLE_@</span>
-   <button name="playlist" value="@_ITEM_ID_@" class="like_buttons" onclick="addRemoveLike(this)">@_LIKE_@</button>
+   <button name="playlist" value="@_ITEM_ID_@" class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>
 </div>

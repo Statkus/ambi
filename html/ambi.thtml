@@ -132,12 +132,12 @@
                document.getElementById("search_results").innerHTML = "";
             }
 
-            ajaxGetRequestNoCallback ("/onclick$add_to_playlist?source=" + String(elm.getAttribute('name')) + "&item=" + String(elm.getAttribute('value')));
+            ajaxGetRequestNoCallback ("/onclick$add_to_playlist?source=" + elm.getAttribute('name') + "&item=" + elm.getAttribute('value'));
          }
 
          // Function called when a like/unlike button is clicked
          function addRemoveLike(elm) {
-            ajaxGetRequestNoCallback ("/onclick$add_remove_like?source=" + String(elm.getAttribute('name')) + "&like=" + String(elm.innerHTML) + "&item=" + String(elm.getAttribute('value')));
+            ajaxGetRequestNoCallback ("/onclick$add_remove_like?source=" + elm.getAttribute('name') + "&item=" + elm.getAttribute('value') + "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
          }
 
          // Function called when a video list selection button is clicked

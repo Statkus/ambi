@@ -180,7 +180,7 @@ input:checked + .slider:before {
   text-align: left;
   line-height: 90px;
   position: absolute;
-  width: 352px;
+  width: 371px;
   height: 90px;
   padding-left: 8px;
   overflow: hidden;
@@ -193,7 +193,7 @@ input:checked + .slider:before {
   font-size: inherit;
   text-align: left;
   position: absolute;
-  width: 360px;
+  width: 379px;
   height: 90px;
   overflow: hidden;
   border: none;
@@ -201,16 +201,15 @@ input:checked + .slider:before {
 }
 
 .like_buttons {
-  background-color: rgb(200, 70, 70);
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  float: right;
-  width: 100px;
+  background-color: inherit;
+  color: IndianRed;
+  font-size: 60px;
+  width: 76px;
   height: 90px;
+  float: right;
   border: none;
   outline: none;
-  border-radius: 20px;
+  border-radius: 38px;
 }
 
 /* Back to top link *******************************************************************************/

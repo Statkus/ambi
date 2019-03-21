@@ -76,6 +76,7 @@ package body Room is
             end if;
 
             This.Update_No_Player_Clients;
+            This.Room_Next_Video_Ready := True;
          end loop;
       end loop;
    end T_Room_Sync_Task;
@@ -211,6 +212,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Next_Room_Video (This : in out T_Room) is
    begin
+      This.Room_Next_Video_Ready := not This.Room_Current_Video_Active;
+
       if This.Room_Current_Video_Active then
          This.Room_Sync_Task.Next_Room_Video;
       end if;
@@ -389,6 +392,12 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Get_Number_Clients_Sync (This : in T_Room) return Natural is
      (This.Number_Of_Clients_Sync);
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Room_Next_Video_Ready
+   -------------------------------------------------------------------------------------------------
+   function Get_Room_Next_Video_Ready (This : in T_Room) return Boolean is
+     (This.Room_Next_Video_Ready);
 
    -------------------------------------------------------------------------------------------------
    -- Update_No_Player_Clients

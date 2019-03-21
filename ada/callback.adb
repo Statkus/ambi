@@ -300,8 +300,17 @@ package body Callback is
    -- Next_Room_Video_Callback
    -------------------------------------------------------------------------------------------------
    function Next_Room_Video_Callback return AWS.Response.Data is
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
       Current_Room.Next_Room_Video;
+
+      while not Current_Room.Get_Room_Next_Video_Ready loop
+         null;
+      end loop;
+
+      -- Send next video request for all the clients sync
+      AWS.Net.WebSocket.Registry.Send (Rcp, "force_next_video");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Next_Room_Video_Callback;

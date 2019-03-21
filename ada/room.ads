@@ -99,6 +99,8 @@ package Room is
 
    function Get_Number_Clients_Sync (This : in T_Room) return Natural;
 
+   function Get_Room_Next_Video_Ready (This : in T_Room) return Boolean;
+
 private
 
    procedure Update_No_Player_Clients (This : in out T_Room);
@@ -137,6 +139,7 @@ private
       Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
+      Room_Next_Video_Ready     : Boolean := False;
       Room_Video_Playlist_Mutex : T_Mutex;
       Room_Callback_Mutex       : T_Mutex;
       Client_List               : Client_Vectors.Vector := Client_Vectors.Empty_Vector;

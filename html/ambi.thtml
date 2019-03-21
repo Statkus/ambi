@@ -75,8 +75,10 @@
          }
 
          @@IF@@ @_CLIENT_SYNC_@
+            var clientState = "sync";
             document.getElementById("player_sync_checkbox").checked = true;
          @@ELSE@@
+            var clientState = "no_sync";
             document.getElementById("player_sync_checkbox").checked = false;
          @@END_IF@@
 
@@ -122,6 +124,11 @@
             }
             else if (event.data == "update_nb_clients_sync") {
                ajaxGetXmlRequest ("/get_nb_clients_sync");
+            }
+            else if (event.data == "force_next_video") {
+               if (clientState == "sync" && playerState != "no_player") {
+                  ajaxGetRequestNoCallback ("/next_video", true);
+               }
             }
          }
 

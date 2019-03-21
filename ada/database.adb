@@ -49,6 +49,10 @@ package body Database is
         & To_String (Video.Video_Thumbnail) & "');");
 
       This.Historic.Append (Video);
+
+      while Natural (This.Historic.Length) > MAX_HISTORIC_VIDEOS loop
+         This.Historic.Delete_First;
+      end loop;
    end Add_To_Historic;
 
    -------------------------------------------------------------------------------------------------
@@ -154,9 +158,11 @@ package body Database is
 
       Video : T_Video;
    begin
-      DB.SQLite.Prepare_Select (This.DB_Handle, DB_Iterator, "SELECT * FROM historic");
+      DB.SQLite.Prepare_Select
+        (This.DB_Handle, DB_Iterator, "SELECT * FROM historic ORDER BY id DESC");
 
-      while DB.SQLite.More (DB_Iterator) loop
+      while DB.SQLite.More (DB_Iterator)
+        and Natural (This.Historic.Length) < MAX_HISTORIC_VIDEOS loop
          DB.SQLite.Get_Line (DB_Iterator, DB_Row);
          DB_Row_Cursor := DB_Row.First;
          DB.String_Vectors.Next (DB_Row_Cursor);
@@ -169,7 +175,7 @@ package body Database is
 
          Video.Video_Thumbnail := To_Unbounded_String (DB.String_Vectors.Element (DB_Row_Cursor));
 
-         This.Historic.Append (Video);
+         This.Historic.Prepend (Video);
       end loop;
 
       DB.SQLite.End_Select (DB_Iterator);

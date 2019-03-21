@@ -23,6 +23,8 @@ package Database is
 
 private
 
+   MAX_HISTORIC_VIDEOS : constant := 500;
+
    procedure Read_Historic_In_DB (This : in out T_Database);
    procedure Read_Likes_In_DB (This : in out T_Database);
 

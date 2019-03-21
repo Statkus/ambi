@@ -78,7 +78,7 @@ package body YT_API is
    begin
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&relatedToVideoId=" & Video_ID
-        & "&maxResults=5"
+        & "&maxResults=7"
         & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoSyndicated=true";
    end Get_Videos_Related_Request;
 

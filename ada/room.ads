@@ -53,8 +53,6 @@ package Room is
 
    procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID);
 
-   procedure Set_Video_Search_Results (This : in out T_Room; Search_Input : in String);
-
    procedure Set_Client_Display_Player
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean);
 
@@ -63,10 +61,8 @@ package Room is
 
    function Get_Current_Video (This : in out T_Room) return T_Video;
 
-   function Get_Video_Search_Results (This : in T_Room) return Video_Vectors.Vector;
-
-   function Get_Video_Search_Results_Item (This : in T_Room; Item_Number : in Natural)
-     return T_Video;
+   function Get_Video_Search_Results (This : in T_Room; Search_Input : in String)
+     return Video_Vectors.Vector;
 
    function Get_Historic (This : in T_Room) return Video_Vectors.Vector;
 
@@ -133,8 +129,7 @@ private
    end T_Mutex;
 
    type T_Room is tagged limited record
-      Video_Search_Results : Video_Vectors.Vector;
-      Room_Current_Video   : T_Video :=
+      Room_Current_Video : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
       Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Room_Sync_Task            : T_Room_Sync_Task_Access;

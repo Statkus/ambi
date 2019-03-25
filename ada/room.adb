@@ -239,14 +239,6 @@ package body Room is
    end Next_Client_Video;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Video_Search_Results
-   -------------------------------------------------------------------------------------------------
-   procedure Set_Video_Search_Results (This : in out T_Room; Search_Input : in String) is
-   begin
-      This.Video_Search_Results := YT_API.Get_Video_Search_Results (Search_Input);
-   end Set_Video_Search_Results;
-
-   -------------------------------------------------------------------------------------------------
    -- Set_Client_Display_Player
    -------------------------------------------------------------------------------------------------
    procedure Set_Client_Display_Player
@@ -295,14 +287,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results (This : in T_Room) return Video_Vectors.Vector is
-     (This.Video_Search_Results);
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Video_Search_Results_Item
-   -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results_Item (This : in T_Room; Item_Number : in Natural)
-     return T_Video is (This.Video_Search_Results.Element (Item_Number));
+   function Get_Video_Search_Results (This : in T_Room; Search_Input : in String)
+     return Video_Vectors.Vector is (YT_API.Get_Video_Search_Results (Search_Input));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Historic

@@ -139,7 +139,12 @@
                document.getElementById("search_results").innerHTML = "";
             }
 
-            ajaxGetRequestNoCallback ("/onclick$add_to_playlist?source=" + elm.getAttribute('name') + "&item=" + elm.getAttribute('value'));
+            if (elm.tagName == "DIV") {
+               ajaxGetRequestNoCallback ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") + "&videoTitle=" + elm.getElementsByTagName("span")[0].innerHTML + "&videoThumbnail=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
+            }
+            else {
+               ajaxGetRequestNoCallback ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") + "&videoTitle=" + elm.innerHTML + "&videoThumbnail=" + elm.parentNode.getElementsByTagName("img")[0].getAttribute("src"));
+            }
          }
 
          // Function called when a like/unlike button is clicked

@@ -176,37 +176,25 @@ package body Callback is
    -- Search_Button_Callback
    -------------------------------------------------------------------------------------------------
    function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
-      Parameters   : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
    begin
-      Current_Room.Set_Video_Search_Results (AWS.Parameters.Get (Parameters, "search_input"));
-
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("search_results", Build_Search_Results (Current_Room.Get_Video_Search_Results)));
+          ("search_results", Build_Search_Results (Current_Room.Get_Video_Search_Results
+            (AWS.Status.Parameter (Request, "search_input")))));
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Add_To_Playlist_Callback
    -------------------------------------------------------------------------------------------------
    function Add_To_Playlist_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
-      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Source      : constant T_Add_To_Playlist_Source :=
-        T_Add_To_Playlist_Source'Value (AWS.Parameters.Get (Parameters, "source"));
-      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
+      Video : constant T_Video :=
+        (Video_ID        => To_Unbounded_String (AWS.Status.Parameter (Request, "videoId")),
+         Video_Title     => To_Unbounded_String (AWS.Status.Parameter (Request, "videoTitle")),
+         Video_Thumbnail => To_Unbounded_String (AWS.Status.Parameter (Request, "videoThumbnail")));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      case Source is
-         when Search_Results =>
-            Current_Room.Add_Video_To_Playlists
-              (Current_Room.Get_Video_Search_Results_Item (Item_Number));
-
-         when Historic =>
-            Current_Room.Add_Video_To_Playlists (Current_Room.Get_Historic_Item (Item_Number));
-
-         when Likes =>
-            Current_Room.Add_Video_To_Playlists (Current_Room.Get_Likes_Item (Item_Number));
-      end case;
+      Current_Room.Add_Video_To_Playlists (Video);
 
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
 
@@ -369,14 +357,13 @@ package body Callback is
    begin
       while Video_Vectors.Has_Element (List_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim
-             (Integer'Image (Video_Vectors.To_Index (List_Cursor)), Ada.Strings.Left));
+           ("VIDEO_ID", Video_Vectors.Element (List_Cursor).Video_ID);
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
+           ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
          Translations (3) := Templates_Parser.Assoc
-           ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
+           ("VIDEO_THUMBNAIL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
 
          Append (Response, To_String
            (Templates_Parser.Parse ("html/search_results_item.thtml", Translations)));
@@ -392,7 +379,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)
      return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 4);
+      Translations : Templates_Parser.Translate_Table (1 .. 5);
 
       Response : Unbounded_String;
 
@@ -417,17 +404,20 @@ package body Callback is
              (Integer'Image (Video_Vectors.To_Index (List_Cursor)), Ada.Strings.Left));
 
          Translations (2) := Templates_Parser.Assoc
-           ("IMAGE_URL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
+           ("VIDEO_THUMBNAIL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
 
          Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_ID", Video_Vectors.Element (List_Cursor).Video_ID);
+
+         Translations (4) := Templates_Parser.Assoc
            ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
          if Source = Likes then
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
+            Translations (5) := Templates_Parser.Assoc ("LIKE", "s");
          elsif Current_Room.Is_Video_Liked (Video_Vectors.Element (List_Cursor)) then
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
+            Translations (5) := Templates_Parser.Assoc ("LIKE", "s");
          else
-            Translations (4) := Templates_Parser.Assoc ("LIKE", "r");
+            Translations (5) := Templates_Parser.Assoc ("LIKE", "r");
          end if;
 
          case Source is

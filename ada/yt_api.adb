@@ -58,7 +58,7 @@ package body YT_API is
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&q=" & Search_Input
         & "&maxResults=" & MAX_VIDEO_SEARCH_RESULTS
-        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoSyndicated=true";
+        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Get_Search_Request;
 
    -------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ package body YT_API is
       return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
         & "&relatedToVideoId=" & Video_ID
         & "&maxResults=4"
-        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoSyndicated=true";
+        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Get_Videos_Related_Request;
 
    -------------------------------------------------------------------------------------------------

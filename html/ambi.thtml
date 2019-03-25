@@ -57,7 +57,7 @@
 
       <div id="video_list">@_VIDEO_LIST_@</div>
 
-      <a id="back_to_top_link" href="#top">Back to top</a>
+      <a id="back_to_top_link" href="#top"><i class="fas fa-chevron-circle-up"></i></a>
 
       <script>
          // Function to autocomplete search input

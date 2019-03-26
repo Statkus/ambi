@@ -10,6 +10,8 @@
 
       <link rel="stylesheet" href="/css/room.css">
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+      <link rel="shortcut icon" href="/icon/ambi_logo.png" type="image/x-icon">
    </head>
 
    <body>
@@ -94,62 +96,80 @@
          ambiSocket.onmessage = function (event) {
             if (event.data == "update_playlist_request") {
                if (playerState == "end" || playerState == "error") {
-                  ajaxGetRequestNoCallback ("/next_video", true);
+                  ajaxGetRequestNoCallback("/next_video", true);
                }
                else {
                   if (videoListState == "playlist") {
-                     ajaxGetXmlRequest ("/get_video_list?source=playlist");
+                     ajaxGetXmlRequest("/get_video_list?source=playlist");
                   }
                }
             }
             else if (event.data == "update_historic_request") {
                if (videoListState == "historic") {
-                  ajaxGetXmlRequest ("/get_video_list?source=historic");
+                  ajaxGetXmlRequest("/get_video_list?source=historic");
                }
             }
             else if (event.data == "update_likes_request") {
                if (videoListState == "likes") {
-                  ajaxGetXmlRequest ("/get_video_list?source=likes");
+                  ajaxGetXmlRequest("/get_video_list?source=likes");
                }
             }
             else if (event.data == "update_room_current_video_request") {
                if (videoListState == "historic") {
-                  ajaxGetXmlRequest ("/get_video_list?source=historic");
+                  ajaxGetXmlRequest("/get_video_list?source=historic");
                }
                else if (playerState == "no_player" && videoListState == "playlist") {
-                  ajaxGetXmlRequest ("/get_video_list?source=playlist");
+                  ajaxGetXmlRequest("/get_video_list?source=playlist");
                }
 
-               ajaxGetXmlRequest ("/get_current_room_video");
+               ajaxGetXmlRequest("/get_current_room_video");
             }
             else if (event.data == "update_nb_clients_sync") {
-               ajaxGetXmlRequest ("/get_nb_clients_sync");
+               ajaxGetXmlRequest("/get_nb_clients_sync");
             }
             else if (event.data == "force_next_video") {
                if (clientState == "sync" && playerState != "no_player") {
-                  ajaxGetRequestNoCallback ("/next_video", true);
+                  ajaxGetRequestNoCallback("/next_video", true);
                }
             }
          }
 
          // Function called when an item of search_results or video_list is clicked
          function addToPlaylist(elm) {
-            if (elm.getAttribute("name") == "search_results") {
-               document.getElementById("search_input").value = "";
-               document.getElementById("search_results").innerHTML = "";
-            }
-
             if (elm.tagName == "DIV") {
-               ajaxGetRequestNoCallback ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") + "&videoTitle=" + encodeURIComponent(elm.getElementsByTagName("span")[0].innerHTML) + "&videoThumbnail=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
+               document.getElementById("search_input").value = "";
+               ajaxGetRequestNoCallback
+                 ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") +
+                  "&videoTitle=" + encodeURIComponent(elm.getElementsByTagName("span")[0].innerHTML) +
+                  "&videoThumbnail=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
             }
             else {
-               ajaxGetRequestNoCallback ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") + "&videoTitle=" + encodeURIComponent(elm.innerHTML) + "&videoThumbnail=" + elm.parentNode.getElementsByTagName("img")[0].getAttribute("src"));
+               var parentElm = elm.parentNode;
+               ajaxGetRequestNoCallback
+                 ("/onclick$add_to_playlist?videoId=" + parentElm.getAttribute("videoId") +
+                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
             }
          }
 
          // Function called when a like/unlike button is clicked
          function addRemoveLike(elm) {
-            ajaxGetRequestNoCallback ("/onclick$add_remove_like?source=" + elm.getAttribute('name') + "&item=" + elm.getAttribute('value') + "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+            var parentElm = elm.parentNode;
+
+            if (parentElm.getElementsByTagName("span").length > 0) {
+               ajaxGetRequestNoCallback
+                 ("/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
+                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByTagName("span")[0].innerHTML) +
+                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+                  "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+            }
+            else {
+               ajaxGetRequestNoCallback
+                 ("/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
+                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+                  "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+            }
          }
 
          // Function called when a video list selection button is clicked
@@ -162,7 +182,7 @@
             document.getElementById(list + "_button").className += " active";
             if (videoListState != list) {
                videoListState = list;
-               ajaxGetXmlRequest ("/get_video_list?source=" + list);
+               ajaxGetXmlRequest("/get_video_list?source=" + list);
             }
          }
       </script>

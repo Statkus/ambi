@@ -59,6 +59,8 @@ package body Callback is
             Response := Javascripts_Callback (Request);
          elsif Index (URI, "/css/") > 0 then
             Response := CSS_Callback (Request);
+         elsif Index (URI, "/icon/") > 0 then
+            Response := Icon_Callback (Request);
          elsif URI = "/onclick$search_button" then
             Response := Search_Button_Callback (Request);
          elsif URI = "/onclick$add_to_playlist" then
@@ -173,6 +175,15 @@ package body Callback is
    end CSS_Callback;
 
    -------------------------------------------------------------------------------------------------
+   -- Icon_Callback
+   -------------------------------------------------------------------------------------------------
+   function Icon_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
+      URI : constant String := AWS.Status.URI (Request);
+   begin
+      return AWS.Response.File (AWS.MIME.Image_Icon, URI (URI'First + 1 .. URI'Last));
+   end Icon_Callback;
+
+   -------------------------------------------------------------------------------------------------
    -- Search_Button_Callback
    -------------------------------------------------------------------------------------------------
    function Search_Button_Callback (Request : in AWS.Status.Data) return AWS.Response.Data is
@@ -207,28 +218,20 @@ package body Callback is
    function Add_Remove_Like_Callback (Request : in AWS.Status.Data)
      return AWS.Response.Data is
       Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
-      Parameters  : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Source      : constant T_Video_List_Source :=
-        T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
-      Liked       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "liked"));
-      Item_Number : constant Natural := Natural'Value (AWS.Parameters.Get (Parameters, "item"));
 
-      Video_To_Add_Remove : T_Video;
+      Video       : constant T_Video :=
+        (Video_ID        => To_Unbounded_String (AWS.Status.Parameter (Request, "videoId")),
+         Video_Title     => To_Unbounded_String (AWS.Status.Parameter (Request, "videoTitle")),
+         Video_Thumbnail => To_Unbounded_String (AWS.Status.Parameter (Request, "videoThumbnail")));
+      Liked       : constant Boolean := Boolean'Value (AWS.Status.Parameter (Request, "liked"));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/socket");
    begin
-      case Source is
-         when Playlist =>
-           Video_To_Add_Remove := Current_Room.Get_Client_Playlist_Item (Session_ID, Item_Number);
-         when Historic => Video_To_Add_Remove := Current_Room.Get_Historic_Item (Item_Number);
-         when Likes    => Video_To_Add_Remove := Current_Room.Get_Likes_Item (Item_Number);
-      end case;
-
       if Liked then
-         Current_Room.Remove_Like (Video_To_Add_Remove);
+         Current_Room.Remove_Like (Video);
       else
-         Current_Room.Add_Like (Video_To_Add_Remove);
+         Current_Room.Add_Like (Video);
       end if;
 
       -- Send update request only if the video lists are not empty
@@ -379,7 +382,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    function Build_Video_List (Session_ID : in AWS.Session.ID; Source : in T_Video_List_Source)
      return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 5);
+      Translations : Templates_Parser.Translate_Table (1 .. 4);
 
       Response : Unbounded_String;
 
@@ -400,24 +403,20 @@ package body Callback is
 
       while Video_Vectors.Has_Element (List_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
-           ("ITEM_ID", Trim
-             (Integer'Image (Video_Vectors.To_Index (List_Cursor)), Ada.Strings.Left));
-
-         Translations (2) := Templates_Parser.Assoc
-           ("VIDEO_THUMBNAIL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
-
-         Translations (3) := Templates_Parser.Assoc
            ("VIDEO_ID", Video_Vectors.Element (List_Cursor).Video_ID);
 
-         Translations (4) := Templates_Parser.Assoc
+         Translations (2) := Templates_Parser.Assoc
            ("VIDEO_TITLE", Video_Vectors.Element (List_Cursor).Video_Title);
 
+         Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_THUMBNAIL", Video_Vectors.Element (List_Cursor).Video_Thumbnail);
+
          if Source = Likes then
-            Translations (5) := Templates_Parser.Assoc ("LIKE", "s");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
          elsif Current_Room.Is_Video_Liked (Video_Vectors.Element (List_Cursor)) then
-            Translations (5) := Templates_Parser.Assoc ("LIKE", "s");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "s");
          else
-            Translations (5) := Templates_Parser.Assoc ("LIKE", "r");
+            Translations (4) := Templates_Parser.Assoc ("LIKE", "r");
          end if;
 
          case Source is
@@ -427,15 +426,9 @@ package body Callback is
 
                List_Cursor := Video_Vectors.Next (List_Cursor);
 
-            when Historic =>
+            when others =>
                Append (Response, To_String
-                 (Templates_Parser.Parse ("html/historic_item.thtml", Translations)));
-
-               List_Cursor := Video_Vectors.Previous (List_Cursor);
-
-            when Likes =>
-               Append (Response, To_String
-                 (Templates_Parser.Parse ("html/likes_item.thtml", Translations)));
+                 (Templates_Parser.Parse ("html/video_list_item.thtml", Translations)));
 
                List_Cursor := Video_Vectors.Previous (List_Cursor);
          end case;

@@ -297,22 +297,10 @@ package body Room is
      (This.DB.Get_Historic);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Historic_Item
-   -------------------------------------------------------------------------------------------------
-   function Get_Historic_Item (This : in T_Room; Item_Number : in Natural) return T_Video is
-     (This.DB.Get_Historic.Element (Item_Number));
-
-   -------------------------------------------------------------------------------------------------
    -- Get_Likes
    -------------------------------------------------------------------------------------------------
    function Get_Likes (This : in T_Room) return Video_Vectors.Vector is
      (This.DB.Get_Likes);
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Likes_Item
-   -------------------------------------------------------------------------------------------------
-   function Get_Likes_Item (This : in T_Room; Item_Number : in Natural) return T_Video is
-     (This.DB.Get_Likes.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Is_Video_Liked
@@ -332,14 +320,6 @@ package body Room is
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Video_Vectors.Vector is
        (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist);
-
-   -------------------------------------------------------------------------------------------------
-   -- Get_Client_Playlist_Item
-   -------------------------------------------------------------------------------------------------
-   function Get_Client_Playlist_Item
-     (This : in T_Room; Session_ID : in AWS.Session.ID; Item_Number : in Natural)
-     return T_Video is
-       (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist.Element (Item_Number));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Display_Player

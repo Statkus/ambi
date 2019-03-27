@@ -1,0 +1,10 @@
+body {
+  background-color: rgb(70, 70, 70);
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 16px;
+  color: white;
+}
+
+button {
+  cursor: pointer;
+}

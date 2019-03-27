@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Ambi</title>
+
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+    <link rel="shortcut icon" href="/icon/ambi_logo.png" type="image/x-icon">
+  </head>
+
+  <body>
+    <h1>Ambi</h1>
+
+    <h2>Join or create a room</h2>
+
+    <div id="room_select_bar">
+      <form id="input_form">
+        <input id="room_name_input" type="text" name="roomName" placeholder="Join or create a room" autocomplete="off">
+        <button id="search_button" onclick="joinOrCreateRoom()"><i class="fas fa-play"></i></button>
+      </form>
+
+      <div id="room_name_autocomplete"></div>
+    </div>
+
+    <script>
+      function joinOrCreateRoom() {
+        var roomName = document.getElementById("room_name_input").value;
+        document.getElementById("input_form").action = "/" + roomName.toLowerCase();
+        document.getElementById("room_name_input").value = roomName.toLowerCase();
+      }
+    </script>
+  </body>
+</html>

@@ -29,7 +29,7 @@ function onPlayerStateChange(event) {
     player.stopVideo();
     playerState = "end";
 
-    ajaxGetRequestNoCallback ("/next_video", true);
+    ajaxGetRequestNoCallback ("/@_ROOM_NAME_@/next_video", true);
   }
 }
 
@@ -37,5 +37,5 @@ function onPlayerError(event) {
   player.stopVideo();
   playerState = "error";
 
-  ajaxGetRequestNoCallback ("/next_video", true);
+  ajaxGetRequestNoCallback ("/@_ROOM_NAME_@/next_video", true);
 }

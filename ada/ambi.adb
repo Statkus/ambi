@@ -32,9 +32,7 @@ begin
 
    -- Open or create the ambi database
    Ambi_Database.Open;
-
-   -- Create the room
-   Callback.Create_Room (Ambi_Database);
+   Callback.Set_Database (Ambi_Database);
 
    -- Launch the server on port 80
    AWS.Server.Start

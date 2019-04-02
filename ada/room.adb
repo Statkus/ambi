@@ -18,7 +18,7 @@ package body Room is
       Playlist_Empty : Boolean := False;
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
-        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
    begin
       loop
          -- Wait for the start of a playlist
@@ -52,7 +52,7 @@ package body Room is
                This.Playlist_Delete_First;
 
                -- Add the current video to the historic
-               This.DB.Add_To_Historic (This.Get_Video);
+               This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
             else
                if This.Is_Client_Sync_And_Play then
                   -- There is at least one client sync with the room with the player activated, play
@@ -61,7 +61,7 @@ package body Room is
                     (This.Select_Random_Video (YT_API.Get_Videos_Related (This.Get_Video)));
 
                   -- Add the current video to the historic
-                  This.DB.Add_To_Historic (This.Get_Video);
+                  This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
                else
                   -- The playlist is empty and there is no sync client, go back at waiting for the
                   -- start of a new playlist
@@ -82,18 +82,20 @@ package body Room is
    end T_Room_Sync_Task;
 
    -------------------------------------------------------------------------------------------------
-   -- Client_Compare
+   -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
-
-   -------------------------------------------------------------------------------------------------
-   -- Set_Database
-   -------------------------------------------------------------------------------------------------
-   procedure Set_Database
-     (This : in out T_Room; DB : in not null Database.T_Database_Class_Access) is
+   function New_And_Initialize
+     (Name : in String; DB : in not null Database.T_Database_Class_Access)
+     return T_Room_Class_Access is
+      New_Room : constant T_Room_Class_Access :=
+        new T_Room'(Name => To_Unbounded_String (Name), DB => DB, others => <>);
    begin
-      This.DB := DB;
-   end Set_Database;
+      DB.Add_To_Rooms (Name);
+
+      New_Room.Set_Room_Sync_Task (new Room.T_Room_Sync_Task (New_Room));
+
+      return New_Room;
+   end New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Room_Sync_Task
@@ -138,8 +140,8 @@ package body Room is
       This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
       This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
 
-      Put_Line ("New client: " & AWS.Session.Image (Session_ID) & ", number of clients:"
-        & This.Client_List.Length'Img);
+      Put_Line ("Room " & This.Get_Name & ", new client " & AWS.Session.Image (Session_ID)
+        & ", number of clients:" & This.Client_List.Length'Img);
    end Add_Client;
 
    -------------------------------------------------------------------------------------------------
@@ -168,7 +170,7 @@ package body Room is
          This.Set_Video (Video);
 
          -- Add the current video to the historic
-         This.DB.Add_To_Historic (Video);
+         This.DB.Add_To_Room_Historic (This.Get_Name, Video);
 
          This.Room_Sync_Task.Start_Room_Playlist;
       else
@@ -196,7 +198,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Add_Like (This : in out T_Room; Video : in T_Video) is
    begin
-      This.DB.Add_To_Likes (Video);
+      This.DB.Add_To_Room_Likes (This.Get_Name, Video);
    end Add_Like;
 
    -------------------------------------------------------------------------------------------------
@@ -204,7 +206,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Remove_Like (This : in out T_Room; Video : in T_Video) is
    begin
-      This.DB.Remove_From_Likes (Video);
+      This.DB.Remove_From_Room_Likes (This.Get_Name, Video);
    end Remove_Like;
 
    -------------------------------------------------------------------------------------------------
@@ -280,6 +282,11 @@ package body Room is
    end Set_Client_Sync_With_Room;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Name
+   -------------------------------------------------------------------------------------------------
+   function Get_Name (This : in T_Room) return String is (To_String (This.Name));
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Current_Video
    -------------------------------------------------------------------------------------------------
    function Get_Current_Video (This : in out T_Room) return T_Video is (This.Get_Video);
@@ -294,19 +301,19 @@ package body Room is
    -- Get_Historic
    -------------------------------------------------------------------------------------------------
    function Get_Historic (This : in T_Room) return Video_Vectors.Vector is
-     (This.DB.Get_Historic);
+     (This.DB.Get_Room_Historic (This.Get_Name));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Likes
    -------------------------------------------------------------------------------------------------
    function Get_Likes (This : in T_Room) return Video_Vectors.Vector is
-     (This.DB.Get_Likes);
+     (This.DB.Get_Room_Likes (This.Get_Name));
 
    -------------------------------------------------------------------------------------------------
    -- Is_Video_Liked
    -------------------------------------------------------------------------------------------------
    function Is_Video_Liked (This : in T_Room; Video : in T_Video) return Boolean is
-     (This.DB.Is_Video_Liked (Video));
+     (This.DB.Is_Room_Video_Liked (This.Get_Name, Video));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Current_Client_Video
@@ -447,7 +454,7 @@ package body Room is
       Number_Of_Clients_Sync : Natural := 0;
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
-        AWS.Net.WebSocket.Registry.Create (URI => "/socket");
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID)
@@ -458,8 +465,9 @@ package body Room is
             Client_To_Remove := Client_Vectors.Element (Client_List_Cursor);
             This.Client_List.Delete (Client_List_Cursor);
 
-            Put_Line ("Remove client: " & AWS.Session.Image (Client_To_Remove.Get_Session_ID)
-              & ", number of clients:" & This.Client_List.Length'Img);
+            Put_Line ("Room " & This.Get_Name & ", remove client "
+              & AWS.Session.Image (Client_To_Remove.Get_Session_ID) & ", number of clients:"
+              & This.Client_List.Length'Img);
 
             Free_Client (Client_To_Remove);
 

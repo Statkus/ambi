@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with JSON.Parsers;
 with JSON.Types;
 
-with Video_List; use Video_List;
+with List; use List;
 
 package YT_API is
 

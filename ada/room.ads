@@ -7,7 +7,7 @@ with AWS.Session;
 
 with Client;
 with Database;
-with Video_List; use Video_List;
+with List; use List;
 
 package Room is
 
@@ -22,14 +22,9 @@ package Room is
 
    type T_Room_Sync_Task_Access is access T_Room_Sync_Task;
 
-   -- Dummy function to instantiate a vector, for now comparing Client.T_Client type is useless
-   function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean;
-
-   package Client_Vectors is new Ada.Containers.Vectors
-     (Natural, Client.T_Client_Class_Access, Client_Compare);
-
-   procedure Set_Database
-     (This : in out T_Room; DB : in not null Database.T_Database_Class_Access);
+   function New_And_Initialize
+     (Name : in String; DB : in not null Database.T_Database_Class_Access)
+     return T_Room_Class_Access;
 
    procedure Set_Room_Sync_Task
      (This : in out T_Room; Sync_Task : in not null T_Room_Sync_Task_Access);
@@ -58,6 +53,8 @@ package Room is
 
    procedure Set_Client_Sync_With_Room
      (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean);
+
+   function Get_Name (This : in T_Room) return String;
 
    function Get_Current_Video (This : in out T_Room) return T_Video;
 
@@ -113,6 +110,12 @@ private
    function Get_Playlist_First (This : in out T_Room) return T_Video;
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
 
+   -- Dummy function to instantiate a vector, for now comparing Client.T_Client type is useless
+   function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
+
+   package Client_Vectors is new Ada.Containers.Vectors
+     (Natural, Client.T_Client_Class_Access, Client_Compare);
+
    protected type T_Mutex is
       entry Seize;
       procedure Release;
@@ -121,6 +124,7 @@ private
    end T_Mutex;
 
    type T_Room is tagged limited record
+      Name               : Unbounded_String;
       Room_Current_Video : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
       Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;

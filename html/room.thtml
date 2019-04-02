@@ -1,192 +1,193 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <meta charset="utf-8"/>
-      <title>Ambi</title>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Ambi</title>
 
-      <script src="/javascripts/xml_actions.js" type="text/javascript"></script>
-      <script src="/javascripts/ajax_get_handler.js" type="text/javascript"></script>
-      <script src="/javascripts/search_bar_autocomplete.js" type="text/javascript"></script>
+    <script src="/javascripts/xml_actions.js" type="text/javascript"></script>
+    <script src="/javascripts/ajax_get_handler.js" type="text/javascript"></script>
+    <script src="/javascripts/search_bar_autocomplete.js" type="text/javascript"></script>
 
-      <link rel="stylesheet" href="/css/room.css">
-      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/room.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
-      <link rel="shortcut icon" href="/icon/ambi_logo.png" type="image/x-icon">
-   </head>
+    <link rel="shortcut icon" href="/icon/ambi_logo.png" type="image/x-icon">
+  </head>
 
-   <body>
-      <div id="search_bar">
-         <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
-         <button id="search_button" onclick="ajaxGetXmlRequest('/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fas fa-search"></i></button>
-         <div id="search_results"></div>
+  <body>
+    <h1>@_ROOM_NAME_@</h1>
+
+    <div id="search_bar">
+      <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
+      <button id="search_button" onclick="ajaxGetXmlRequest('/@_ROOM_NAME_@/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fas fa-search"></i></button>
+      <div id="search_results"></div>
+    </div>
+
+    <div id="checkboxes">
+      <div class="checkboxe">
+        <p>Player</p>
+        <label class="switch">
+          <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_display_checkbox?checked=' + this.checked, true)">
+          <span class="slider"></span>
+        </label>
       </div>
 
-
-      <div id="checkboxes">
-         <div class="checkboxe">
-            <p>Player</p>
-            <label class="switch">
-               <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/onclick$player_display_checkbox?checked=' + this.checked, true)">
-               <span class="slider"></span>
-            </label>
-         </div>
-
-         <div id="sync_checkbox" class="checkboxe" style="display:@_DISPLAY_SYNC_CHECKBOX_@">
-            <p>Sync with room</p>
-            <label class="switch">
-               <input type="checkbox" id="player_sync_checkbox" onclick="ajaxGetRequestNoCallback('/onclick$player_sync_checkbox?checked=' + this.checked, true)">
-               <span class="slider"></span>
-            </label>
-         </div>
+      <div id="sync_checkbox" class="checkboxe" style="display:@_DISPLAY_SYNC_CHECKBOX_@">
+        <p>Sync with room</p>
+        <label class="switch">
+          <input type="checkbox" id="player_sync_checkbox" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_sync_checkbox?checked=' + this.checked, true)">
+          <span class="slider"></span>
+        </label>
       </div>
+    </div>
 
-      <div id="player"></div>
+    <div id="player"></div>
 
-      <p>
-         Current room video: <span id="current_room_video">@_ROOM_VIDEO_@</span>
-         @@IF@@ @_CLIENT_SYNC_@
-            <button id="next_room_video_button" onclick="ajaxGetRequestNoCallback('/onclick$next_room_video')"><i class="fas fa-step-forward"></i></button>
-         @@END_IF@@
-      </p>
+    <p>
+      Current room video: <span id="current_room_video">@_ROOM_VIDEO_@</span>
+      @@IF@@ @_CLIENT_SYNC_@
+        <button id="next_room_video_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_video')"><i class="fas fa-step-forward"></i></button>
+      @@END_IF@@
+    </p>
 
-      <p>Clients sync: <span id="nb_clients_sync">@_NB_CLIENTS_SYNC_@</span></p>
+    <p>Clients sync: <span id="nb_clients_sync">@_NB_CLIENTS_SYNC_@</span></p>
 
-      <div id="video_list_buttons">
-         <button id="playlist_button" class="video_list_button" onclick="showVideoList('playlist')">Playlist</button>
-         <button id="historic_button" class="video_list_button" onclick="showVideoList('historic')">Historic</button>
-         <button id="likes_button" class="video_list_button" onclick="showVideoList('likes')">Likes</button>
-      </div>
+    <div id="video_list_buttons">
+      <button id="playlist_button" class="video_list_button" onclick="showVideoList('playlist')">Playlist</button>
+      <button id="historic_button" class="video_list_button" onclick="showVideoList('historic')">Historic</button>
+      <button id="likes_button" class="video_list_button" onclick="showVideoList('likes')">Likes</button>
+    </div>
 
-      <div id="video_list">@_VIDEO_LIST_@</div>
+    <div id="video_list">@_VIDEO_LIST_@</div>
 
-      <a id="back_to_top_link" href="#top"><i class="fas fa-chevron-circle-up"></i></a>
+    <a id="back_to_top_link" href="#top"><i class="fas fa-chevron-circle-up"></i></a>
 
-      <script>
-         // Function to autocomplete search input
-         autocomplete();
+    <script>
+      // Function to autocomplete search input
+      autocomplete();
 
-         // State of the Youtube player
-         var playerState = "@_PLAYER_STATE_@";
+      // State of the Youtube player
+      var playerState = "@_PLAYER_STATE_@";
 
-         // Force checkboxes value to what the server expect from this client
-         if (playerState == "no_player") {
-            document.getElementById("player_display_checkbox").checked = false;
-         }
-         else {
-            document.getElementById("player_display_checkbox").checked = true;
-         }
+      // Force checkboxes value to what the server expect from this client
+      if (playerState == "no_player") {
+        document.getElementById("player_display_checkbox").checked = false;
+      }
+      else {
+        document.getElementById("player_display_checkbox").checked = true;
+      }
 
-         @@IF@@ @_CLIENT_SYNC_@
-            var clientState = "sync";
-            document.getElementById("player_sync_checkbox").checked = true;
-         @@ELSE@@
-            var clientState = "no_sync";
-            document.getElementById("player_sync_checkbox").checked = false;
-         @@END_IF@@
+      @@IF@@ @_CLIENT_SYNC_@
+        var clientState = "sync";
+        document.getElementById("player_sync_checkbox").checked = true;
+      @@ELSE@@
+        var clientState = "no_sync";
+        document.getElementById("player_sync_checkbox").checked = false;
+      @@END_IF@@
 
-         // State of the video list
-         var videoListState = "playlist";
+      // State of the video list
+      var videoListState = "playlist";
 
-         // Simulate a click on the playlist button
-         document.getElementById("playlist_button").click();
+      // Simulate a click on the playlist button
+      document.getElementById("playlist_button").click();
 
-         // WebSocket to update playlist and current room video for all clients
-         var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/socket");
+      // WebSocket to update playlist and current room video for all clients
+      var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/@_ROOM_NAME_@Socket");
 
-         ambiSocket.onmessage = function (event) {
-            if (event.data == "update_playlist_request") {
-               if (playerState == "end" || playerState == "error") {
-                  ajaxGetRequestNoCallback("/next_video", true);
-               }
-               else {
-                  if (videoListState == "playlist") {
-                     ajaxGetXmlRequest("/get_video_list?source=playlist");
-                  }
-               }
+      ambiSocket.onmessage = function (event) {
+        if (event.data == "update_playlist_request") {
+          if (playerState == "end" || playerState == "error") {
+            ajaxGetRequestNoCallback("/@_ROOM_NAME_@/next_video", true);
+          }
+          else {
+            if (videoListState == "playlist") {
+              ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=playlist");
             }
-            else if (event.data == "update_historic_request") {
-               if (videoListState == "historic") {
-                  ajaxGetXmlRequest("/get_video_list?source=historic");
-               }
-            }
-            else if (event.data == "update_likes_request") {
-               if (videoListState == "likes") {
-                  ajaxGetXmlRequest("/get_video_list?source=likes");
-               }
-            }
-            else if (event.data == "update_room_current_video_request") {
-               if (videoListState == "historic") {
-                  ajaxGetXmlRequest("/get_video_list?source=historic");
-               }
-               else if (playerState == "no_player" && videoListState == "playlist") {
-                  ajaxGetXmlRequest("/get_video_list?source=playlist");
-               }
+          }
+        }
+        else if (event.data == "update_historic_request") {
+          if (videoListState == "historic") {
+            ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=historic");
+          }
+        }
+        else if (event.data == "update_likes_request") {
+          if (videoListState == "likes") {
+            ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=likes");
+          }
+        }
+        else if (event.data == "update_room_current_video_request") {
+          if (videoListState == "historic") {
+            ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=historic");
+          }
+          else if (playerState == "no_player" && videoListState == "playlist") {
+            ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=playlist");
+          }
 
-               ajaxGetXmlRequest("/get_current_room_video");
-            }
-            else if (event.data == "update_nb_clients_sync") {
-               ajaxGetXmlRequest("/get_nb_clients_sync");
-            }
-            else if (event.data == "force_next_video") {
-               if (clientState == "sync" && playerState != "no_player") {
-                  ajaxGetRequestNoCallback("/next_video", true);
-               }
-            }
-         }
+          ajaxGetXmlRequest("/@_ROOM_NAME_@/get_current_room_video");
+        }
+        else if (event.data == "update_nb_clients_sync") {
+          ajaxGetXmlRequest("/@_ROOM_NAME_@/get_nb_clients_sync");
+        }
+        else if (event.data == "force_next_video") {
+          if (clientState == "sync" && playerState != "no_player") {
+            ajaxGetRequestNoCallback("/@_ROOM_NAME_@/next_video", true);
+          }
+        }
+      }
 
-         // Function called when an item of search_results or video_list is clicked
-         function addToPlaylist(elm) {
-            if (elm.tagName == "DIV") {
-               document.getElementById("search_input").value = "";
-               ajaxGetRequestNoCallback
-                 ("/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") +
-                  "&videoTitle=" + encodeURIComponent(elm.getElementsByTagName("span")[0].innerHTML) +
-                  "&videoThumbnail=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
-            }
-            else {
-               var parentElm = elm.parentNode;
-               ajaxGetRequestNoCallback
-                 ("/onclick$add_to_playlist?videoId=" + parentElm.getAttribute("videoId") +
-                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
-                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
-            }
-         }
+      // Function called when an item of search_results or video_list is clicked
+      function addToPlaylist(elm) {
+        if (elm.tagName == "DIV") {
+          document.getElementById("search_input").value = "";
+          ajaxGetRequestNoCallback
+           ("/@_ROOM_NAME_@/onclick$add_to_playlist?videoId=" + elm.getAttribute("videoId") +
+            "&videoTitle=" + encodeURIComponent(elm.getElementsByTagName("span")[0].innerHTML) +
+            "&videoThumbnail=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
+        }
+        else {
+          var parentElm = elm.parentNode;
+          ajaxGetRequestNoCallback
+           ("/@_ROOM_NAME_@/onclick$add_to_playlist?videoId=" + parentElm.getAttribute("videoId") +
+            "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+            "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
+        }
+      }
 
-         // Function called when a like/unlike button is clicked
-         function addRemoveLike(elm) {
-            var parentElm = elm.parentNode;
+      // Function called when a like/unlike button is clicked
+      function addRemoveLike(elm) {
+        var parentElm = elm.parentNode;
 
-            if (parentElm.getElementsByTagName("span").length > 0) {
-               ajaxGetRequestNoCallback
-                 ("/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
-                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByTagName("span")[0].innerHTML) +
-                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
-                  "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
-            }
-            else {
-               ajaxGetRequestNoCallback
-                 ("/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
-                  "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
-                  "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
-                  "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
-            }
-         }
+        if (parentElm.getElementsByTagName("span").length > 0) {
+          ajaxGetRequestNoCallback
+           ("/@_ROOM_NAME_@/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
+            "&videoTitle=" + encodeURIComponent(parentElm.getElementsByTagName("span")[0].innerHTML) +
+            "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+            "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+        }
+        else {
+          ajaxGetRequestNoCallback
+           ("/@_ROOM_NAME_@/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
+            "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+            "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+            "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+        }
+      }
 
-         // Function called when a video list selection button is clicked
-         function showVideoList(list) {
-            var videoListButtons = document.getElementsByClassName("video_list_button");
-            for (var i = 0; i < videoListButtons.length; i++) {
-               videoListButtons[i].className = videoListButtons[i].className.replace(" active", "");
-            }
+      // Function called when a video list selection button is clicked
+      function showVideoList(list) {
+        var videoListButtons = document.getElementsByClassName("video_list_button");
+        for (var i = 0; i < videoListButtons.length; i++) {
+          videoListButtons[i].className = videoListButtons[i].className.replace(" active", "");
+        }
 
-            document.getElementById(list + "_button").className += " active";
-            if (videoListState != list) {
-               videoListState = list;
-               ajaxGetXmlRequest("/get_video_list?source=" + list);
-            }
-         }
-      </script>
+        document.getElementById(list + "_button").className += " active";
+        if (videoListState != list) {
+          videoListState = list;
+          ajaxGetXmlRequest("/@_ROOM_NAME_@/get_video_list?source=" + list);
+        }
+      }
+    </script>
 
-	  <script id="youtube_player_script">@_YOUTUBE_PLAYER_SCRIPT_@</script>
-   </body>
+    <script id="youtube_player_script">@_YOUTUBE_PLAYER_SCRIPT_@</script>
+  </body>
 </html>

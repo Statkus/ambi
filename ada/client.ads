@@ -2,7 +2,7 @@ with Ada.Real_Time;
 
 with AWS.Session;
 
-with Video_List; use Video_List;
+with List; use List;
 
 package Client is
 

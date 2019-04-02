@@ -17,7 +17,7 @@ function autocomplete() {
     currentFocus = -1;
 
     // Get autocompletion results
-	var s = document.createElement("script");
+    var s = document.createElement("script");
     s.src = "http://google.com/complete/search?q=" + currentInput + "&client=youtube&ds=yt&jsonp=displayAutocompletionResults";
     document.body.appendChild(s);
   });
@@ -114,7 +114,7 @@ function displayAutocompletionResults(results) {
     resultItem.addEventListener("click", function(e) {
         // Set the current input to the value of the result item and launch the search on the result item
         autocompleteSource.value = this.getAttribute("value");
-        ajaxGetXmlRequest('/onclick$search_button?search_input=' + autocompleteSource.value);
+        document.getElementById("search_button").click();
 
         document.getElementById("search_results").innerHTML = "";
     });

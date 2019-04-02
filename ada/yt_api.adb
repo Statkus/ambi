@@ -1,3 +1,5 @@
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+
 with GNAT.Regpat; use GNAT.Regpat;
 
 with AWS.Client;
@@ -22,10 +24,10 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    function Get_Video_Search_Results (Search_Input : in String) return Video_Vectors.Vector is
    begin
-      Put_Line ("YT API query: " & Get_Search_Request (Search_Input));
+      return Parse_Video_Search_Results (Get_Request_Response (Get_Search_Request (Search_Input)));
 
-      return Parse_Video_Search_Results (AWS.Response.Message_Body
-        (AWS.Client.Get (URL => Get_Search_Request (Search_Input))));
+   exception
+      when others => return Video_Vectors.Empty_Vector;
    end Get_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
@@ -33,10 +35,11 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    function Get_Video_Duration (Video : in T_Video) return Natural is
    begin
-      Put_Line ("YT API query: " & Get_Video_Request (To_String (Video.Video_ID)));
+      return Parse_Video_Duration_Result
+        (Get_Request_Response (Get_Video_Request (To_String (Video.Video_ID))));
 
-      return Parse_Video_Duration_Result (AWS.Response.Message_Body
-        (AWS.Client.Get (URL => Get_Video_Request (To_String (Video.Video_ID)))));
+   exception
+      when others => return Natural'First;
    end Get_Video_Duration;
 
    -------------------------------------------------------------------------------------------------
@@ -44,11 +47,36 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector is
    begin
-      Put_Line ("YT API query: " & Get_Videos_Related_Request (To_String (Video.Video_ID)));
+      return Parse_Video_Search_Results
+       (Get_Request_Response (Get_Videos_Related_Request (To_String (Video.Video_ID))));
 
-      return Parse_Video_Search_Results (AWS.Response.Message_Body
-        (AWS.Client.Get (URL => Get_Videos_Related_Request (To_String (Video.Video_ID)))));
+   exception
+      when others => return Video_Vectors.Empty_Vector;
    end Get_Videos_Related;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Request_Response
+   -------------------------------------------------------------------------------------------------
+   function Get_Request_Response (URL_Request : in String) return String is
+      Response      : Unbounded_String := To_Unbounded_String ("GET request error.");
+      Number_Of_Try : Natural := Natural'First;
+   begin
+      Put_Line ("YT API request: " & URL_Request);
+
+      while Index (To_String (Response), "GET request error.") = 1
+        and Number_Of_Try < MAX_NUMBER_OF_REQUEST_RETRY loop
+         Response :=
+           To_Unbounded_String (AWS.Response.Message_Body (AWS.Client.Get (URL => URL_Request)));
+
+         Number_Of_Try := Number_Of_Try + 1;
+      end loop;
+
+      if Index (To_String (Response), "GET request error.") = 1 then
+         Put_Line ("YT API request not answered after" & Number_Of_Try'Img & " retry");
+      end if;
+
+      return To_String (Response);
+   end Get_Request_Response;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Search_Request

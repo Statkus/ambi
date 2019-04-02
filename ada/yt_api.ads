@@ -20,6 +20,8 @@ private
    package Types is new JSON.Types (Long_Integer, Long_Float); use Types;
    package Parsers is new JSON.Parsers (Types);
 
+   function Get_Request_Response (URL_Request : in String) return String;
+
    function Get_Search_Request (Search_Input : in String) return String;
    function Get_Video_Request (Video_ID : in String) return String;
    function Get_Videos_Related_Request (Video_ID : in String) return String;
@@ -32,6 +34,7 @@ private
    YT_API_KEY : Unbounded_String;
    YT_API_URL : constant String := "https://www.googleapis.com/youtube/v3/";
 
-   MAX_VIDEO_SEARCH_RESULTS : constant String := "10";
+   MAX_VIDEO_SEARCH_RESULTS    : constant String := "10";
+   MAX_NUMBER_OF_REQUEST_RETRY : constant := 10;
 
 end YT_API;

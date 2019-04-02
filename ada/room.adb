@@ -60,8 +60,15 @@ package body Room is
                   This.Set_Video
                     (This.Select_Random_Video (YT_API.Get_Videos_Related (This.Get_Video)));
 
-                  -- Add the current video to the historic
-                  This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
+                  if To_String (This.Get_Video.Video_ID) = "" then
+                     -- There is no youtube suggestion, go back at waiting for the start of a new
+                     -- playlist
+                     This.Room_Current_Video_Active := False;
+                     Playlist_Empty := True;
+                  else
+                     -- Add the current video to the historic
+                     This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
+                  end if;
                else
                   -- The playlist is empty and there is no sync client, go back at waiting for the
                   -- start of a new playlist
@@ -494,7 +501,9 @@ package body Room is
      return T_Video is
       Video_Index : Natural := Natural'First;
       Video       : T_Video :=
-        (Video_Title => To_Unbounded_String ("no video played"), others => <>);
+        (Video_ID        => To_Unbounded_String (""),
+         Video_Title     => To_Unbounded_String ("no video played"),
+         Video_Thumbnail => To_Unbounded_String (""));
    begin
       if Natural (Videos.Length) > 0 then
          Video_Index :=

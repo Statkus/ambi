@@ -82,6 +82,8 @@ package Room is
    function Client_Has_Nothing_To_Play (This : in out T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
 
+   function Get_Number_Clients (This : in T_Room) return Natural;
+
    function Get_Number_Clients_Sync (This : in T_Room) return Natural;
 
    function Get_Room_Next_Video_Ready (This : in T_Room) return Boolean;

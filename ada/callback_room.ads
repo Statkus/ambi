@@ -55,7 +55,7 @@ private
    function Get_Current_Room_Video_Callback (Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;
 
-   function Get_Number_Clients_Sync_Callback (Current_Room : in T_Room_Class_Access)
+   function Get_Number_Clients_Callback (Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;
 
    function Build_Search_Results (Video_Search_Results : in Video_Vectors.Vector) return String;

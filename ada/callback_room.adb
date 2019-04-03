@@ -67,8 +67,8 @@ package body Callback_Room is
             Response := Get_Video_List_Callback (Request, Current_Room);
          elsif URI = "/get_current_room_video" then
             Response := Get_Current_Room_Video_Callback (Current_Room);
-         elsif URI = "/get_nb_clients_sync" then
-            Response := Get_Number_Clients_Sync_Callback (Current_Room);
+         elsif URI = "/get_nb_clients" then
+            Response := Get_Number_Clients_Callback (Current_Room);
          else
             Put_Line ("Room " & Current_Room.Get_Name & ", not supported request: '" & URI & "'");
             Response := AWS.Response.Build (AWS.MIME.Text_HTML, "");
@@ -113,8 +113,9 @@ package body Callback_Room is
         ("ROOM_VIDEO", To_String (Current_Room.Get_Current_Video.Video_Title));
 
       -- Number of client sync
-      Translations (3) := Templates_Parser.Assoc
-        ("NB_CLIENTS_SYNC", Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left));
+      Translations (3) := Templates_Parser.Assoc ("NB_CLIENTS",
+        Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left) & "/" &
+        Trim (Current_Room.Get_Number_Clients'Img, Ada.Strings.Left));
 
       -- Client playlist
       Translations (4) := Templates_Parser.Assoc
@@ -236,8 +237,8 @@ package body Callback_Room is
    begin
       Current_Room.Set_Client_Display_Player (Session_ID, Checked);
 
-      -- Send update request for the number of clients sync
-      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
+      -- Send update request for the number of clients
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Player_Display_Checkbox_Callback;
@@ -257,8 +258,8 @@ package body Callback_Room is
    begin
       Current_Room.Set_Client_Sync_With_Room (Session_ID, Sync);
 
-      -- Send update request for the number of clients sync
-      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
+      -- Send update request for the number of clients
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Player_Sync_Checkbox_Callback;
@@ -322,14 +323,15 @@ package body Callback_Room is
    end Get_Current_Room_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Number_Clients_Sync_Callback
+   -- Get_Number_Clients_Callback
    -------------------------------------------------------------------------------------------------
-   function Get_Number_Clients_Sync_Callback (Current_Room : in T_Room_Class_Access)
+   function Get_Number_Clients_Callback (Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
    begin
-      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("nb_clients_sync", Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left)));
-   end Get_Number_Clients_Sync_Callback;
+      return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response ("nb_clients",
+        Trim (Current_Room.Get_Number_Clients_Sync'Img, Ada.Strings.Left) & "/" &
+        Trim (Current_Room.Get_Number_Clients'Img, Ada.Strings.Left)));
+   end Get_Number_Clients_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results

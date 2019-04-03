@@ -133,6 +133,8 @@ package body Room is
    -- Add_Client
    -------------------------------------------------------------------------------------------------
    procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
    begin
       -- Remove all expired sessions
       This.Remove_Disconnected_Client;
@@ -146,6 +148,9 @@ package body Room is
 
       This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
       This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
+
+      -- Send update request for the number of clients
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
 
       Put_Line ("Room " & This.Get_Name & ", new client " & AWS.Session.Image (Session_ID)
         & ", number of clients:" & This.Client_List.Length'Img);
@@ -368,6 +373,12 @@ package body Room is
    end Client_Has_Nothing_To_Play;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Number_Clients
+   -------------------------------------------------------------------------------------------------
+   function Get_Number_Clients (This : in T_Room) return Natural is
+     (Natural (This.Client_List.Length));
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Number_Clients_Sync
    -------------------------------------------------------------------------------------------------
    function Get_Number_Clients_Sync (This : in T_Room) return Natural is
@@ -457,6 +468,7 @@ package body Room is
    procedure Remove_Disconnected_Client (This : in out T_Room) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
       Client_To_Remove   : T_Client_Class_Access := null;
+      Clients_Removed    : Boolean := False;
 
       Number_Of_Clients_Sync : Natural := 0;
 
@@ -478,6 +490,8 @@ package body Room is
 
             Free_Client (Client_To_Remove);
 
+            Clients_Removed := True;
+
             Client_List_Cursor := This.Client_List.First;
          end if;
 
@@ -486,12 +500,12 @@ package body Room is
 
       Number_Of_Clients_Sync := This.Count_Number_Of_Clients_Sync;
 
-      if This.Number_Of_Clients_Sync /= Number_Of_Clients_Sync then
-         This.Number_Of_Clients_Sync := Number_Of_Clients_Sync;
-
-         -- Send update request for the number of clients sync
-         AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients_sync");
+      if Clients_Removed or This.Number_Of_Clients_Sync /= Number_Of_Clients_Sync then
+         -- Send update request for the number of clients
+         AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
       end if;
+
+      This.Number_Of_Clients_Sync := Number_Of_Clients_Sync;
    end Remove_Disconnected_Client;
 
    -------------------------------------------------------------------------------------------------

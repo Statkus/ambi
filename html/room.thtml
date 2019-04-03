@@ -52,7 +52,7 @@
       @@END_IF@@
     </p>
 
-    <p>Clients sync: <span id="nb_clients_sync">@_NB_CLIENTS_SYNC_@</span></p>
+    <p>Clients sync: <span id="nb_clients">@_NB_CLIENTS_@</span></p>
 
     <div id="video_list_buttons">
       <button id="playlist_button" class="video_list_button" onclick="showVideoList('playlist')">Playlist</button>
@@ -127,8 +127,8 @@
 
           ajaxGetXmlRequest("/@_ROOM_NAME_@/get_current_room_video");
         }
-        else if (event.data == "update_nb_clients_sync") {
-          ajaxGetXmlRequest("/@_ROOM_NAME_@/get_nb_clients_sync");
+        else if (event.data == "update_nb_clients") {
+          ajaxGetXmlRequest("/@_ROOM_NAME_@/get_nb_clients");
         }
         else if (event.data == "force_next_video") {
           if (clientState == "sync" && playerState != "no_player") {

@@ -5,11 +5,21 @@ body {
   color: white;
 }
 
-/* Search bar *************************************************************************************/
 button {
   cursor: pointer;
 }
 
+/* Change room link *******************************************************************************/
+#change_room_link {
+  color: inherit;
+  font-size: inherit;
+  text-decoration: none;
+  position: fixed;
+  top: 35px;
+  left: 525px;
+}
+
+/* Search bar *************************************************************************************/
 #search_bar {
   position: relative;
   display: inline-block;

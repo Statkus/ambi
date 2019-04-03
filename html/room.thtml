@@ -17,6 +17,8 @@
   <body>
     <h1>@_ROOM_NAME_@</h1>
 
+    <a id="change_room_link" href="/">Change room</a>
+
     <div id="search_bar">
       <input id="search_input" type="text" placeholder="Search video" autocomplete="off">
       <button id="search_button" onclick="ajaxGetXmlRequest('/@_ROOM_NAME_@/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fas fa-search"></i></button>

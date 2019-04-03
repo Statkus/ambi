@@ -59,7 +59,7 @@ button {
 }
 
 .search_results_active {
-  background-color: DodgerBlue !important; 
+  background-color: DodgerBlue !important;
 }
 
 /* Checkboxes *************************************************************************************/
@@ -134,7 +134,7 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* Next room video button ************************************************************************/
+/* Next room video button *************************************************************************/
 #next_room_video_button {
   background-color: inherit;
   color: inherit;
@@ -142,7 +142,7 @@ input:checked + .slider:before {
   outline: none;
 }
 
-/* Video list buttons ****************************************************************************/
+/* Video list buttons *****************************************************************************/
 #video_list_buttons {
   display: inline-block;
   background-color: rgb(30, 30, 30);
@@ -167,7 +167,7 @@ input:checked + .slider:before {
   background-color: rgb(100, 100, 100);
 }
 
-/* Video list ************************************************************************************/
+/* Video list *************************************************************************************/
 #video_list {
   width: 600px;
 }

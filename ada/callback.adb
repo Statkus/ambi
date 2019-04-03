@@ -5,6 +5,7 @@ with Ada.Text_IO;           use Ada.Text_IO;
 with AWS.MIME;
 
 with Callback_Room;
+with List; use List;
 with Room; use Room;
 
 package body Callback is
@@ -47,6 +48,9 @@ package body Callback is
       elsif Index (URI, "/icon/") > 0 then
          Put_Line ("Request: '" & URI & "'");
          Response := Icon_Callback (Request);
+      elsif URI = "/get_rooms_list" then
+         Put_Line ("Request: '" & URI & "'");
+         Response := Get_Rooms_List_Callback;
       else
          Current_Room := Select_Room_From_URI (URI);
 
@@ -97,6 +101,34 @@ package body Callback is
    begin
       return AWS.Response.File (AWS.MIME.Image_Icon, URI (URI'First + 1 .. URI'Last));
    end Icon_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Rooms_List_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Rooms_List_Callback return AWS.Response.Data is
+      Response : Unbounded_String :=
+        To_Unbounded_String ("displayRoomNameAutocompletion([");
+      Rooms_List        : constant Room_Name_Vectors.Vector := DB.Get_Rooms;
+      Rooms_List_Cursor : Room_Name_Vectors.Cursor := Rooms_List.First;
+   begin
+      if Room_Name_Vectors.Has_Element (Rooms_List_Cursor) then
+         Append
+           (Response, """" & To_String (Room_Name_Vectors.Element (Rooms_List_Cursor)) & """");
+
+         Room_Name_Vectors.Next (Rooms_List_Cursor);
+
+         while Room_Name_Vectors.Has_Element (Rooms_List_Cursor) loop
+            Append
+              (Response, ",""" & To_String (Room_Name_Vectors.Element (Rooms_List_Cursor)) & """");
+
+            Room_Name_Vectors.Next (Rooms_List_Cursor);
+         end loop;
+      end if;
+
+      Append (Response, "])");
+
+      return AWS.Response.Build (AWS.MIME.Text_Javascript, To_String (Response));
+   end Get_Rooms_List_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Select_Room_From_URI

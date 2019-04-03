@@ -19,6 +19,7 @@ private
    function Javascripts_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function CSS_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
    function Icon_Callback (Request : in AWS.Status.Data) return AWS.Response.Data;
+   function Get_Rooms_List_Callback return AWS.Response.Data;
 
    function Select_Room_From_URI (URI : in String) return Room.T_Room_Class_Access;
 

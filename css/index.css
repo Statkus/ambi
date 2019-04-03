@@ -8,3 +8,31 @@ body {
 button {
   cursor: pointer;
 }
+
+#room_select_bar {
+  display: inline-block;
+}
+
+#room_name_input {
+  width: 300px;
+}
+
+#room_name_autocomplete {
+  z-index: 99;
+  top: 100%;
+}
+
+#room_name_autocomplete div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: rgba(30, 30, 30, 0.95);
+  border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+#room_name_autocomplete div:hover {
+  background-color: rgb(50, 50, 50);
+}
+
+.item_active {
+  background-color: DodgerBlue !important;
+}

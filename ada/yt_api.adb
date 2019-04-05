@@ -164,13 +164,21 @@ package body YT_API is
    -- Parse_Duration
    -------------------------------------------------------------------------------------------------
    function Parse_Duration (Duration_String : in String) return Natural is
+      Hours_Pattern   : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)H");
       Minutes_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)M");
       Seconds_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)S");
       Result  : GNAT.Regpat.Match_Array (0 .. 1);
 
+      Hours   : Natural := 0;
       Minutes : Natural := 0;
       Seconds : Natural := 0;
    begin
+      GNAT.Regpat.Match (Hours_Pattern, Duration_String, Result);
+
+      if Result (1) /= GNAT.Regpat.No_Match then
+         Hours := Natural'Value (Duration_String (Result (1).First .. Result (1).Last));
+      end if;
+
       GNAT.Regpat.Match (Minutes_Pattern, Duration_String, Result);
 
       if Result (1) /= GNAT.Regpat.No_Match then
@@ -183,7 +191,7 @@ package body YT_API is
          Seconds := Natural'Value (Duration_String (Result (1).First .. Result (1).Last));
       end if;
 
-      return Minutes * 60 + Seconds;
+      return (Hours * 3600) + (Minutes * 60) + Seconds;
    end Parse_Duration;
 
 end YT_API;

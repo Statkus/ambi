@@ -9,13 +9,19 @@ button {
   cursor: pointer;
 }
 
+/* Room name **************************************************************************************/
+#room_name {
+  font-size: 32px;
+  font-weight: bolder;
+}
+
 /* Change room link *******************************************************************************/
 #change_room_link {
   color: inherit;
   font-size: inherit;
   text-decoration: none;
-  position: fixed;
-  top: 35px;
+  position: absolute;
+  top: 22px;
   left: 525px;
 }
 
@@ -23,6 +29,7 @@ button {
 #search_bar {
   position: relative;
   display: inline-block;
+  margin-top: 10px;
 }
 
 #search_input {

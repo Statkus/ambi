@@ -15,9 +15,10 @@
   </head>
 
   <body>
-    <h1>@_ROOM_NAME_@</h1>
-
-    <a id="change_room_link" href="/">Change room</a>
+    <div>
+      <span id="room_name">@_ROOM_NAME_@</span>
+      <a id="change_room_link" href="/">Change room</a>
+    </div>
 
     <div id="search_bar">
       <input id="search_input" type="text" placeholder="Search video" autocomplete="off">

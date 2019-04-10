@@ -1,5 +1,9 @@
 <div videoId="@_VIDEO_ID_@">
-   <img src="@_VIDEO_THUMBNAIL_@">
-   <span>@_VIDEO_TITLE_@</span>
-   <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>
+  @@IF@@ @_SOURCE_CLIENT_@
+    <button class="remove_from_playlist_buttons" itemId="@_ITEM_ID_@" onclick="removeFromPlaylist(this)"><i class="fas fa-times"></i></button>
+  @@END_IF@@
+
+  <img src="@_VIDEO_THUMBNAIL_@">
+  <span>@_VIDEO_TITLE_@</span>
+  <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>
 </div>

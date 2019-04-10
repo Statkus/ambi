@@ -16,7 +16,7 @@ package body Client is
    procedure Set_Current_Video (This : in out T_Client) is
    begin
       if not This.Client_Playlist.Is_Empty then
-         This.Client_Current_Video := Video_Vectors.Element (This.Client_Playlist.First);
+         This.Client_Current_Video := Playlist_Vectors.Element (This.Client_Playlist.First).Video;
          This.Nothing_To_Play := False;
       else
          This.Nothing_To_Play := True;
@@ -41,28 +41,43 @@ package body Client is
    end Set_Last_Request_Time;
 
    -------------------------------------------------------------------------------------------------
-   -- Add_Video_To_Playlist
+   -- Add_Item_To_Playlist
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video) is
+   procedure Add_Item_To_Playlist (This : in out T_Client; Item : in T_Playlist_Item) is
    begin
-      This.Client_Playlist.Append (Video);
-   end Add_Video_To_Playlist;
+      This.Client_Playlist.Append (Item);
+   end Add_Item_To_Playlist;
 
    -------------------------------------------------------------------------------------------------
-   -- Remove_First_Playlist_Video
+   -- Remove_First_Playlist_Item
    -------------------------------------------------------------------------------------------------
-   procedure Remove_First_Playlist_Video (This : in out T_Client) is
+   procedure Remove_First_Playlist_Item (This : in out T_Client) is
    begin
       if not This.Client_Playlist.Is_Empty then
          This.Client_Playlist.Delete_First;
       end if;
-   end Remove_First_Playlist_Video;
+   end Remove_First_Playlist_Item;
+
+   -------------------------------------------------------------------------------------------------
+   -- Remove_Item_From_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Remove_Item_From_Playlist (This : in out T_Client; Item_ID : in T_Playlist_Item_ID) is
+      Item_Cursor : Playlist_Vectors.Cursor := This.Client_Playlist.First;
+   begin
+      while Playlist_Vectors.Has_Element (Item_Cursor) loop
+         if Playlist_Vectors.Element (Item_Cursor).ID = Item_ID then
+            This.Client_Playlist.Delete (Item_Cursor);
+         end if;
+
+         Playlist_Vectors.Next (Item_Cursor);
+      end loop;
+   end Remove_Item_From_Playlist;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Set_Playlist
-     (This : in out T_Client; Client_Playlist : in Video_Vectors.Vector) is
+     (This : in out T_Client; Client_Playlist : in Playlist_Vectors.Vector) is
    begin
       This.Client_Playlist := Client_Playlist;
    end Set_Playlist;
@@ -97,7 +112,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in T_Client) return Video_Vectors.Vector is
+   function Get_Playlist (This : in T_Client) return Playlist_Vectors.Vector is
      (This.Client_Playlist);
 
    -------------------------------------------------------------------------------------------------

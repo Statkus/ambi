@@ -1,4 +1,4 @@
 <div videoId="@_VIDEO_ID_@" onclick="addToPlaylist(this)">
-   <img src="@_VIDEO_THUMBNAIL_@">
-   <span>@_VIDEO_TITLE_@</span>
+  <img src="@_VIDEO_THUMBNAIL_@">
+  <span>@_VIDEO_TITLE_@</span>
 </div>

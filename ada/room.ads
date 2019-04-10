@@ -38,7 +38,10 @@ package Room is
 
    function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean;
 
-   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in T_Video);
+   procedure Add_Video_To_Playlists
+     (This : in out T_Room; Session_ID : in AWS.Session.ID; Video : in T_Video);
+
+   procedure Remove_From_Playlists (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
 
    procedure Add_Like (This : in out T_Room; Video : in T_Video);
 
@@ -71,7 +74,7 @@ package Room is
      return T_Video;
 
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Video_Vectors.Vector;
+     return Playlist_Vectors.Vector;
 
    function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
      return Boolean;
@@ -105,11 +108,12 @@ private
 
    -- Accessors protected by mutex
    procedure Set_Video (This : in out T_Room; Video : in T_Video);
-   procedure Playlist_Append (This : in out T_Room; Video : in T_Video);
+   procedure Playlist_Append (This : in out T_Room; Item : in T_Playlist_Item);
    procedure Playlist_Delete_First (This : in out T_Room);
+   procedure Playlist_Remove_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
    function Get_Video (This : in out T_Room) return T_Video;
-   function Get_Playlist (This : in out T_Room) return Video_Vectors.Vector;
-   function Get_Playlist_First (This : in out T_Room) return T_Video;
+   function Get_Playlist (This : in out T_Room) return Playlist_Vectors.Vector;
+   function Get_Playlist_First (This : in out T_Room) return T_Playlist_Item;
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
 
    -- Dummy function to instantiate a vector, for now comparing Client.T_Client type is useless
@@ -129,7 +133,8 @@ private
       Name               : Unbounded_String;
       Room_Current_Video : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
-      Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Room_Playlist : Playlist_Vectors.Vector := Playlist_Vectors.Empty_Vector;
+      Current_Playlist_Item_ID  : T_Playlist_Item_ID := T_Playlist_Item_ID'First;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
       Room_Next_Video_Ready     : Boolean := False;

@@ -29,6 +29,10 @@ private
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;
 
+   function Remove_From_Playlist_Callback
+     (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
+     return AWS.Response.Data;
+
    function Add_Remove_Like_Callback
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;
@@ -60,9 +64,13 @@ private
 
    function Build_Search_Results (Video_Search_Results : in Video_Vectors.Vector) return String;
 
+   function Build_Playlist
+     (Current_Room : in T_Room_Class_Access;
+      Session_ID   : in AWS.Session.ID)
+     return String;
+
    function Build_Video_List
      (Current_Room : in T_Room_Class_Access;
-      Session_ID   : in AWS.Session.ID;
       Source       : in T_Video_List_Source)
      return String;
 

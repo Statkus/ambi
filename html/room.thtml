@@ -176,6 +176,12 @@
         }
       }
 
+      // Function called when a remove from playlist button is clicked
+      function removeFromPlaylist(elm) {
+        ajaxGetRequestNoCallback
+         ("/@_ROOM_NAME_@/onclick$remove_from_playlist?itemId=" + elm.getAttribute("itemId"));
+      }
+
       // Function called when a video list selection button is clicked
       function showVideoList(list) {
         var videoListButtons = document.getElementsByClassName("video_list_button");

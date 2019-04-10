@@ -48,7 +48,7 @@ package body Room is
 
             if not This.Get_Playlist_Is_Empty then
                -- If the playlist is not empty, select the next video
-               This.Set_Video (This.Get_Playlist_First);
+               This.Set_Video (This.Get_Playlist_First.Video);
                This.Playlist_Delete_First;
 
                -- Add the current video to the historic
@@ -173,7 +173,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Add_Video_To_Playlists
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlists (This : in out T_Room; Video : in T_Video) is
+   procedure Add_Video_To_Playlists
+     (This : in out T_Room; Session_ID : in AWS.Session.ID; Video : in T_Video) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
       -- Add the video to the room playlist for room sync
@@ -186,7 +187,7 @@ package body Room is
 
          This.Room_Sync_Task.Start_Room_Playlist;
       else
-         This.Playlist_Append (Video);
+         This.Playlist_Append ((Video, This.Current_Playlist_Item_ID, Session_ID));
       end if;
 
       -- Add the video to all the clients playlist
@@ -198,12 +199,31 @@ package body Room is
             Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          else
             -- Otherwise only add the video to the playlist client
-            Client_Vectors.Element (Client_List_Cursor).Add_Video_To_Playlist (Video);
+            Client_Vectors.Element (Client_List_Cursor).Add_Item_To_Playlist
+              ((Video, This.Current_Playlist_Item_ID, Session_ID));
          end if;
 
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
+
+      This.Current_Playlist_Item_ID := This.Current_Playlist_Item_ID + 1;
    end Add_Video_To_Playlists;
+
+   -------------------------------------------------------------------------------------------------
+   -- Remove_From_Playlists
+   -------------------------------------------------------------------------------------------------
+   procedure Remove_From_Playlists (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      -- Remove the video from the room playlist for room sync
+      This.Playlist_Remove_Item (Item_ID);
+
+      -- Remove the video from all the clients playlist
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         Client_Vectors.Element (Client_List_Cursor).Remove_Item_From_Playlist (Item_ID);
+         Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Remove_From_Playlists;
 
    -------------------------------------------------------------------------------------------------
    -- Add_Like
@@ -248,7 +268,7 @@ package body Room is
          -- Set the first client video in the playlist as the current client video and remove
          -- it from the playlist
          Current_Client.Set_Current_Video;
-         Current_Client.Remove_First_Playlist_Video;
+         Current_Client.Remove_First_Playlist_Item;
       end if;
    end Next_Client_Video;
 
@@ -337,7 +357,7 @@ package body Room is
    -- Get_Client_Playlist
    -------------------------------------------------------------------------------------------------
    function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Video_Vectors.Vector is
+     return Playlist_Vectors.Vector is
        (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist);
 
    -------------------------------------------------------------------------------------------------
@@ -544,10 +564,10 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Playlist_Append
    -------------------------------------------------------------------------------------------------
-   procedure Playlist_Append (This : in out T_Room; Video : in T_Video) is
+   procedure Playlist_Append (This : in out T_Room; Item : in T_Playlist_Item) is
    begin
       This.Room_Video_Playlist_Mutex.Seize;
-      This.Room_Playlist.Append (Video);
+      This.Room_Playlist.Append (Item);
       This.Room_Video_Playlist_Mutex.Release;
    end Playlist_Append;
 
@@ -560,6 +580,23 @@ package body Room is
       This.Room_Playlist.Delete_First;
       This.Room_Video_Playlist_Mutex.Release;
    end Playlist_Delete_First;
+
+   -------------------------------------------------------------------------------------------------
+   -- Playlist_Remove_Item
+   -------------------------------------------------------------------------------------------------
+   procedure Playlist_Remove_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+      Item_Cursor : Playlist_Vectors.Cursor := This.Room_Playlist.First;
+   begin
+      while Playlist_Vectors.Has_Element (Item_Cursor) loop
+         if Playlist_Vectors.Element (Item_Cursor).ID = Item_ID then
+            This.Room_Video_Playlist_Mutex.Seize;
+            This.Room_Playlist.Delete (Item_Cursor);
+            This.Room_Video_Playlist_Mutex.Release;
+         end if;
+
+         Playlist_Vectors.Next (Item_Cursor);
+      end loop;
+   end Playlist_Remove_Item;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video
@@ -577,8 +614,8 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in out T_Room) return Video_Vectors.Vector is
-      Room_Playlist : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+   function Get_Playlist (This : in out T_Room) return Playlist_Vectors.Vector is
+      Room_Playlist : Playlist_Vectors.Vector := Playlist_Vectors.Empty_Vector;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
       Room_Playlist := This.Room_Playlist;
@@ -590,14 +627,14 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist_First
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist_First (This : in out T_Room) return T_Video is
-      Video : T_Video;
+   function Get_Playlist_First (This : in out T_Room) return T_Playlist_Item is
+      Item : T_Playlist_Item;
    begin
       This.Room_Video_Playlist_Mutex.Seize;
-      Video := Video_Vectors.Element (This.Room_Playlist.First);
+      Item := Playlist_Vectors.Element (This.Room_Playlist.First);
       This.Room_Video_Playlist_Mutex.Release;
 
-      return Video;
+      return Item;
    end Get_Playlist_First;
 
    -------------------------------------------------------------------------------------------------

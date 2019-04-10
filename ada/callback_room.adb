@@ -3,7 +3,7 @@ with Ada.Text_IO;       use Ada.Text_IO;
 
 with AWS.MIME;
 with AWS.Net.Websocket.Registry;
-with AWS.Parameters;
+with AWS.Session; use AWS.Session;
 
 with Templates_Parser;
 
@@ -53,6 +53,8 @@ package body Callback_Room is
             Response := Search_Button_Callback (Request, Current_Room);
          elsif URI = "/onclick$add_to_playlist" then
             Response := Add_To_Playlist_Callback (Request, Current_Room);
+         elsif URI = "/onclick$remove_from_playlist" then
+            Response := Remove_From_Playlist_Callback (Request, Current_Room);
          elsif URI = "/onclick$add_remove_like" then
             Response := Add_Remove_Like_Callback (Request, Current_Room);
          elsif URI = "/onclick$player_display_checkbox" then
@@ -119,14 +121,11 @@ package body Callback_Room is
 
       -- Client playlist
       Translations (4) := Templates_Parser.Assoc
-        ("VIDEO_LIST", Build_Video_List (Current_Room, Session_ID, Playlist));
+        ("VIDEO_LIST", Build_Playlist (Current_Room, Session_ID));
 
       -- Sync checkboxe value
-      if Current_Room.Get_Client_Sync_With_Room (Session_ID) then
-         Translations (5) := Templates_Parser.Assoc ("CLIENT_SYNC", True);
-      else
-         Translations (5) := Templates_Parser.Assoc ("CLIENT_SYNC", False);
-      end if;
+      Translations (5) :=
+        Templates_Parser.Assoc ("CLIENT_SYNC", Current_Room.Get_Client_Sync_With_Room (Session_ID));
 
       -- Server address for WebSocket
       Translations (6) := Templates_Parser.Assoc ("SERVER_ADDRESS", To_String (SERVER_ADDRESS));
@@ -170,6 +169,8 @@ package body Callback_Room is
    function Add_To_Playlist_Callback
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
+      Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
+
       Video : constant T_Video :=
         (Video_ID        => To_Unbounded_String (AWS.Status.Parameter (Request, "videoId")),
          Video_Title     => To_Unbounded_String (AWS.Status.Parameter (Request, "videoTitle")),
@@ -178,12 +179,31 @@ package body Callback_Room is
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
    begin
-      Current_Room.Add_Video_To_Playlists (Video);
+      Current_Room.Add_Video_To_Playlists (Session_ID, Video);
 
       AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
 
       return AWS.Response.Build (AWS.MIME.Text_HTML, "");
    end Add_To_Playlist_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Remove_From_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Remove_From_Playlist_Callback
+     (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
+     return AWS.Response.Data is
+      Item_ID : constant T_Playlist_Item_ID
+        := T_Playlist_Item_ID'Value (AWS.Status.Parameter (Request, "itemId"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
+   begin
+      Current_Room.Remove_From_Playlists (Item_ID);
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Remove_From_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Add_Remove_Like_Callback
@@ -229,8 +249,7 @@ package body Callback_Room is
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
-      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Checked    : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+      Checked    : constant Boolean := Boolean'Value (AWS.Status.Parameter (Request, "checked"));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
@@ -250,8 +269,7 @@ package body Callback_Room is
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
-      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
-      Sync       : constant Boolean := Boolean'Value (AWS.Parameters.Get (Parameters, "checked"));
+      Sync       : constant Boolean := Boolean'Value (AWS.Status.Parameter (Request, "checked"));
 
       Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
         AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
@@ -304,12 +322,21 @@ package body Callback_Room is
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
       Session_ID : constant AWS.Session.ID := AWS.Status.Session (Request);
-      Parameters : constant AWS.Parameters.List := AWS.Status.Parameters (Request);
       Source     : constant T_Video_List_Source :=
-        T_Video_List_Source'Value (AWS.Parameters.Get (Parameters, "source"));
+        T_Video_List_Source'Value (AWS.Status.Parameter (Request, "source"));
+
+      Response : Unbounded_String := Null_Unbounded_String;
    begin
+      case Source is
+         when Playlist =>
+            Response := To_Unbounded_String (Build_Playlist (Current_Room, Session_ID));
+
+         when others =>
+            Response := To_Unbounded_String (Build_Video_List (Current_Room, Source));
+      end case;
+
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-        ("video_list", Build_Video_List (Current_Room, Session_ID, Source)));
+        ("video_list", To_String (Response)));
    end Get_Video_List_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -339,7 +366,7 @@ package body Callback_Room is
    function Build_Search_Results (Video_Search_Results : in Video_Vectors.Vector) return String is
       Translations : Templates_Parser.Translate_Table (1 .. 3);
 
-      Response : Unbounded_String;
+      Response : Unbounded_String := Null_Unbounded_String;
 
       List_Cursor : Video_Vectors.Cursor := Video_Search_Results.First;
    begin
@@ -363,31 +390,73 @@ package body Callback_Room is
    end Build_Search_Results;
 
    -------------------------------------------------------------------------------------------------
+   -- Build_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Build_Playlist
+     (Current_Room : in T_Room_Class_Access;
+      Session_ID   : in AWS.Session.ID)
+     return String is
+      Translations : Templates_Parser.Translate_Table (1 .. 6);
+
+      Response : Unbounded_String := Null_Unbounded_String;
+
+      Playlist_Items : constant Playlist_Vectors.Vector :=
+        Current_Room.Get_Client_Playlist (Session_ID);
+
+      List_Cursor : Playlist_Vectors.Cursor := Playlist_Items.First;
+   begin
+      while Playlist_Vectors.Has_Element (List_Cursor) loop
+         Translations (1) := Templates_Parser.Assoc
+           ("SOURCE_CLIENT", Session_ID = Playlist_Vectors.Element (List_Cursor).Client_ID);
+
+         Translations (2) := Templates_Parser.Assoc
+           ("ITEM_ID", Trim (Playlist_Vectors.Element (List_Cursor).ID'Img, Ada.Strings.Left));
+
+         Translations (3) := Templates_Parser.Assoc
+           ("VIDEO_ID", Playlist_Vectors.Element (List_Cursor).Video.Video_ID);
+
+         Translations (4) := Templates_Parser.Assoc
+           ("VIDEO_TITLE", Playlist_Vectors.Element (List_Cursor).Video.Video_Title);
+
+         Translations (5) := Templates_Parser.Assoc
+           ("VIDEO_THUMBNAIL", Playlist_Vectors.Element (List_Cursor).Video.Video_Thumbnail);
+
+         if Current_Room.Is_Video_Liked (Playlist_Vectors.Element (List_Cursor).Video) then
+            Translations (6) := Templates_Parser.Assoc ("LIKE", "s");
+         else
+            Translations (6) := Templates_Parser.Assoc ("LIKE", "r");
+         end if;
+
+         Append (Response, To_String
+           (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
+
+         Playlist_Vectors.Next (List_Cursor);
+      end loop;
+
+      return To_String (Response);
+   end Build_Playlist;
+
+   -------------------------------------------------------------------------------------------------
    -- Build_Video_List
    -------------------------------------------------------------------------------------------------
    function Build_Video_List
      (Current_Room : in T_Room_Class_Access;
-      Session_ID   : in AWS.Session.ID;
       Source       : in T_Video_List_Source)
      return String is
       Translations : Templates_Parser.Translate_Table (1 .. 4);
 
-      Response : Unbounded_String;
+      Response : Unbounded_String := Null_Unbounded_String;
 
-      Videos      : Video_Vectors.Vector;
+      Videos      : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       List_Cursor : Video_Vectors.Cursor;
    begin
-      case Source is
-         when Playlist =>
-            Videos := Current_Room.Get_Client_Playlist (Session_ID);
-            List_Cursor := Videos.First;
-         when Historic =>
-            Videos := Current_Room.Get_Historic;
-            List_Cursor := Videos.Last;
-         when Likes =>
-            Videos := Current_Room.Get_Likes;
-            List_Cursor := Videos.Last;
-      end case;
+      if Source = Historic then
+         Videos := Current_Room.Get_Historic;
+         List_Cursor := Videos.Last;
+      elsif Source = Likes then
+         Videos := Current_Room.Get_Likes;
+         List_Cursor := Videos.Last;
+      end if;
 
       while Video_Vectors.Has_Element (List_Cursor) loop
          Translations (1) := Templates_Parser.Assoc
@@ -407,20 +476,10 @@ package body Callback_Room is
             Translations (4) := Templates_Parser.Assoc ("LIKE", "r");
          end if;
 
-         case Source is
-            when Playlist =>
-               Append (Response, To_String
-                 (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));
+         Append (Response, To_String
+           (Templates_Parser.Parse ("html/video_list_item.thtml", Translations)));
 
-               List_Cursor := Video_Vectors.Next (List_Cursor);
-
-            when others =>
-               Append (Response, To_String
-                 (Templates_Parser.Parse ("html/video_list_item.thtml", Translations)));
-
-               List_Cursor := Video_Vectors.Previous (List_Cursor);
-         end case;
-
+         Video_Vectors.Previous (List_Cursor);
       end loop;
 
       return To_String (Response);

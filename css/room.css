@@ -229,6 +229,17 @@ input:checked + .slider:before {
   border-radius: 38px;
 }
 
+.remove_from_playlist_buttons {
+  background-color: black;
+  color: inherit;
+  font-size: 30px;
+  position: absolute;
+  z-index: 1;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+}
+
 /* Back to top link *******************************************************************************/
 #back_to_top_link {
   color: inherit;

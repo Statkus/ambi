@@ -18,12 +18,14 @@ package Client is
 
    procedure Set_Last_Request_Time (This : in out T_Client);
 
-   procedure Add_Video_To_Playlist (This : in out T_Client; Video : in T_Video);
+   procedure Add_Item_To_Playlist (This : in out T_Client; Item : in T_Playlist_Item);
 
-   procedure Remove_First_Playlist_Video (This : in out T_Client);
+   procedure Remove_First_Playlist_Item (This : in out T_Client);
+
+   procedure Remove_Item_From_Playlist (This : in out T_Client; Item_ID : in T_Playlist_Item_ID);
 
    procedure Set_Playlist
-     (This : in out T_Client; Client_Playlist : in Video_Vectors.Vector);
+     (This : in out T_Client; Client_Playlist : in Playlist_Vectors.Vector);
 
    procedure Set_Display_Player (This : in out T_Client; Display : in Boolean);
 
@@ -33,7 +35,7 @@ package Client is
 
    function Get_Current_Video (This : in T_Client) return T_Video;
 
-   function Get_Playlist (This : in T_Client) return Video_Vectors.Vector;
+   function Get_Playlist (This : in T_Client) return Playlist_Vectors.Vector;
 
    function Get_Display_Player (This : in T_Client) return Boolean;
 
@@ -48,7 +50,7 @@ private
    type T_Client is tagged limited record
       Session_ID           : AWS.Session.ID;
       Client_Current_Video : T_Video;
-      Client_Playlist      : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Client_Playlist      : Playlist_Vectors.Vector := Playlist_Vectors.Empty_Vector;
       Display_Player       : Boolean := True;
       Sync_With_Room       : Boolean := False;
       Nothing_To_Play      : Boolean := True;

@@ -43,6 +43,8 @@ package Room is
 
    procedure Remove_From_Playlists (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
 
+   procedure Up_Vote_Playlist_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
+
    procedure Add_Like (This : in out T_Room; Video : in T_Video);
 
    procedure Remove_Like (This : in out T_Room; Video : in T_Video);
@@ -111,6 +113,7 @@ private
    procedure Playlist_Append (This : in out T_Room; Item : in T_Playlist_Item);
    procedure Playlist_Delete_First (This : in out T_Room);
    procedure Playlist_Remove_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
+   procedure Playlist_Up_Vote_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
    function Get_Video (This : in out T_Room) return T_Video;
    function Get_Playlist (This : in out T_Room) return Playlist_Vectors.Vector;
    function Get_Playlist_First (This : in out T_Room) return T_Playlist_Item;

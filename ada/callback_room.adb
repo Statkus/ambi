@@ -63,6 +63,8 @@ package body Callback_Room is
             Response := Player_Sync_Checkbox_Callback (Request, Current_Room);
          elsif URI = "/onclick$next_room_video" then
             Response := Next_Room_Video_Callback (Current_Room);
+         elsif URI = "/onclick$up_vote" then
+            Response := Up_Vote_Callback (Request, Current_Room);
          elsif URI = "/next_video" then
             Response := Next_Video_Callback (Request, Current_Room);
          elsif URI = "/get_video_list" then
@@ -303,6 +305,24 @@ package body Callback_Room is
    end Next_Room_Video_Callback;
 
    -------------------------------------------------------------------------------------------------
+   -- Up_Vote_Callback
+   -------------------------------------------------------------------------------------------------
+   function Up_Vote_Callback (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
+     return AWS.Response.Data is
+      Item_ID : constant T_Playlist_Item_ID
+        := T_Playlist_Item_ID'Value (AWS.Status.Parameter (Request, "itemId"));
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
+   begin
+      Current_Room.Up_Vote_Playlist_Item (Item_ID);
+
+      AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
+
+      return AWS.Response.Build (AWS.MIME.Text_HTML, "");
+   end Up_Vote_Callback;
+
+   -------------------------------------------------------------------------------------------------
    -- Next_Video_Callback
    -------------------------------------------------------------------------------------------------
    function Next_Video_Callback
@@ -396,7 +416,7 @@ package body Callback_Room is
      (Current_Room : in T_Room_Class_Access;
       Session_ID   : in AWS.Session.ID)
      return String is
-      Translations : Templates_Parser.Translate_Table (1 .. 6);
+      Translations : Templates_Parser.Translate_Table (1 .. 7);
 
       Response : Unbounded_String := Null_Unbounded_String;
 
@@ -426,6 +446,10 @@ package body Callback_Room is
          else
             Translations (6) := Templates_Parser.Assoc ("LIKE", "r");
          end if;
+
+         Translations (7) := Templates_Parser.Assoc
+           ("UP_VOTES",
+            Trim (Playlist_Vectors.Element (List_Cursor).Up_Votes'Img, Ada.Strings.Left));
 
          Append (Response, To_String
            (Templates_Parser.Parse ("html/playlist_item.thtml", Translations)));

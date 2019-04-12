@@ -24,6 +24,8 @@ package Client is
 
    procedure Remove_Item_From_Playlist (This : in out T_Client; Item_ID : in T_Playlist_Item_ID);
 
+   procedure Up_Vote_Playlist_Item (This : in out T_Client; Item_ID : in T_Playlist_Item_ID);
+
    procedure Set_Playlist
      (This : in out T_Client; Client_Playlist : in Playlist_Vectors.Vector);
 

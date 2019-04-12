@@ -48,6 +48,9 @@ private
    function Next_Room_Video_Callback (Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;
 
+   function Up_Vote_Callback (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
+     return AWS.Response.Data;
+
    function Next_Video_Callback
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data;

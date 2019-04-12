@@ -74,6 +74,14 @@ package body Client is
    end Remove_Item_From_Playlist;
 
    -------------------------------------------------------------------------------------------------
+   -- Up_Vote_Playlist_Item
+   -------------------------------------------------------------------------------------------------
+   procedure Up_Vote_Playlist_Item (This : in out T_Client; Item_ID : in T_Playlist_Item_ID) is
+   begin
+      Up_Vote_Playlist_Item (This.Client_Playlist, Item_ID);
+   end Up_Vote_Playlist_Item;
+
+   -------------------------------------------------------------------------------------------------
    -- Set_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Set_Playlist

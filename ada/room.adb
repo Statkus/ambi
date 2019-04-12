@@ -187,7 +187,11 @@ package body Room is
 
          This.Room_Sync_Task.Start_Room_Playlist;
       else
-         This.Playlist_Append ((Video, This.Current_Playlist_Item_ID, Session_ID));
+         This.Playlist_Append
+           ((Video     => Video,
+             ID        => This.Current_Playlist_Item_ID,
+             Client_ID => Session_ID,
+             others    => <>));
       end if;
 
       -- Add the video to all the clients playlist
@@ -200,7 +204,10 @@ package body Room is
          else
             -- Otherwise only add the video to the playlist client
             Client_Vectors.Element (Client_List_Cursor).Add_Item_To_Playlist
-              ((Video, This.Current_Playlist_Item_ID, Session_ID));
+              ((Video     => Video,
+                ID        => This.Current_Playlist_Item_ID,
+                Client_ID => Session_ID,
+                others    => <>));
          end if;
 
          Client_Vectors.Next (Client_List_Cursor);
@@ -224,6 +231,20 @@ package body Room is
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
    end Remove_From_Playlists;
+
+   -------------------------------------------------------------------------------------------------
+   -- Up_Vote_Playlist_Item
+   -------------------------------------------------------------------------------------------------
+   procedure Up_Vote_Playlist_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   begin
+      This.Playlist_Up_Vote_Item (Item_ID);
+
+      while Client_Vectors.Has_Element (Client_List_Cursor) loop
+         Client_Vectors.Element (Client_List_Cursor).Up_Vote_Playlist_Item (Item_ID);
+         Client_Vectors.Next (Client_List_Cursor);
+      end loop;
+   end Up_Vote_Playlist_Item;
 
    -------------------------------------------------------------------------------------------------
    -- Add_Like
@@ -597,6 +618,16 @@ package body Room is
          Playlist_Vectors.Next (Item_Cursor);
       end loop;
    end Playlist_Remove_Item;
+
+   -------------------------------------------------------------------------------------------------
+   -- Playlist_Up_Vote_Item
+   -------------------------------------------------------------------------------------------------
+   procedure Playlist_Up_Vote_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+   begin
+      This.Room_Video_Playlist_Mutex.Seize;
+      Up_Vote_Playlist_Item (This.Room_Playlist, Item_ID);
+      This.Room_Video_Playlist_Mutex.Release;
+   end Playlist_Up_Vote_Item;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video

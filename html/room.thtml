@@ -160,10 +160,10 @@
       function addRemoveLike(elm) {
         var parentElm = elm.parentNode;
 
-        if (parentElm.getElementsByTagName("span").length > 0) {
+        if (parentElm.getElementsByClassName("playlist_videos_titles").length > 0) {
           ajaxGetRequestNoCallback
            ("/@_ROOM_NAME_@/onclick$add_remove_like?videoId=" + parentElm.getAttribute("videoId") +
-            "&videoTitle=" + encodeURIComponent(parentElm.getElementsByTagName("span")[0].innerHTML) +
+            "&videoTitle=" + encodeURIComponent(parentElm.getElementsByClassName("playlist_videos_titles")[0].innerHTML) +
             "&videoThumbnail=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
             "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
         }
@@ -179,7 +179,13 @@
       // Function called when a remove from playlist button is clicked
       function removeFromPlaylist(elm) {
         ajaxGetRequestNoCallback
-         ("/@_ROOM_NAME_@/onclick$remove_from_playlist?itemId=" + elm.getAttribute("itemId"));
+         ("/@_ROOM_NAME_@/onclick$remove_from_playlist?itemId=" + elm.parentNode.getAttribute("itemId"));
+      }
+
+      // Function called when an up vote button is clicked
+      function upVote(elm) {
+        ajaxGetRequestNoCallback
+         ("/@_ROOM_NAME_@/onclick$up_vote?itemId=" + elm.parentNode.getAttribute("itemId"));
       }
 
       // Function called when a video list selection button is clicked

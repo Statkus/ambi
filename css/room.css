@@ -193,7 +193,7 @@ input:checked + .slider:before {
   cursor: pointer;
 }
 
-#video_list div span {
+.playlist_videos_titles {
   text-align: left;
   line-height: 90px;
   position: absolute;
@@ -240,11 +240,29 @@ input:checked + .slider:before {
   border-radius: 10px;
 }
 
+.up_vote_buttons {
+  background-color: rgba(0, 0, 0, 0.0);
+  color: red;
+  font-size: 30px;
+  z-index: 1;
+  position: absolute;
+  left: 605px;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+}
+
+.up_vote_numbers {
+  position: absolute;
+  left: 623px;
+  padding-top: 35px;
+}
+
 /* Back to top link *******************************************************************************/
 #back_to_top_link {
   color: inherit;
   font-size: 30px;
   position: fixed;
   bottom: 10px;
-  left: 620px;
+  left: 650px;
 }

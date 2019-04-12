@@ -17,6 +17,7 @@ package List is
       Video     : T_Video;
       ID        : T_Playlist_Item_ID;
       Client_ID : AWS.Session.ID;
+      Up_Votes  : Natural := 0;
    end record;
 
    -- Dummy function to instantiate a vector, for now comparing T_Video records is useless
@@ -30,5 +31,8 @@ package List is
    package Playlist_Vectors is new Ada.Containers.Vectors (Natural, T_Playlist_Item, Playlist_Item_Compare);
 
    package Room_Name_Vectors is new Ada.Containers.Vectors (Natural, Unbounded_String);
+
+   procedure Up_Vote_Playlist_Item
+     (Playlist : in out Playlist_Vectors.Vector; Item_ID : in T_Playlist_Item_ID);
 
 end List;

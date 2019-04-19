@@ -95,7 +95,7 @@ button {
 }
 
 #sync_checkbox {
-  margin-left: 250px;
+  margin-left: 20%;
 }
 
 .switch {
@@ -293,4 +293,30 @@ input:checked + .slider:before {
   position: fixed;
   bottom: 10px;
   left: calc(50% + 370px);
+}
+
+/* Special rules for screen lower than 816px width ************************************************/
+@media all and (max-width: 816px) {
+  #change_room_link {
+    position: static;
+  }
+
+  #search_bar {
+    width: 100%;
+  }
+
+  #video_list_buttons {
+    position: relative;
+    width: calc(100% - 80px);
+    left: -40px;
+  }
+
+  #video_list {
+    width: calc(100% - 80px);
+    left: 0px;
+  }
+
+  #back_to_top_link {
+    left: calc(100% - 38px);
+  }
 }

@@ -18,7 +18,7 @@
 
   <body>
     <div>
-      <span id="room_name">@_ROOM_NAME_@</span>
+      <div id="room_name">@_ROOM_NAME_@</div>
       <a id="change_room_link" href="/">Change room</a>
     </div>
 

@@ -21,6 +21,7 @@ button {
 #room_select_bar {
   display: inline-block;
   width: 400px;
+  margin-bottom: 20px;
 }
 
 @media all and (max-width: 416px) {
@@ -56,4 +57,18 @@ button {
 
 .item_active {
   background-color: DodgerBlue !important;
+}
+
+@media all and (min-height: 200px) {
+  footer {
+    position: absolute;
+    bottom: 0px;
+    left: calc(50% - 157px);
+  }
+}
+
+#github_link {
+  background-color: inherit;
+  color: inherit;
+  font-size: 25px;
 }

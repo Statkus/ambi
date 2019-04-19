@@ -3,23 +3,44 @@ body {
   font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
   font-size: 16px;
   color: white;
+  text-align: center;
 }
 
 button {
   cursor: pointer;
+  background-color: white;
+  color: black;
+  width: 35px;
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px;
+  margin: 0px;
 }
 
 #room_select_bar {
   display: inline-block;
+  width: 400px;
+}
+
+@media all and (max-width: 416px) {
+  #room_select_bar {
+    width: 100%;
+  }
 }
 
 #room_name_input {
-  width: 300px;
+  width: calc(100% - 10px - 35px - 5px);
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px 5px;
+  margin: 0px;
 }
 
 #room_name_autocomplete {
   z-index: 99;
-  top: 100%;
+  width: 100%;
 }
 
 #room_name_autocomplete div {

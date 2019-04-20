@@ -269,21 +269,24 @@ input:checked + .slider:before {
 }
 
 .up_vote_buttons {
-  background-color: rgba(0, 0, 0, 0.0);
+  background-color: black;
   color: red;
   font-size: 30px;
   z-index: 1;
   position: absolute;
-  left: calc(100% + 5px);
+  left: 55px;
   border: none;
   outline: none;
-  border-radius: 40px;
+  border-radius: 50%;
+  padding: 0px;
+  margin: 0px;
 }
 
 .up_vote_numbers {
+  background-color: black;
   position: absolute;
-  left: calc(100% + 23px);
-  padding-top: 35px;
+  left: 100px;
+  padding: 5px;
 }
 
 /* Back to top link *******************************************************************************/
@@ -291,12 +294,12 @@ input:checked + .slider:before {
   color: inherit;
   font-size: 30px;
   position: fixed;
-  bottom: 10px;
-  left: calc(50% + 370px);
+  bottom: 5px;
+  left: calc(50% + 325px);
 }
 
-/* Special rules for screen lower than 816px width ************************************************/
-@media all and (max-width: 816px) {
+/* Special rules for small screen *****************************************************************/
+@media all and (max-width: 666px) {
   #change_room_link {
     position: static;
   }
@@ -307,15 +310,16 @@ input:checked + .slider:before {
 
   #video_list_buttons {
     position: relative;
-    width: calc(100% - 80px);
-    left: -40px;
+    width: 100%;
   }
 
   #video_list {
-    width: calc(100% - 80px);
+    width: 100%;
     left: 0px;
   }
+}
 
+@media all and (max-width: 737px) {
   #back_to_top_link {
     left: calc(100% - 38px);
   }

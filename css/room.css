@@ -69,7 +69,6 @@ button {
 }
 
 #search_results div span {
-  line-height: 90px;
   position: absolute;
   width: calc(100% - 120px - 20px - 8px);
   height: 90px;

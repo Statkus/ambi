@@ -181,13 +181,13 @@
       // Function called when a remove from playlist button is clicked
       function removeFromPlaylist(elm) {
         ajaxGetRequestNoCallback
-         ("/@_ROOM_NAME_@/onclick$remove_from_playlist?itemId=" + elm.parentNode.getAttribute("itemId"));
+         ("/@_ROOM_NAME_@/onclick$remove_from_playlist?itemId=" + elm.parentNode.parentNode.getAttribute("itemId"));
       }
 
       // Function called when an up vote button is clicked
       function upVote(elm) {
         ajaxGetRequestNoCallback
-         ("/@_ROOM_NAME_@/onclick$up_vote?itemId=" + elm.parentNode.getAttribute("itemId"));
+         ("/@_ROOM_NAME_@/onclick$up_vote?itemId=" + elm.parentNode.parentNode.getAttribute("itemId"));
       }
 
       // Function called when a video list selection button is clicked

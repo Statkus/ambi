@@ -1,10 +1,13 @@
 <div itemId="@_ITEM_ID_@" videoId="@_VIDEO_ID_@">
-  @@IF@@ @_SOURCE_CLIENT_@
-    <button class="remove_from_playlist_buttons" onclick="removeFromPlaylist(this)"><i class="fas fa-times"></i></button>
-  @@END_IF@@
+  <span class="playlist_management_buttons">
+    @@IF@@ @_SOURCE_CLIENT_@
+      <button class="remove_from_playlist_buttons" onclick="removeFromPlaylist(this)"><i class="fas fa-times"></i></button>
+    @@END_IF@@
 
-  <button class="up_vote_buttons" onclick="upVote(this)"><i class="fas fa-arrow-alt-circle-up"></i></button>
-  <span class="up_vote_numbers">@_UP_VOTES_@</span>
+    <button class="up_vote_buttons" onclick="upVote(this)"><i class="fas fa-arrow-alt-circle-up"></i></button>
+    <span class="up_vote_numbers">@_UP_VOTES_@</span>
+  </span>
+
   <img src="@_VIDEO_THUMBNAIL_@">
   <span class="playlist_videos_titles">@_VIDEO_TITLE_@</span>
   <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>

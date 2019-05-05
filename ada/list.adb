@@ -19,22 +19,26 @@ package body List is
 
          Playlist.Delete (Item_Cursor);
 
-         Item_Cursor := Playlist.First;
+         if Playlist.Is_Empty then
+            Playlist.Append (Item);
+         else
+            Item_Cursor := Playlist.First;
 
-         while Playlist_Vectors.Has_Element (Item_Cursor) loop
-            if Playlist_Vectors.Element (Item_Cursor).Up_Votes < Item.Up_Votes then
-               Playlist.Insert (Item_Cursor, Item);
+            while Playlist_Vectors.Has_Element (Item_Cursor) loop
+               if Playlist_Vectors.Element (Item_Cursor).Up_Votes < Item.Up_Votes then
+                  Playlist.Insert (Item_Cursor, Item);
 
-               Item_Cursor := Playlist.Last;
-            elsif Playlist_Vectors.To_Index (Item_Cursor)
-              = Playlist_Vectors.To_Index (Playlist.Last) then
-               Playlist.Append (Item);
+                  Item_Cursor := Playlist.Last;
+               elsif Playlist_Vectors.To_Index (Item_Cursor)
+                 = Playlist_Vectors.To_Index (Playlist.Last) then
+                  Playlist.Append (Item);
 
-               Item_Cursor := Playlist.Last;
-            end if;
+                  Item_Cursor := Playlist.Last;
+               end if;
 
-            Playlist_Vectors.Next (Item_Cursor);
-         end loop;
+               Playlist_Vectors.Next (Item_Cursor);
+            end loop;
+         end if;
       end if;
    end Up_Vote_Playlist_Item;
 

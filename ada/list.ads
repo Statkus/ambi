@@ -20,8 +20,9 @@ package List is
       Up_Votes  : Natural := 0;
    end record;
 
-   -- Dummy function to instantiate a vector, for now comparing T_Video records is useless
-   function Video_Compare (Left, Right : in T_Video) return Boolean is (False);
+   -- Function comparing two videos to instantiate a vector
+   function Video_Compare (Left, Right : in T_Video) return Boolean is
+     (Left.Video_ID = Right.Video_ID);
 
    -- Dummy function to instantiate a vector, for now comparing T_Playlist_Item records is useless
    function Playlist_Item_Compare (Left, Right : in T_Playlist_Item) return Boolean is (False);

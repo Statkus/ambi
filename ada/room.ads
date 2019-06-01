@@ -1,5 +1,4 @@
 with Ada.Containers.Vectors;
-with Ada.Numerics.Float_Random;
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
@@ -7,7 +6,8 @@ with AWS.Session;
 
 with Client;
 with Database;
-with List; use List;
+with List; use List; use List.Video_Vectors;
+
 
 package Room is
 
@@ -106,18 +106,19 @@ private
 
    procedure Remove_Disconnected_Client (This : in out T_Room);
 
-   function Select_Random_Video (This : in T_Room; Videos : in Video_Vectors.Vector) return T_Video;
-
    -- Accessors protected by mutex
    procedure Set_Video (This : in out T_Room; Video : in T_Video);
    procedure Playlist_Append (This : in out T_Room; Item : in T_Playlist_Item);
    procedure Playlist_Delete_First (This : in out T_Room);
    procedure Playlist_Remove_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
    procedure Playlist_Up_Vote_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
+   procedure Add_Video_To_Last_Room_Videos (This: in out T_Room; Video : T_Video);
    function Get_Video (This : in out T_Room) return T_Video;
    function Get_Playlist (This : in out T_Room) return Playlist_Vectors.Vector;
    function Get_Playlist_First (This : in out T_Room) return T_Playlist_Item;
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean;
+   function Select_Related_Video (This : in out T_Room; Related_Videos : in Video_Vectors.Vector)
+     return T_Video;
 
    -- Dummy function to instantiate a vector, for now comparing Client.T_Client type is useless
    function Client_Compare (Left, Right : Client.T_Client_Class_Access) return Boolean is (False);
@@ -132,11 +133,14 @@ private
       Owned : Boolean := False;
    end T_Mutex;
 
+   MAX_LAST_ROOM_VIDEOS : constant := 10;
+
    type T_Room is tagged limited record
       Name               : Unbounded_String;
       Room_Current_Video : T_Video :=
         (Video_Title => To_Unbounded_String ("no video played"), others => <>);
       Room_Playlist : Playlist_Vectors.Vector := Playlist_Vectors.Empty_Vector;
+      Last_Room_Videos          : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
       Current_Playlist_Item_ID  : T_Playlist_Item_ID := T_Playlist_Item_ID'First;
       Room_Sync_Task            : T_Room_Sync_Task_Access;
       Room_Current_Video_Active : Boolean := False;
@@ -147,7 +151,6 @@ private
       Number_Of_Clients_Sync    : Natural := 0;
       Last_Request_Time         : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       DB                        : Database.T_Database_Class_Access;
-      RNG                       : Ada.Numerics.Float_Random.Generator;
    end record;
 
 end Room;

@@ -138,6 +138,9 @@
             ajaxGetRequestNoCallback("/@_ROOM_NAME_@/next_video", true);
           }
         }
+        else if (event.data == "clear_search_input") {
+          document.getElementById("search_input").value = "";
+        }
       }
 
       // Function called when an item of search_results or video_list is clicked

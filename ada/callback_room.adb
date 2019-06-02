@@ -170,6 +170,7 @@ package body Callback_Room is
    begin
       if Direct_Link then
          AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
+         AWS.Net.WebSocket.Registry.Send (Rcp, "clear_search_input");
       end if;
 
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response

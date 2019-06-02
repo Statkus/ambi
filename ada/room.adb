@@ -50,7 +50,6 @@ package body Room is
                -- If the playlist is not empty, select the next video
                This.Set_Video (This.Get_Playlist_First.Video);
                This.Playlist_Delete_First;
-               This.Add_Video_To_Last_Room_Videos (This.Get_Video);
 
                -- Add the current video to the historic
                This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
@@ -67,8 +66,6 @@ package body Room is
                      This.Room_Current_Video_Active := False;
                      Playlist_Empty := True;
                   else
-                     This.Add_Video_To_Last_Room_Videos (This.Get_Video);
-
                      -- Add the current video to the historic
                      This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
                   end if;
@@ -184,7 +181,6 @@ package body Room is
       if This.Get_Playlist_Is_Empty and not This.Room_Current_Video_Active then
          This.Room_Current_Video_Active := True;
          This.Set_Video (Video);
-         This.Add_Video_To_Last_Room_Videos (Video);
 
          -- Add the current video to the historic
          This.DB.Add_To_Room_Historic (This.Get_Name, Video);
@@ -554,6 +550,37 @@ package body Room is
    end Remove_Disconnected_Client;
 
    -------------------------------------------------------------------------------------------------
+   -- Select_Related_Video
+   -------------------------------------------------------------------------------------------------
+   function Select_Related_Video (This : in out T_Room; Related_Videos : in Video_Vectors.Vector)
+     return T_Video is
+      Related_Videos_Cursor : Video_Vectors.Cursor := Related_Videos.First;
+      Related_Video_Found   : Boolean := False;
+      Last_Room_Videos      : constant Video_Vectors.Vector :=
+        This.DB.Get_Room_Last_Videos (This.Get_Name, MAX_LAST_ROOM_VIDEOS);
+      Video : T_Video :=
+        (Video_ID        => To_Unbounded_String (""),
+         Video_Title     => To_Unbounded_String ("no video played"),
+         Video_Thumbnail => To_Unbounded_String (""));
+   begin
+      while not Related_Video_Found and Video_Vectors.Has_Element (Related_Videos_Cursor) loop
+         if Last_Room_Videos.Find (Video_Vectors.Element (Related_Videos_Cursor))
+           = Video_Vectors.No_Element then
+            Video := Video_Vectors.Element (Related_Videos_Cursor);
+            Related_Video_Found := True;
+         end if;
+
+         Video_Vectors.Next (Related_Videos_Cursor);
+      end loop;
+
+      if not Related_Video_Found and Natural (Related_Videos.Length) > 0 then
+         Video := Video_Vectors.Element (Related_Videos.First);
+      end if;
+
+      return Video;
+   end Select_Related_Video;
+
+   -------------------------------------------------------------------------------------------------
    -- Set_Video
    -------------------------------------------------------------------------------------------------
    procedure Set_Video (This : in out T_Room; Video : in T_Video) is
@@ -611,20 +638,6 @@ package body Room is
    end Playlist_Up_Vote_Item;
 
    -------------------------------------------------------------------------------------------------
-   -- Add_Video_To_Last_Room_Videos
-   -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Last_Room_Videos (This : in out T_Room; Video : in T_Video) is
-   begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      This.Last_Room_Videos.Prepend (Video);
-
-      while Natural (This.Last_Room_Videos.Length) > MAX_LAST_ROOM_VIDEOS loop
-         This.Last_Room_Videos.Delete_Last;
-      end loop;
-      This.Room_Video_Playlist_Mutex.Release;
-   end Add_Video_To_Last_Room_Videos;
-
-   -------------------------------------------------------------------------------------------------
    -- Get_Video
    -------------------------------------------------------------------------------------------------
    function Get_Video (This : in out T_Room) return T_Video is
@@ -675,37 +688,6 @@ package body Room is
 
       return Is_Empty;
    end Get_Playlist_Is_Empty;
-
-   -------------------------------------------------------------------------------------------------
-   -- Select_Related_Video
-   -------------------------------------------------------------------------------------------------
-   function Select_Related_Video (This : in out T_Room; Related_Videos : in Video_Vectors.Vector)
-     return T_Video is
-      Video : T_Video :=
-        (Video_ID        => To_Unbounded_String (""),
-         Video_Title     => To_Unbounded_String ("no video played"),
-         Video_Thumbnail => To_Unbounded_String (""));
-      Related_Videos_Cursor : Video_Vectors.Cursor := Related_Videos.First;
-      Related_Video_Found   : Boolean := False;
-   begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      while not Related_Video_Found and Video_Vectors.Has_Element (Related_Videos_Cursor) loop
-         if This.Last_Room_Videos.Find (Video_Vectors.Element (Related_Videos_Cursor))
-           = Video_Vectors.No_Element then
-            Video := Video_Vectors.Element (Related_Videos_Cursor);
-            Related_Video_Found := True;
-         end if;
-
-         Video_Vectors.Next (Related_Videos_Cursor);
-      end loop;
-      This.Room_Video_Playlist_Mutex.Release;
-
-      if not Related_Video_Found and Natural (Related_Videos.Length) > 0 then
-         Video := Video_Vectors.Element (Related_Videos.First);
-      end if;
-
-      return Video;
-   end Select_Related_Video;
 
    -------------------------------------------------------------------------------------------------
    -- T_Mutex

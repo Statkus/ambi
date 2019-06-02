@@ -134,6 +134,13 @@ package body Database is
    -- Get_Room_Historic
    -------------------------------------------------------------------------------------------------
    function Get_Room_Historic (This : in T_Database; Room_Name : in String)
+     return Video_Vectors.Vector is (This.Get_Room_Last_Videos (Room_Name, MAX_HISTORIC_VIDEOS));
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Room_Last_Videos
+   -------------------------------------------------------------------------------------------------
+   function Get_Room_Last_Videos
+     (This : in T_Database; Room_Name : in String; Number_Of_Videos : in Natural)
      return Video_Vectors.Vector is
       DB_Iterator   : DB.SQLite.Iterator;
       DB_Row        : DB.String_Vectors.Vector;
@@ -147,7 +154,7 @@ package body Database is
         & "' ORDER BY id DESC;");
 
       while DB.SQLite.More (DB_Iterator)
-        and Natural (Video_List.Length) < MAX_HISTORIC_VIDEOS loop
+        and Natural (Video_List.Length) < Number_Of_Videos loop
          DB.SQLite.Get_Line (DB_Iterator, DB_Row);
 
          DB_Row_Cursor := DB.String_Vectors.Next (DB_Row.First);
@@ -165,7 +172,7 @@ package body Database is
       DB.SQLite.End_Select (DB_Iterator);
 
       return Video_List;
-   end Get_Room_Historic;
+   end Get_Room_Last_Videos;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Likes

@@ -23,6 +23,9 @@ package Database is
    function Get_Rooms (This : in T_Database) return Room_Name_Vectors.Vector;
    function Get_Room_Historic (This : in T_Database; Room_Name : in String)
      return Video_Vectors.Vector;
+   function Get_Room_Last_Videos
+     (This : in T_Database; Room_Name : in String; Number_Of_Videos : in Natural)
+     return Video_Vectors.Vector;
    function Get_Room_Likes (This : in T_Database; Room_Name : in String) return Video_Vectors.Vector;
 
    function Is_Room_Video_Liked (This : in T_Database; Room_Name : in String; Video : in T_Video)

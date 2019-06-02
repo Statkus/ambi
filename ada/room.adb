@@ -174,7 +174,10 @@ package body Room is
    -- Add_Video_To_Playlists
    -------------------------------------------------------------------------------------------------
    procedure Add_Video_To_Playlists
-     (This : in out T_Room; Session_ID : in AWS.Session.ID; Video : in T_Video) is
+     (This         : in out T_Room;
+      Session_ID   : in AWS.Session.ID;
+      Video        : in T_Video;
+      Low_Priority : in Boolean := False) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
       -- Add the video to the room playlist for room sync
@@ -212,6 +215,10 @@ package body Room is
 
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
+
+      if not Low_Priority then
+         This.Up_Vote_Playlist_Item (This.Current_Playlist_Item_ID);
+      end if;
 
       This.Current_Playlist_Item_ID := This.Current_Playlist_Item_ID + 1;
    end Add_Video_To_Playlists;
@@ -347,8 +354,38 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results (This : in T_Room; Search_Input : in String)
-     return Video_Vectors.Vector is (YT_API.Get_Video_Search_Results (Search_Input));
+   function Get_Video_Search_Results
+     (This         : in out T_Room;
+      Session_ID   : in AWS.Session.ID;
+      Search_Input : in String;
+      Direct_Link  : out Boolean)
+     return Video_Vectors.Vector is
+      Search_Type : YT_API.T_Search_Type;
+      Videos : Video_Vectors.Vector := YT_API.Get_Video_Search_Results (Search_Input, Search_Type);
+      Videos_Cursor : Video_Vectors.Cursor := Videos.First;
+   begin
+      case Search_Type is
+         when YT_API.Video_Link =>
+            This.Add_Video_To_Playlists (Session_ID, Videos.First_Element, False);
+            Direct_Link := True;
+            Videos := Video_Vectors.Empty_Vector;
+
+         when YT_API.Playlist_Link =>
+            while Video_Vectors.Has_Element (Videos_Cursor) loop
+               This.Add_Video_To_Playlists
+                 (Session_ID, Video_Vectors.Element (Videos_Cursor), True);
+
+               Video_Vectors.Next (Videos_Cursor);
+            end loop;
+            Direct_Link := True;
+            Videos := Video_Vectors.Empty_Vector;
+
+         when YT_API.Words =>
+            Direct_Link := False;
+      end case;
+
+      return Videos;
+   end Get_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Historic

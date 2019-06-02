@@ -159,10 +159,21 @@ package body Callback_Room is
    function Search_Button_Callback
      (Request : in AWS.Status.Data; Current_Room : in T_Room_Class_Access)
      return AWS.Response.Data is
+      Session_ID  : constant AWS.Session.ID := AWS.Status.Session (Request);
+
+      Direct_Link    : Boolean;
+      Search_Results : constant Video_Vectors.Vector := Current_Room.Get_Video_Search_Results
+        (Session_ID, AWS.Status.Parameter (Request, "search_input"), Direct_Link);
+
+      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
+        AWS.Net.WebSocket.Registry.Create (URI => "/" & Current_Room.Get_Name & "Socket");
    begin
+      if Direct_Link then
+         AWS.Net.WebSocket.Registry.Send (Rcp, "update_playlist_request");
+      end if;
+
       return AWS.Response.Build (AWS.MIME.Text_XML, Pack_AJAX_XML_Response
-          ("search_results", Build_Search_Results (Current_Room.Get_Video_Search_Results
-            (AWS.Status.Parameter (Request, "search_input")))));
+          ("search_results", Build_Search_Results (Search_Results)));
    end Search_Button_Callback;
 
    -------------------------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ package List is
       Video     : T_Video;
       ID        : T_Playlist_Item_ID;
       Client_ID : AWS.Session.ID;
-      Up_Votes  : Natural := 0;
+      Up_Votes  : Natural := Natural'First;
    end record;
 
    -- Function comparing two videos to instantiate a vector

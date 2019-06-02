@@ -39,7 +39,10 @@ package Room is
    function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean;
 
    procedure Add_Video_To_Playlists
-     (This : in out T_Room; Session_ID : in AWS.Session.ID; Video : in T_Video);
+     (This         : in out T_Room;
+      Session_ID   : in AWS.Session.ID;
+      Video        : in T_Video;
+      Low_Priority : in Boolean := False);
 
    procedure Remove_From_Playlists (This : in out T_Room; Item_ID : in T_Playlist_Item_ID);
 
@@ -63,7 +66,11 @@ package Room is
 
    function Get_Current_Video (This : in out T_Room) return T_Video;
 
-   function Get_Video_Search_Results (This : in T_Room; Search_Input : in String)
+   function Get_Video_Search_Results
+     (This         : in out T_Room;
+      Session_ID   : in AWS.Session.ID;
+      Search_Input : in String;
+      Direct_Link  : out Boolean)
      return Video_Vectors.Vector;
 
    function Get_Historic (This : in T_Room) return Video_Vectors.Vector;

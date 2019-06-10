@@ -1,6 +1,6 @@
 FROM ubuntu
 
-RUN apt update && apt install -y git make gcc gnat gpr gprbuild libssl-dev libsqlite3-dev
+RUN apt update && apt install -y git make gcc gnat gpr gprbuild asis-programs libssl-dev libsqlite3-dev
 
 # Ada Web Server with SSL support installation
 WORKDIR /home/ubuntu

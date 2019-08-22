@@ -1,0 +1,19 @@
+with "aunit";
+
+with "ambi.gpr";
+
+project Ambi_Test is
+
+   for Main use ("ambi_test.adb");
+
+   for Source_Dirs use ("ada/test");
+
+   for Object_Dir use "obj";
+
+   for Exec_Dir use "obj";
+
+   package Compiler is
+      for Default_Switches ("Ada") use ("-O", "-gnato", "-gnatwa", "-gnatwh", "-gnatwl", "-gnatwt");
+   end Compiler;
+
+end Ambi_Test;

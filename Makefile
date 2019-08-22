@@ -4,11 +4,18 @@ OBJ_DIR = obj
 IMAGE_NAME = ambi_image
 CONTAINER_NAME = ambi_container
 
-.PHONY : clean build build-server-image start-server-image stop-server-image remove-server-image
+.PHONY : build build-test run-test clean build-server-image start-server-image stop-server-image remove-server-image
 
 build:
 	mkdir -p $(OBJ_DIR)
 	gprbuild $(PROG_NAME).gpr
+
+build-test:
+	mkdir -p $(OBJ_DIR)
+	gprbuild $(PROG_NAME)_test.gpr
+
+run-test:
+	$(OBJ_DIR)/$(PROG_NAME)_test
 
 clean:
 	rm -f $(PROG_NAME)

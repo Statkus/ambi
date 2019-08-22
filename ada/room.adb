@@ -366,9 +366,13 @@ package body Room is
    begin
       case Search_Type is
          when YT_API.Video_Link =>
-            This.Add_Video_To_Playlists (Session_ID, Videos.First_Element, False);
-            Direct_Link := True;
-            Videos := Video_Vectors.Empty_Vector;
+            if not Videos.Is_Empty then
+               This.Add_Video_To_Playlists (Session_ID, Videos.First_Element, False);
+               Direct_Link := True;
+               Videos := Video_Vectors.Empty_Vector;
+            else
+               Direct_Link := False;
+            end if;
 
          when YT_API.Playlist_Link =>
             while Video_Vectors.Has_Element (Videos_Cursor) loop

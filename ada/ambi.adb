@@ -1,6 +1,8 @@
 with GNAT.Exception_Traces;
 
-with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Command_Line;      use Ada.Command_Line;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO;           use Ada.Text_IO;
 
 with AWS.Net.Websocket.Registry.Control;
 with AWS.Server;
@@ -15,15 +17,28 @@ with YT_API;
 ----------------------------------------------------------------------------------------------------
 procedure Ambi is
    Config_File   : File_Type;
+   Server_IP     : Unbounded_String := To_Unbounded_String ("localhost");
+   Server_Port   : Natural := 80;
    Ambi_Database : constant Database.T_Database_Class_Access := new Database.T_Database;
    Ambi_Server   : AWS.Server.HTTP;
 begin
    GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
 
-   -- Read server address
-   Open (File => Config_File, Mode => In_File, Name => "server_address.txt");
-   Callback.Set_Server_Address (Get_Line (Config_File));
-   Close (Config_File);
+   -- Read command line arguments
+   if Argument_Count >= Positive'First then
+      Put_Line ("nb arg: " & Argument_Count'Img);
+      for Arg_Number in Positive range Positive'First .. Argument_Count loop
+         Put_Line ("arg: " & Argument (Arg_Number));
+         if Argument (Arg_Number) = "--ip" and Argument_Count > Arg_Number then
+            Server_IP := To_Unbounded_String (Argument (Arg_Number + 1));
+         elsif Argument (Arg_Number) = "--port" and Argument_Count > Arg_Number then
+            Server_Port := Natural'Value (Argument (Arg_Number + 1));
+         end if;
+      end loop;
+   end if;
+
+   -- Set server IP address
+   Callback.Set_Server_Address (To_String (Server_IP));
 
    -- Read Youtube API key
    Open (File => Config_File, Mode => In_File, Name => "yt_api_key.txt");
@@ -39,7 +54,7 @@ begin
      (Web_Server     => Ambi_Server,
       Name           => "Ambi",
       Callback       => Callback.Ambi_Callback'Access,
-      Port           => 80,
+      Port           => Server_Port,
       Max_Connection => 100,
       Session        => True);
 

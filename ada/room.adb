@@ -1,11 +1,12 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Unchecked_Deallocation;
 
-with AWS.Net.Websocket.Registry;
-with AWS.Session; use AWS.Session;
+with Aws.Net.Websocket.Registry;
+with Aws.Session; use Aws.Session;
 
-with Client; use Client;
-with YT_API;
+with Api_Dispatcher;
+with Api_Provider; use Api_Provider;
+with Client;       use Client;
 
 package body Room is
 
@@ -17,8 +18,8 @@ package body Room is
    task body T_Room_Sync_Task is
       Playlist_Empty : Boolean := False;
 
-      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
-        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
+      Rcp : constant Aws.Net.Websocket.Registry.Recipient :=
+        Aws.Net.Websocket.Registry.Create (Uri => "/" & This.Get_Name & "Socket");
    begin
       loop
          -- Wait for the start of a playlist
@@ -30,60 +31,57 @@ package body Room is
 
          Playlist_Empty := False;
          loop
-            -- Send request to the clients, the current room video has changed
-            AWS.Net.WebSocket.Registry.Send (Rcp, "update_room_current_video_request");
+            -- Send request to the clients, the current room song has changed
+            Aws.Net.Websocket.Registry.Send (Rcp, "update_room_current_song_request");
             This.Last_Request_Time := Ada.Real_Time.Clock;
 
             exit when Playlist_Empty;
 
-            -- Wait for the duration of the current video or next room video entry
+            -- Wait for the duration of the current song or next room song entry
             select
-               accept Next_Room_Video;
+               accept Next_Room_Song;
             or
-               delay Duration (YT_API.Get_Video_Duration (This.Get_Video));
+               delay Duration (Api_Dispatcher.Get_Song_Duration (This.Get_Song));
             end select;
 
             -- Remove all expired sessions
             This.Remove_Disconnected_Client;
 
             if not This.Get_Playlist_Is_Empty then
-               -- If the playlist is not empty, select the next video
-               This.Set_Video (This.Get_Playlist_First.Video);
+               -- If the playlist is not empty, select the next song
+               This.Set_Song (This.Get_Playlist_First.Get_Song);
                This.Playlist_Delete_First;
 
-               -- Add the current video to the historic
-               This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
+               -- Add the current song to the historic
+               This.Db.Add_To_Room_Historic (This.Get_Name, This.Get_Song);
             else
                if This.Is_Client_Sync_And_Play then
                   -- There is at least one client sync with the room with the player activated, play
-                  -- a video following Youtube suggestion
-                  This.Set_Video
-                    (This.Select_Related_Video (YT_API.Get_Videos_Related (This.Get_Video)));
+                  -- a song following Youtube suggestion
+                  This.Set_Song
+                  (This.Select_Related_Song (Api_Dispatcher.Get_Related_Songs (This.Get_Song)));
 
-                  if To_String (This.Get_Video.Video_ID) = "" then
-                     -- There is no youtube suggestion, go back at waiting for the start of a new
+                  if This.Get_Song.Get_Provider = Api_Provider.No_Provider then
+                     -- There is no suggestion, go back at waiting for the start of a new
                      -- playlist
-                     This.Room_Current_Video_Active := False;
-                     Playlist_Empty := True;
+                     This.Room_Current_Song_Active := False;
+                     Playlist_Empty                := True;
                   else
-                     -- Add the current video to the historic
-                     This.DB.Add_To_Room_Historic (This.Get_Name, This.Get_Video);
+                     -- Add the current song to the historic
+                     This.Db.Add_To_Room_Historic (This.Get_Name, This.Get_Song);
                   end if;
                else
                   -- The playlist is empty and there is no sync client, go back at waiting for the
                   -- start of a new playlist
-                  This.Room_Current_Video_Active := False;
-                  This.Set_Video
-                    ((Video_ID        => To_Unbounded_String (""),
-                      Video_Title     => To_Unbounded_String ("no video played"),
-                      Video_Thumbnail => To_Unbounded_String ("")));
+                  This.Room_Current_Song_Active := False;
+                  This.Set_Song (Song.Constructors.Initialize);
 
                   Playlist_Empty := True;
                end if;
             end if;
 
             This.Update_No_Player_Clients;
-            This.Room_Next_Video_Ready := True;
+            This.Room_Next_Song_Ready := True;
          end loop;
       end loop;
    end T_Room_Sync_Task;
@@ -92,12 +90,13 @@ package body Room is
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
    function New_And_Initialize
-     (Name : in String; DB : in not null Database.T_Database_Class_Access)
-     return T_Room_Class_Access is
+     (Name : in String;
+      Db   : in not null Database.T_Database_Class_Access) return T_Room_Class_Access
+   is
       New_Room : constant T_Room_Class_Access :=
-        new T_Room'(Name => To_Unbounded_String (Name), DB => DB, others => <>);
+        new T_Room'(Name => To_Unbounded_String (Name), Db => Db, others => <>);
    begin
-      DB.Add_To_Rooms (Name);
+      Db.Add_To_Rooms (Name);
 
       New_Room.Set_Room_Sync_Task (new Room.T_Room_Sync_Task (New_Room));
 
@@ -108,7 +107,9 @@ package body Room is
    -- Set_Room_Sync_Task
    -------------------------------------------------------------------------------------------------
    procedure Set_Room_Sync_Task
-     (This : in out T_Room; Sync_Task : in not null T_Room_Sync_Task_Access) is
+     (This      : in out T_Room;
+      Sync_Task : in     not null T_Room_Sync_Task_Access)
+   is
    begin
       This.Room_Sync_Task := Sync_Task;
    end Set_Room_Sync_Task;
@@ -132,109 +133,118 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Add_Client
    -------------------------------------------------------------------------------------------------
-   procedure Add_Client (This : in out T_Room; Session_ID : in AWS.Session.ID) is
-      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
-        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
+   procedure Add_Client (This : in out T_Room; Session_Id : in Aws.Session.Id) is
+      Rcp : constant Aws.Net.Websocket.Registry.Recipient :=
+        Aws.Net.Websocket.Registry.Create (Uri => "/" & This.Get_Name & "Socket");
    begin
       -- Remove all expired sessions
       This.Remove_Disconnected_Client;
 
       -- Set a parameter to this session ID to register it, the parameter is a unique ID
-      AWS.Session.Set (Session_ID, "ID", AWS.Session.Image (Session_ID));
+      Aws.Session.Set (Session_Id, "ID", Aws.Session.Image (Session_Id));
 
       -- Add the new client to the list and set his session ID
       This.Client_List.Append (new Client.T_Client);
-      This.Client_List.Last_Element.Set_Session_ID (Session_ID);
+      This.Client_List.Last_Element.Set_Session_Id (Session_Id);
 
-      This.Client_List.Last_Element.Set_Current_Video (This.Get_Video);
+      This.Client_List.Last_Element.Set_Current_Song (This.Get_Song);
       This.Client_List.Last_Element.Set_Playlist (This.Get_Playlist);
 
       -- Send update request for the number of clients
-      AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
+      Aws.Net.Websocket.Registry.Send (Rcp, "update_nb_clients");
 
-      Put_Line ("Room " & This.Get_Name & ", new client " & AWS.Session.Image (Session_ID)
-        & ", number of clients:" & This.Client_List.Length'Img);
+      Put_Line
+        ("Room " &
+         This.Get_Name &
+         ", new client " &
+         Aws.Session.Image (Session_Id) &
+         ", number of clients:" &
+         This.Client_List.Length'Img);
    end Add_Client;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Client_Last_Request_Time
    -------------------------------------------------------------------------------------------------
-   procedure Set_Client_Last_Request_Time (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+   procedure Set_Client_Last_Request_Time (This : in out T_Room; Session_Id : in Aws.Session.Id) is
    begin
-      This.Find_Client_From_Session_ID (Session_ID).Set_Last_Request_Time;
+      This.Find_Client_From_Session_Id (Session_Id).Set_Last_Request_Time;
    end Set_Client_Last_Request_Time;
 
    -------------------------------------------------------------------------------------------------
    -- Is_Registered
    -------------------------------------------------------------------------------------------------
-   function Is_Registered (This : in out T_Room; Session_ID : in AWS.Session.ID) return Boolean is
-     (This.Find_Client_From_Session_ID (Session_ID) /= null);
+   function Is_Registered
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id) return Boolean is
+     (This.Find_Client_From_Session_Id (Session_Id) /= null);
 
    -------------------------------------------------------------------------------------------------
-   -- Add_Video_To_Playlists
+   -- Add_Song_To_Playlists
    -------------------------------------------------------------------------------------------------
-   procedure Add_Video_To_Playlists
+   procedure Add_Song_To_Playlists
      (This         : in out T_Room;
-      Session_ID   : in AWS.Session.ID;
-      Video        : in T_Video;
-      Low_Priority : in Boolean := False) is
+      Session_Id   : in     Aws.Session.Id;
+      New_Song     : in     T_Song;
+      Low_Priority : in     Boolean := False)
+   is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      -- Add the video to the room playlist for room sync
-      if This.Get_Playlist_Is_Empty and not This.Room_Current_Video_Active then
-         This.Room_Current_Video_Active := True;
-         This.Set_Video (Video);
+      -- Add the song to the room playlist for room sync
+      if This.Get_Playlist_Is_Empty and not This.Room_Current_Song_Active then
+         This.Room_Current_Song_Active := True;
+         This.Set_Song (New_Song);
 
-         -- Add the current video to the historic
-         This.DB.Add_To_Room_Historic (This.Get_Name, Video);
+         -- Add the current song to the historic
+         This.Db.Add_To_Room_Historic (This.Get_Name, New_Song);
 
          This.Room_Sync_Task.Start_Room_Playlist;
       else
          This.Playlist_Append
-           ((Video     => Video,
-             ID        => This.Current_Playlist_Item_ID,
-             Client_ID => Session_ID,
-             others    => <>));
+         (Playlist_Item.Constructors.Initialize
+            (Item_Song => New_Song,
+             Id        => This.Current_Playlist_Item_Id,
+             Client_Id => Session_Id));
       end if;
 
-      -- Add the video to all the clients playlist
+      -- Add the song to all the clients playlist
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player
-           or Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
+         if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player or
+           Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room
+         then
             -- If the client is sync with the room (sync player or no player) then sync it
-            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Get_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Song (This.Get_Song);
             Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          else
-            -- Otherwise only add the video to the playlist client
+            -- Otherwise only add the song to the playlist client
             Client_Vectors.Element (Client_List_Cursor).Add_Item_To_Playlist
-              ((Video     => Video,
-                ID        => This.Current_Playlist_Item_ID,
-                Client_ID => Session_ID,
-                others    => <>));
+            (Playlist_Item.Constructors.Initialize
+               (Item_Song => New_Song,
+                Id        => This.Current_Playlist_Item_Id,
+                Client_Id => Session_Id));
          end if;
 
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
 
       if not Low_Priority then
-         This.Up_Vote_Playlist_Item (This.Current_Playlist_Item_ID);
+         This.Up_Vote_Playlist_Item (This.Current_Playlist_Item_Id);
       end if;
 
-      This.Current_Playlist_Item_ID := This.Current_Playlist_Item_ID + 1;
-   end Add_Video_To_Playlists;
+      This.Current_Playlist_Item_Id := This.Current_Playlist_Item_Id + 1;
+   end Add_Song_To_Playlists;
 
    -------------------------------------------------------------------------------------------------
    -- Remove_From_Playlists
    -------------------------------------------------------------------------------------------------
-   procedure Remove_From_Playlists (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+   procedure Remove_From_Playlists (This : in out T_Room; Item_Id : in T_Playlist_Item_Id) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      -- Remove the video from the room playlist for room sync
-      This.Playlist_Remove_Item (Item_ID);
+      -- Remove the song from the room playlist for room sync
+      This.Playlist_Remove_Item (Item_Id);
 
-      -- Remove the video from all the clients playlist
+      -- Remove the song from all the clients playlist
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         Client_Vectors.Element (Client_List_Cursor).Remove_Item_From_Playlist (Item_ID);
+         Client_Vectors.Element (Client_List_Cursor).Remove_Item_From_Playlist (Item_Id);
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
    end Remove_From_Playlists;
@@ -242,13 +252,13 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Up_Vote_Playlist_Item
    -------------------------------------------------------------------------------------------------
-   procedure Up_Vote_Playlist_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+   procedure Up_Vote_Playlist_Item (This : in out T_Room; Item_Id : in T_Playlist_Item_Id) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
    begin
-      This.Playlist_Up_Vote_Item (Item_ID);
+      This.Playlist_Up_Vote_Item (Item_Id);
 
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         Client_Vectors.Element (Client_List_Cursor).Up_Vote_Playlist_Item (Item_ID);
+         Client_Vectors.Element (Client_List_Cursor).Up_Vote_Playlist_Item (Item_Id);
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
    end Up_Vote_Playlist_Item;
@@ -256,64 +266,67 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Add_Like
    -------------------------------------------------------------------------------------------------
-   procedure Add_Like (This : in out T_Room; Video : in T_Video) is
+   procedure Add_Like (This : in out T_Room; New_Song : in T_Song) is
    begin
-      This.DB.Add_To_Room_Likes (This.Get_Name, Video);
+      This.Db.Add_To_Room_Likes (This.Get_Name, New_Song);
    end Add_Like;
 
    -------------------------------------------------------------------------------------------------
    -- Remove_Like
    -------------------------------------------------------------------------------------------------
-   procedure Remove_Like (This : in out T_Room; Video : in T_Video) is
+   procedure Remove_Like (This : in out T_Room; Old_Song : in T_Song) is
    begin
-      This.DB.Remove_From_Room_Likes (This.Get_Name, Video);
+      This.Db.Remove_From_Room_Likes (This.Get_Name, Old_Song);
    end Remove_Like;
 
    -------------------------------------------------------------------------------------------------
-   -- Next_Room_Video
+   -- Next_Room_Song
    -------------------------------------------------------------------------------------------------
-   procedure Next_Room_Video (This : in out T_Room) is
+   procedure Next_Room_Song (This : in out T_Room) is
    begin
-      This.Room_Next_Video_Ready := not This.Room_Current_Video_Active;
+      This.Room_Next_Song_Ready := not This.Room_Current_Song_Active;
 
-      if This.Room_Current_Video_Active then
-         This.Room_Sync_Task.Next_Room_Video;
+      if This.Room_Current_Song_Active then
+         This.Room_Sync_Task.Next_Room_Song;
       end if;
-   end Next_Room_Video;
+   end Next_Room_Song;
 
    -------------------------------------------------------------------------------------------------
-   -- Next_Client_Video
+   -- Next_Client_Song
    -------------------------------------------------------------------------------------------------
-   procedure Next_Client_Video (This : in out T_Room; Session_ID : in AWS.Session.ID) is
+   procedure Next_Client_Song (This : in out T_Room; Session_Id : in Aws.Session.Id) is
       Current_Client : constant Client.T_Client_Class_Access :=
-        This.Find_Client_From_Session_ID (Session_ID);
+        This.Find_Client_From_Session_Id (Session_Id);
    begin
       if Current_Client.Get_Sync_With_Room then
-         -- Synchronized the client playlist and current video with the room ones
-         Current_Client.Set_Current_Video (This.Get_Video);
+         -- Synchronized the client playlist and current song with the room ones
+         Current_Client.Set_Current_Song (This.Get_Song);
          Current_Client.Set_Playlist (This.Get_Playlist);
       else
-         -- Set the first client video in the playlist as the current client video and remove
+         -- Set the first client song in the playlist as the current client song and remove
          -- it from the playlist
-         Current_Client.Set_Current_Video;
+         Current_Client.Set_Current_Song;
          Current_Client.Remove_First_Playlist_Item;
       end if;
-   end Next_Client_Video;
+   end Next_Client_Song;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Client_Display_Player
    -------------------------------------------------------------------------------------------------
    procedure Set_Client_Display_Player
-     (This : in out T_Room; Session_ID : in AWS.Session.ID; Display : in Boolean) is
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Display    : in     Boolean)
+   is
       Current_Client : constant Client.T_Client_Class_Access :=
-        This.Find_Client_From_Session_ID (Session_ID);
+        This.Find_Client_From_Session_Id (Session_Id);
    begin
       Current_Client.Set_Display_Player (Display);
 
       if not Display then
-         -- Synchronized the client playlist and current video with the room ones
+         -- Synchronized the client playlist and current song with the room ones
          Current_Client.Set_Sync_With_Room (True);
-         Current_Client.Set_Current_Video (This.Get_Video);
+         Current_Client.Set_Current_Song (This.Get_Song);
          Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
 
@@ -325,15 +338,18 @@ package body Room is
    -- Set_Client_Sync_With_Room
    -------------------------------------------------------------------------------------------------
    procedure Set_Client_Sync_With_Room
-     (This : in out T_Room; Session_ID : in AWS.Session.ID; Sync : in Boolean) is
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Sync       : in     Boolean)
+   is
       Current_Client : constant Client.T_Client_Class_Access :=
-        This.Find_Client_From_Session_ID (Session_ID);
+        This.Find_Client_From_Session_Id (Session_Id);
    begin
       Current_Client.Set_Sync_With_Room (Sync);
 
       if Sync then
-         -- Synchronized the client playlist and current video with the room ones
-         Current_Client.Set_Current_Video (This.Get_Video);
+         -- Synchronized the client playlist and current song with the room ones
+         Current_Client.Set_Current_Song (This.Get_Song);
          Current_Client.Set_Playlist (This.Get_Playlist);
       end if;
 
@@ -347,104 +363,117 @@ package body Room is
    function Get_Name (This : in T_Room) return String is (To_String (This.Name));
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Current_Video
+   -- Get_Current_Song
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in out T_Room) return T_Video is (This.Get_Video);
+   function Get_Current_Song (This : in out T_Room) return T_Song is (This.Get_Song);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Video_Search_Results
+   -- Get_Song_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results
+   function Get_Song_Search_Results
      (This         : in out T_Room;
-      Session_ID   : in AWS.Session.ID;
-      Search_Input : in String;
-      Direct_Link  : out Boolean)
-     return Video_Vectors.Vector is
-      Search_Type : YT_API.T_Search_Type;
-      Videos : Video_Vectors.Vector := YT_API.Get_Video_Search_Results (Search_Input, Search_Type);
-      Videos_Cursor : Video_Vectors.Cursor := Videos.First;
+      Session_Id   : in     Aws.Session.Id;
+      Search_Input : in     String;
+      Direct_Link  :    out Boolean) return T_Song_Vector
+   is
+      Search_Type : Api_Provider.T_Search_Type;
+      Songs       : T_Song_Vector :=
+        Api_Dispatcher.Get_Song_Search_Results (Api_Provider.Youtube, Search_Input, Search_Type);
+      Songs_Cursor : Song_Vectors.Cursor := Songs.First;
    begin
       case Search_Type is
-         when YT_API.Video_Link =>
-            if not Videos.Is_Empty then
-               This.Add_Video_To_Playlists (Session_ID, Videos.First_Element, False);
+         when Api_Provider.Video_Link =>
+            if not Songs.Is_Empty then
+               This.Add_Song_To_Playlists (Session_Id, Songs.First_Element, False);
                Direct_Link := True;
-               Videos := Video_Vectors.Empty_Vector;
+               Songs       := Song_Vector.Constructors.Initialize;
             else
                Direct_Link := False;
             end if;
 
-         when YT_API.Playlist_Link =>
-            while Video_Vectors.Has_Element (Videos_Cursor) loop
-               This.Add_Video_To_Playlists
-                 (Session_ID, Video_Vectors.Element (Videos_Cursor), True);
+         when Api_Provider.Playlist_Link =>
+            while Song_Vectors.Has_Element (Songs_Cursor) loop
+               This.Add_Song_To_Playlists (Session_Id, Song_Vectors.Element (Songs_Cursor), True);
 
-               Video_Vectors.Next (Videos_Cursor);
+               Song_Vectors.Next (Songs_Cursor);
             end loop;
             Direct_Link := True;
-            Videos := Video_Vectors.Empty_Vector;
+            Songs       := Song_Vector.Constructors.Initialize;
 
-         when YT_API.Words =>
+         when Api_Provider.Words =>
             Direct_Link := False;
       end case;
 
-      return Videos;
-   end Get_Video_Search_Results;
+      return Songs;
+   end Get_Song_Search_Results;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Historic
    -------------------------------------------------------------------------------------------------
-   function Get_Historic (This : in T_Room) return Video_Vectors.Vector is
-     (This.DB.Get_Room_Historic (This.Get_Name));
+   function Get_Historic
+     (This : in T_Room) return T_Song_Vector is
+     (This.Db.Get_Room_Historic (This.Get_Name));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Likes
    -------------------------------------------------------------------------------------------------
-   function Get_Likes (This : in T_Room) return Video_Vectors.Vector is
-     (This.DB.Get_Room_Likes (This.Get_Name));
+   function Get_Likes
+     (This : in T_Room) return T_Song_Vector is
+     (This.Db.Get_Room_Likes (This.Get_Name));
 
    -------------------------------------------------------------------------------------------------
-   -- Is_Video_Liked
+   -- Is_Song_Liked
    -------------------------------------------------------------------------------------------------
-   function Is_Video_Liked (This : in T_Room; Video : in T_Video) return Boolean is
-     (This.DB.Is_Room_Video_Liked (This.Get_Name, Video));
+   function Is_Song_Liked
+     (This          : in T_Room;
+      Song_To_Check : in T_Song) return Boolean is
+     (This.Db.Is_Room_Song_Liked (This.Get_Name, Song_To_Check));
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Current_Client_Video
+   -- Get_Current_Client_Song
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Client_Video (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return T_Video is (This.Find_Client_From_Session_ID (Session_ID).Get_Current_Video);
+   function Get_Current_Client_Song
+     (This       : in T_Room;
+      Session_Id : in Aws.Session.Id) return T_Song is
+     (This.Find_Client_From_Session_Id (Session_Id).Get_Current_Song);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Client_Playlist (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Playlist_Vectors.Vector is
-       (This.Find_Client_From_Session_ID (Session_ID).Get_Playlist);
+   function Get_Client_Playlist
+     (This       : in T_Room;
+      Session_Id : in Aws.Session.Id) return T_Playlist is
+     (This.Find_Client_From_Session_Id (Session_Id).Get_Playlist);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Display_Player
    -------------------------------------------------------------------------------------------------
-   function Get_Client_Display_Player (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Boolean is (This.Find_Client_From_Session_ID (Session_ID).Get_Display_Player);
+   function Get_Client_Display_Player
+     (This       : in T_Room;
+      Session_Id : in Aws.Session.Id) return Boolean is
+     (This.Find_Client_From_Session_Id (Session_Id).Get_Display_Player);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Client_Sync_With_Room
    -------------------------------------------------------------------------------------------------
-   function Get_Client_Sync_With_Room (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Boolean is (This.Find_Client_From_Session_ID (Session_ID).Get_Sync_With_Room);
+   function Get_Client_Sync_With_Room
+     (This       : in T_Room;
+      Session_Id : in Aws.Session.Id) return Boolean is
+     (This.Find_Client_From_Session_Id (Session_Id).Get_Sync_With_Room);
 
    -------------------------------------------------------------------------------------------------
    -- Client_Has_Nothing_To_Play
    -------------------------------------------------------------------------------------------------
-   function Client_Has_Nothing_To_Play (This : in out T_Room; Session_ID : in AWS.Session.ID)
-     return Boolean is
+   function Client_Has_Nothing_To_Play
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id) return Boolean
+   is
       Current_Client : constant Client.T_Client_Class_Access :=
-        This.Find_Client_From_Session_ID (Session_ID);
+        This.Find_Client_From_Session_Id (Session_Id);
       Nothing_To_Play : Boolean := False;
    begin
       if Current_Client.Get_Sync_With_Room then
-         if To_String (This.Get_Video.Video_Title) = "no video played" then
+         if This.Get_Song.Get_Provider = Api_Provider.No_Provider then
             Nothing_To_Play := True;
          end if;
       else
@@ -457,20 +486,23 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Get_Number_Clients
    -------------------------------------------------------------------------------------------------
-   function Get_Number_Clients (This : in T_Room) return Natural is
+   function Get_Number_Clients
+     (This : in T_Room) return Natural is
      (Natural (This.Client_List.Length));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Number_Clients_Sync
    -------------------------------------------------------------------------------------------------
-   function Get_Number_Clients_Sync (This : in T_Room) return Natural is
+   function Get_Number_Clients_Sync
+     (This : in T_Room) return Natural is
      (This.Number_Of_Clients_Sync);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Room_Next_Video_Ready
+   -- Get_Room_Next_Song_Ready
    -------------------------------------------------------------------------------------------------
-   function Get_Room_Next_Video_Ready (This : in T_Room) return Boolean is
-     (This.Room_Next_Video_Ready);
+   function Get_Room_Next_Song_Ready
+     (This : in T_Room) return Boolean is
+     (This.Room_Next_Song_Ready);
 
    -------------------------------------------------------------------------------------------------
    -- Update_No_Player_Clients
@@ -480,7 +512,7 @@ package body Room is
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if not Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
-            Client_Vectors.Element (Client_List_Cursor).Set_Current_Video (This.Get_Video);
+            Client_Vectors.Element (Client_List_Cursor).Set_Current_Song (This.Get_Song);
             Client_Vectors.Element (Client_List_Cursor).Set_Playlist (This.Get_Playlist);
          end if;
 
@@ -493,11 +525,11 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function Count_Number_Of_Clients_Sync (This : in T_Room) return Natural is
       Client_List_Cursor     : Client_Vectors.Cursor := This.Client_List.First;
-      Number_Of_Clients_Sync : Natural := 0;
+      Number_Of_Clients_Sync : Natural               := 0;
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
          if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room then
-             Number_Of_Clients_Sync := Number_Of_Clients_Sync + 1;
+            Number_Of_Clients_Sync := Number_Of_Clients_Sync + 1;
          end if;
 
          Client_Vectors.Next (Client_List_Cursor);
@@ -509,32 +541,35 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    -- Find_Client_From_Session_ID
    -------------------------------------------------------------------------------------------------
-   function Find_Client_From_Session_ID (This : in T_Room; Session_ID : in AWS.Session.ID)
-     return Client.T_Client_Class_Access is
-      Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
+   function Find_Client_From_Session_Id
+     (This       : in T_Room;
+      Session_Id : in Aws.Session.Id) return Client.T_Client_Class_Access
+   is
+      Client_List_Cursor : Client_Vectors.Cursor        := This.Client_List.First;
       Client_To_Find     : Client.T_Client_Class_Access := null;
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) and Client_To_Find = null loop
-         if Client_Vectors.Element (Client_List_Cursor).Get_Session_ID = Session_ID then
-            Client_To_Find:= Client_Vectors.Element (Client_List_Cursor);
+         if Client_Vectors.Element (Client_List_Cursor).Get_Session_Id = Session_Id then
+            Client_To_Find := Client_Vectors.Element (Client_List_Cursor);
          end if;
 
          Client_Vectors.Next (Client_List_Cursor);
       end loop;
 
       return Client_To_Find;
-   end Find_Client_From_Session_ID;
+   end Find_Client_From_Session_Id;
 
    -------------------------------------------------------------------------------------------------
    -- Is_Client_Sync_And_Play
    -------------------------------------------------------------------------------------------------
    function Is_Client_Sync_And_Play (This : in out T_Room) return Boolean is
       Client_List_Cursor   : Client_Vectors.Cursor := This.Client_List.First;
-      Client_Sync_And_Play : Boolean := False;
+      Client_Sync_And_Play : Boolean               := False;
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) and not Client_Sync_And_Play loop
-         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room
-           and Client_Vectors.Element (Client_List_Cursor).Get_Display_Player then
+         if Client_Vectors.Element (Client_List_Cursor).Get_Sync_With_Room and
+           Client_Vectors.Element (Client_List_Cursor).Get_Display_Player
+         then
             Client_Sync_And_Play := True;
          end if;
 
@@ -550,25 +585,33 @@ package body Room is
    procedure Remove_Disconnected_Client (This : in out T_Room) is
       Client_List_Cursor : Client_Vectors.Cursor := This.Client_List.First;
       Client_To_Remove   : T_Client_Class_Access := null;
-      Clients_Removed    : Boolean := False;
+      Clients_Removed    : Boolean               := False;
 
       Number_Of_Clients_Sync : Natural := 0;
 
-      Rcp : constant AWS.Net.WebSocket.Registry.Recipient :=
-        AWS.Net.WebSocket.Registry.Create (URI => "/" & This.Get_Name & "Socket");
+      Rcp : constant Aws.Net.Websocket.Registry.Recipient :=
+        Aws.Net.Websocket.Registry.Create (Uri => "/" & This.Get_Name & "Socket");
    begin
       while Client_Vectors.Has_Element (Client_List_Cursor) loop
-         if not AWS.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_ID)
-           or (This.Last_Request_Time
-               > Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time
-               and then Ada.Real_Time.To_Duration (This.Last_Request_Time
-               - Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time) > 120.0) then
+         if not Aws.Session.Exist (Client_Vectors.Element (Client_List_Cursor).Get_Session_Id) or
+           (This.Last_Request_Time >
+            Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time
+            and then
+              Ada.Real_Time.To_Duration
+                (This.Last_Request_Time -
+                 Client_Vectors.Element (Client_List_Cursor).Get_Last_Request_Time) >
+              120.0)
+         then
             Client_To_Remove := Client_Vectors.Element (Client_List_Cursor);
             This.Client_List.Delete (Client_List_Cursor);
 
-            Put_Line ("Room " & This.Get_Name & ", remove client "
-              & AWS.Session.Image (Client_To_Remove.Get_Session_ID) & ", number of clients:"
-              & This.Client_List.Length'Img);
+            Put_Line
+              ("Room " &
+               This.Get_Name &
+               ", remove client " &
+               Aws.Session.Image (Client_To_Remove.Get_Session_Id) &
+               ", number of clients:" &
+               This.Client_List.Length'Img);
 
             Free_Client (Client_To_Remove);
 
@@ -584,61 +627,63 @@ package body Room is
 
       if Clients_Removed or This.Number_Of_Clients_Sync /= Number_Of_Clients_Sync then
          -- Send update request for the number of clients
-         AWS.Net.WebSocket.Registry.Send (Rcp, "update_nb_clients");
+         Aws.Net.Websocket.Registry.Send (Rcp, "update_nb_clients");
       end if;
 
       This.Number_Of_Clients_Sync := Number_Of_Clients_Sync;
    end Remove_Disconnected_Client;
 
    -------------------------------------------------------------------------------------------------
-   -- Select_Related_Video
+   -- Select_Related_Song
    -------------------------------------------------------------------------------------------------
-   function Select_Related_Video (This : in out T_Room; Related_Videos : in Video_Vectors.Vector)
-     return T_Video is
-      Related_Videos_Cursor : Video_Vectors.Cursor := Related_Videos.First;
-      Related_Video_Found   : Boolean := False;
-      Last_Room_Videos      : constant Video_Vectors.Vector :=
-        This.DB.Get_Room_Last_Videos (This.Get_Name, MAX_LAST_ROOM_VIDEOS);
-      Video : T_Video :=
-        (Video_ID        => To_Unbounded_String (""),
-         Video_Title     => To_Unbounded_String ("no video played"),
-         Video_Thumbnail => To_Unbounded_String (""));
+   function Select_Related_Song
+     (This          : in out T_Room;
+      Related_Songs : in     T_Song_Vector) return T_Song
+   is
+      use Song_Vector.Song_Vectors;
+
+      Related_Songs_Cursor : Song_Vectors.Cursor    := Related_Songs.First;
+      Related_Song_Found   : Boolean                := False;
+      Last_Room_Songs      : constant T_Song_Vector :=
+        This.Db.Get_Room_Last_Songs (This.Get_Name, Max_Last_Room_Songs);
+      Related_Song : T_Song := Song.Constructors.Initialize;
    begin
-      while not Related_Video_Found and Video_Vectors.Has_Element (Related_Videos_Cursor) loop
-         if Last_Room_Videos.Find (Video_Vectors.Element (Related_Videos_Cursor))
-           = Video_Vectors.No_Element then
-            Video := Video_Vectors.Element (Related_Videos_Cursor);
-            Related_Video_Found := True;
+      while not Related_Song_Found and Song_Vectors.Has_Element (Related_Songs_Cursor) loop
+         if Last_Room_Songs.Find (Song_Vectors.Element (Related_Songs_Cursor)) =
+           Song_Vectors.No_Element
+         then
+            Related_Song       := Song_Vectors.Element (Related_Songs_Cursor);
+            Related_Song_Found := True;
          end if;
 
-         Video_Vectors.Next (Related_Videos_Cursor);
+         Song_Vectors.Next (Related_Songs_Cursor);
       end loop;
 
-      if not Related_Video_Found and Natural (Related_Videos.Length) > 0 then
-         Video := Video_Vectors.Element (Related_Videos.First);
+      if not Related_Song_Found and Natural (Related_Songs.Length) > 0 then
+         Related_Song := Song_Vectors.Element (Related_Songs.First);
       end if;
 
-      return Video;
-   end Select_Related_Video;
+      return Related_Song;
+   end Select_Related_Song;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Video
+   -- Set_Song
    -------------------------------------------------------------------------------------------------
-   procedure Set_Video (This : in out T_Room; Video : in T_Video) is
+   procedure Set_Song (This : in out T_Room; Current_Song : in T_Song) is
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      This.Room_Current_Video := Video;
-      This.Room_Video_Playlist_Mutex.Release;
-   end Set_Video;
+      This.Room_Song_Playlist_Mutex.Seize;
+      This.Room_Current_Song := Current_Song;
+      This.Room_Song_Playlist_Mutex.Release;
+   end Set_Song;
 
    -------------------------------------------------------------------------------------------------
    -- Playlist_Append
    -------------------------------------------------------------------------------------------------
    procedure Playlist_Append (This : in out T_Room; Item : in T_Playlist_Item) is
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Song_Playlist_Mutex.Seize;
       This.Room_Playlist.Append (Item);
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Release;
    end Playlist_Append;
 
    -------------------------------------------------------------------------------------------------
@@ -646,60 +691,60 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Playlist_Delete_First (This : in out T_Room) is
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Song_Playlist_Mutex.Seize;
       This.Room_Playlist.Delete_First;
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Release;
    end Playlist_Delete_First;
 
    -------------------------------------------------------------------------------------------------
    -- Playlist_Remove_Item
    -------------------------------------------------------------------------------------------------
-   procedure Playlist_Remove_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
-      Item_Cursor : Playlist_Vectors.Cursor := This.Room_Playlist.First;
+   procedure Playlist_Remove_Item (This : in out T_Room; Item_Id : in T_Playlist_Item_Id) is
+      Item_Cursor : Playlist_Item_Vectors.Cursor := This.Room_Playlist.First;
    begin
-      while Playlist_Vectors.Has_Element (Item_Cursor) loop
-         if Playlist_Vectors.Element (Item_Cursor).ID = Item_ID then
-            This.Room_Video_Playlist_Mutex.Seize;
+      while Playlist_Item_Vectors.Has_Element (Item_Cursor) loop
+         if Playlist_Item_Vectors.Element (Item_Cursor).Get_Id = Item_Id then
+            This.Room_Song_Playlist_Mutex.Seize;
             This.Room_Playlist.Delete (Item_Cursor);
-            This.Room_Video_Playlist_Mutex.Release;
+            This.Room_Song_Playlist_Mutex.Release;
          end if;
 
-         Playlist_Vectors.Next (Item_Cursor);
+         Playlist_Item_Vectors.Next (Item_Cursor);
       end loop;
    end Playlist_Remove_Item;
 
    -------------------------------------------------------------------------------------------------
    -- Playlist_Up_Vote_Item
    -------------------------------------------------------------------------------------------------
-   procedure Playlist_Up_Vote_Item (This : in out T_Room; Item_ID : in T_Playlist_Item_ID) is
+   procedure Playlist_Up_Vote_Item (This : in out T_Room; Item_Id : in T_Playlist_Item_Id) is
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      Up_Vote_Playlist_Item (This.Room_Playlist, Item_ID);
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Seize;
+      Up_Vote_Playlist_Item (This.Room_Playlist, Item_Id);
+      This.Room_Song_Playlist_Mutex.Release;
    end Playlist_Up_Vote_Item;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Video
+   -- Get_Song
    -------------------------------------------------------------------------------------------------
-   function Get_Video (This : in out T_Room) return T_Video is
-      Video : T_Video;
+   function Get_Song (This : in out T_Room) return T_Song is
+      Current_Song : T_Song;
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      Video := This.Room_Current_Video;
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Seize;
+      Current_Song := This.Room_Current_Song;
+      This.Room_Song_Playlist_Mutex.Release;
 
-      return Video;
-   end Get_Video;
+      return Current_Song;
+   end Get_Song;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in out T_Room) return Playlist_Vectors.Vector is
-      Room_Playlist : Playlist_Vectors.Vector := Playlist_Vectors.Empty_Vector;
+   function Get_Playlist (This : in out T_Room) return T_Playlist is
+      Room_Playlist : T_Playlist := Playlist.Constructors.Initialize;
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Song_Playlist_Mutex.Seize;
       Room_Playlist := This.Room_Playlist;
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Release;
 
       return Room_Playlist;
    end Get_Playlist;
@@ -710,9 +755,9 @@ package body Room is
    function Get_Playlist_First (This : in out T_Room) return T_Playlist_Item is
       Item : T_Playlist_Item;
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
-      Item := Playlist_Vectors.Element (This.Room_Playlist.First);
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Seize;
+      Item := Playlist_Item_Vectors.Element (This.Room_Playlist.First);
+      This.Room_Song_Playlist_Mutex.Release;
 
       return Item;
    end Get_Playlist_First;
@@ -723,9 +768,9 @@ package body Room is
    function Get_Playlist_Is_Empty (This : in out T_Room) return Boolean is
       Is_Empty : Boolean;
    begin
-      This.Room_Video_Playlist_Mutex.Seize;
+      This.Room_Song_Playlist_Mutex.Seize;
       Is_Empty := This.Room_Playlist.Is_Empty;
-      This.Room_Video_Playlist_Mutex.Release;
+      This.Room_Song_Playlist_Mutex.Release;
 
       return Is_Empty;
    end Get_Playlist_Is_Empty;

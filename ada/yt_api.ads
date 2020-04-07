@@ -1,53 +1,96 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with JSON.Parsers;
-with JSON.Types;
+with Api_Provider;
+with Song;        use Song;
+with Song_Vector; use Song_Vector;
 
-with List; use List;
+package Yt_Api is
 
-package YT_API is
+   -------------------------------------------------------------------------------------------------
+   -- Set_Api_Key
+   -------------------------------------------------------------------------------------------------
+   procedure Set_Api_Key (Key : in String);
 
-   type T_Search_Type is (Words, Video_Link, Playlist_Link);
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video_Search_Results
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Search_Results
+     (Search_Input : in     String;
+      Search_Type  :    out Api_Provider.T_Search_Type) return T_Song_Vector;
 
-   procedure Set_YT_API_Key (Key : in String);
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video_Duration
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Duration (Video : in T_Song) return Natural;
 
-   function Get_Video_Search_Results (Search_Input : in String; Search_Type : out T_Search_Type)
-     return Video_Vectors.Vector;
-
-   function Get_Video_Duration (Video : in T_Video) return Natural;
-
-   function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector;
+   -------------------------------------------------------------------------------------------------
+   -- Get_Related_Videos
+   -------------------------------------------------------------------------------------------------
+   function Get_Related_Videos (Video : in T_Song) return T_Song_Vector;
 
 private
 
-   package Types is new JSON.Types (Long_Integer, Long_Float); use Types;
-   package Parsers is new JSON.Parsers (Types);
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist (Playlist_Id : in String) return T_Song_Vector;
 
-   function Get_Playlist (Playlist_ID : in String) return Video_Vectors.Vector;
+   -------------------------------------------------------------------------------------------------
+   -- Get_Request_Response
+   -------------------------------------------------------------------------------------------------
+   function Get_Request_Response (Url_Request : in String) return String;
 
-   function Get_Request_Response (URL_Request : in String) return String;
-
+   -------------------------------------------------------------------------------------------------
+   -- Get_Search_Request
+   -------------------------------------------------------------------------------------------------
    function Get_Search_Request (Search_Input : in String) return String;
-   function Get_Video_Request (Video_ID : in String) return String;
-   function Get_Videos_Related_Request (Video_ID : in String) return String;
-   function Get_Playlist_Items_Request (Playlist_ID : in String; Page_Token : in String)
-     return String;
 
-   function Parse_Video_Search_Results (Search_Results : in String) return Video_Vectors.Vector;
+   -------------------------------------------------------------------------------------------------
+   -- Get_Video_Request
+   -------------------------------------------------------------------------------------------------
+   function Get_Video_Request (Video_Id : in String) return String;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Videos_Related_Request
+   -------------------------------------------------------------------------------------------------
+   function Get_Videos_Related_Request (Video_Id : in String) return String;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Playlist_Items_Request
+   -------------------------------------------------------------------------------------------------
+   function Get_Playlist_Items_Request
+     (Playlist_Id : in String;
+      Page_Token  : in String) return String;
+
+   -------------------------------------------------------------------------------------------------
+   -- Parse_Video_Search_Results
+   -------------------------------------------------------------------------------------------------
+   function Parse_Video_Search_Results (Search_Results : in String) return T_Song_Vector;
+
+   -------------------------------------------------------------------------------------------------
+   -- Parse_Playlist_Item_Results
+   -------------------------------------------------------------------------------------------------
    function Parse_Playlist_Item_Results
-     (Search_Results     : in String;
-      Total_Results      : out Natural;
-      Next_Page_Token    : out Unbounded_String;
-      Unavailable_Videos : in out Natural)
-     return Video_Vectors.Vector;
+     (Search_Results     : in     String;
+      Total_Results      :    out Natural;
+      Next_Page_Token    :    out Unbounded_String;
+      Unavailable_Videos : in out Natural) return T_Song_Vector;
+
+   -------------------------------------------------------------------------------------------------
+   -- Parse_Video_Duration_Result
+   -------------------------------------------------------------------------------------------------
    function Parse_Video_Duration_Result (Search_Result : in String) return Natural;
 
-   function Parse_Duration (Duration_String : in String) return Natural;
+   -------------------------------------------------------------------------------------------------
+   -- Convert_Iso_8601_Duration_To_Seconds
+   -------------------------------------------------------------------------------------------------
+   function Convert_Iso_8601_Duration_To_Seconds
+     (Iso_8601_Duration_String : in String) return Natural;
 
-   YT_API_KEY : Unbounded_String;
-   YT_API_URL : constant String := "https://www.googleapis.com/youtube/v3/";
+   Api_Url : constant String := "https://www.googleapis.com/youtube/v3/";
+   Api_Key : Unbounded_String;
 
-   MAX_VIDEO_SEARCH_RESULTS    : constant String := "10";
-   MAX_NUMBER_OF_REQUEST_RETRY : constant := 10;
+   Max_Video_Search_Results    : constant String := "10";
+   Max_Number_Of_Request_Retry : constant        := 10;
 
-end YT_API;
+end Yt_Api;

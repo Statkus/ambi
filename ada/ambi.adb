@@ -27,7 +27,7 @@ begin
 
    -- Read Youtube API key
    Open (File => Config_File, Mode => In_File, Name => "yt_api_key.txt");
-   YT_API.Set_YT_API_Key (Get_Line (Config_File));
+   YT_API.Set_API_Key (Get_Line (Config_File));
    Close (Config_File);
 
    -- Open or create the ambi database

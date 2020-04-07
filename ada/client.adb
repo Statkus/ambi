@@ -1,36 +1,39 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Api_Provider;
 
 package body Client is
+
+   use type Api_Provider.T_Api_Provider;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Session_ID
    -------------------------------------------------------------------------------------------------
-   procedure Set_Session_ID (This : in out T_Client; Session_ID : in AWS.Session.ID) is
+   procedure Set_Session_Id (This : in out T_Client; Session_Id : in Aws.Session.Id) is
    begin
-      This.Session_ID := Session_ID;
-   end Set_Session_ID;
+      This.Session_Id := Session_Id;
+   end Set_Session_Id;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Current_Video
+   -- Set_Current_Song
    -------------------------------------------------------------------------------------------------
-   procedure Set_Current_Video (This : in out T_Client) is
+   procedure Set_Current_Song (This : in out T_Client) is
    begin
       if not This.Client_Playlist.Is_Empty then
-         This.Client_Current_Video := Playlist_Vectors.Element (This.Client_Playlist.First).Video;
+         This.Client_Current_Song :=
+           Playlist_Item_Vectors.Element (This.Client_Playlist.First).Get_Song;
          This.Nothing_To_Play := False;
       else
          This.Nothing_To_Play := True;
       end if;
-   end Set_Current_Video;
+   end Set_Current_Song;
 
    -------------------------------------------------------------------------------------------------
-   -- Set_Current_Video
+   -- Set_Current_Song
    -------------------------------------------------------------------------------------------------
-   procedure Set_Current_Video (This : in out T_Client; Video : in T_Video) is
+   procedure Set_Current_Song (This : in out T_Client; Current_Song : in T_Song) is
    begin
-      This.Client_Current_Video := Video;
-      This.Nothing_To_Play      := To_String (Video.Video_Title) = "no video played";
-   end Set_Current_Video;
+      This.Client_Current_Song := Current_Song;
+      This.Nothing_To_Play     := Current_Song.Get_Provider = Api_Provider.No_Provider;
+   end Set_Current_Song;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Last_Request_Time
@@ -61,31 +64,30 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Remove_Item_From_Playlist
    -------------------------------------------------------------------------------------------------
-   procedure Remove_Item_From_Playlist (This : in out T_Client; Item_ID : in T_Playlist_Item_ID) is
-      Item_Cursor : Playlist_Vectors.Cursor := This.Client_Playlist.First;
+   procedure Remove_Item_From_Playlist (This : in out T_Client; Item_Id : in T_Playlist_Item_Id) is
+      Item_Cursor : Playlist_Item_Vectors.Cursor := This.Client_Playlist.First;
    begin
-      while Playlist_Vectors.Has_Element (Item_Cursor) loop
-         if Playlist_Vectors.Element (Item_Cursor).ID = Item_ID then
+      while Playlist_Item_Vectors.Has_Element (Item_Cursor) loop
+         if Playlist_Item_Vectors.Element (Item_Cursor).Get_Id = Item_Id then
             This.Client_Playlist.Delete (Item_Cursor);
          end if;
 
-         Playlist_Vectors.Next (Item_Cursor);
+         Playlist_Item_Vectors.Next (Item_Cursor);
       end loop;
    end Remove_Item_From_Playlist;
 
    -------------------------------------------------------------------------------------------------
    -- Up_Vote_Playlist_Item
    -------------------------------------------------------------------------------------------------
-   procedure Up_Vote_Playlist_Item (This : in out T_Client; Item_ID : in T_Playlist_Item_ID) is
+   procedure Up_Vote_Playlist_Item (This : in out T_Client; Item_Id : in T_Playlist_Item_Id) is
    begin
-      Up_Vote_Playlist_Item (This.Client_Playlist, Item_ID);
+      Up_Vote_Playlist_Item (This.Client_Playlist, Item_Id);
    end Up_Vote_Playlist_Item;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Playlist
    -------------------------------------------------------------------------------------------------
-   procedure Set_Playlist
-     (This : in out T_Client; Client_Playlist : in Playlist_Vectors.Vector) is
+   procedure Set_Playlist (This : in out T_Client; Client_Playlist : in T_Playlist) is
    begin
       This.Client_Playlist := Client_Playlist;
    end Set_Playlist;
@@ -109,19 +111,17 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Get_Session_ID
    -------------------------------------------------------------------------------------------------
-   function Get_Session_ID (This : in T_Client) return AWS.Session.ID is (This.Session_ID);
+   function Get_Session_Id (This : in T_Client) return Aws.Session.Id is (This.Session_Id);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Current_Video
+   -- Get_Current_Song
    -------------------------------------------------------------------------------------------------
-   function Get_Current_Video (This : in T_Client) return T_Video is
-     (This.Client_Current_Video);
+   function Get_Current_Song (This : in T_Client) return T_Song is (This.Client_Current_Song);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (This : in T_Client) return Playlist_Vectors.Vector is
-     (This.Client_Playlist);
+   function Get_Playlist (This : in T_Client) return T_Playlist is (This.Client_Playlist);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Display_Player
@@ -141,7 +141,8 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Get_Last_Request_Time
    -------------------------------------------------------------------------------------------------
-   function Get_Last_Request_Time (This : in out T_Client) return Ada.Real_Time.Time is
+   function Get_Last_Request_Time
+     (This : in out T_Client) return Ada.Real_Time.Time is
      (This.Last_Request_Time);
 
 end Client;

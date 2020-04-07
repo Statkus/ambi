@@ -1,55 +1,67 @@
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Text_IO;       use Ada.Text_IO;
 
 with GNAT.Regpat; use GNAT.Regpat;
 
-with AWS.Client;
-with AWS.Response;
+with Aws.Client;
+with Aws.Response;
 
-with JSON.Streams;
+with Json.Parsers;
+with Json.Streams;
+with Json.Types;
 
-with Ada.Text_IO; use Ada.Text_IO;
+package body Yt_Api is
 
-package body YT_API is
+   package Types is new Json.Types (Long_Integer, Long_Float);
+   use Types;
+   package Parsers is new Json.Parsers (Types);
 
    -------------------------------------------------------------------------------------------------
-   -- Set_YT_API_Key
+   -- Set_Api_Key
    -------------------------------------------------------------------------------------------------
-   procedure Set_YT_API_Key (Key : in String) is
+   procedure Set_Api_Key (Key : in String) is
    begin
-      YT_API_KEY := To_Unbounded_String (Key);
-   end Set_YT_API_Key;
+      Api_Key := To_Unbounded_String (Key);
+   end Set_Api_Key;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Search_Results (Search_Input : in String; Search_Type : out T_Search_Type)
-     return Video_Vectors.Vector is
-      Video_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile
-        ("www\.youtube\.com/watch\?v=([\w-]+)");
-      Playlist_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile
-        ("www\.youtube\.com/playlist\?list=([\w-]+)");
+   function Get_Video_Search_Results
+     (Search_Input : in     String;
+      Search_Type  :    out Api_Provider.T_Search_Type) return T_Song_Vector
+   is
+      Video_Pattern : constant GNAT.Regpat.Pattern_Matcher :=
+        GNAT.Regpat.Compile ("www\.youtube\.com/watch\?v=([\w-]+)");
+      Playlist_Pattern : constant GNAT.Regpat.Pattern_Matcher :=
+        GNAT.Regpat.Compile ("www\.youtube\.com/playlist\?list=([\w-]+)");
 
       Video_Match_Result    : GNAT.Regpat.Match_Array (0 .. 1);
       Playlist_Match_Result : GNAT.Regpat.Match_Array (0 .. 1);
 
-      Video_Search_Results : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Video_Search_Results : T_Song_Vector := Song_Vector.Constructors.Initialize;
    begin
       GNAT.Regpat.Match (Video_Pattern, Search_Input, Video_Match_Result);
       GNAT.Regpat.Match (Playlist_Pattern, Search_Input, Playlist_Match_Result);
 
       if Video_Match_Result (1) /= GNAT.Regpat.No_Match then
-         Search_Type := Video_Link;
+         Search_Type := Api_Provider.Video_Link;
 
-         Video_Search_Results.Append (
-           Parse_Video_Search_Results (Get_Request_Response (Get_Search_Request (Search_Input
-             (Video_Match_Result (1).First .. Video_Match_Result (1).Last)))).First_Element);
+         Video_Search_Results.Append
+         (Parse_Video_Search_Results
+            (Get_Request_Response
+               (Get_Search_Request
+                  (Search_Input
+                     (Video_Match_Result (1).First ..
+                          Video_Match_Result (1).Last)))).First_Element);
       elsif Playlist_Match_Result (1) /= GNAT.Regpat.No_Match then
-         Search_Type := Playlist_Link;
+         Search_Type := Api_Provider.Playlist_Link;
 
-         Video_Search_Results := Get_Playlist
-           (Search_Input (Playlist_Match_Result (1).First .. Playlist_Match_Result (1).Last));
+         Video_Search_Results :=
+           Get_Playlist
+             (Search_Input (Playlist_Match_Result (1).First .. Playlist_Match_Result (1).Last));
       else
-         Search_Type := Words;
+         Search_Type := Api_Provider.Words;
 
          Video_Search_Results :=
            Parse_Video_Search_Results (Get_Request_Response (Get_Search_Request (Search_Input)));
@@ -58,53 +70,63 @@ package body YT_API is
       return Video_Search_Results;
 
    exception
-      when others => return Video_Vectors.Empty_Vector;
+      when others =>
+         return Song_Vector.Constructors.Initialize;
    end Get_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Duration
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Duration (Video : in T_Video) return Natural is
+   function Get_Video_Duration (Video : in T_Song) return Natural is
    begin
-      return Parse_Video_Duration_Result
-        (Get_Request_Response (Get_Video_Request (To_String (Video.Video_ID))));
+      return Parse_Video_Duration_Result (Get_Request_Response (Get_Video_Request (Video.Get_Id)));
 
    exception
-      when others => return Natural'First;
+      when others =>
+         return Natural'First;
    end Get_Video_Duration;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Videos_Related
+   -- Get_Related_Videos
    -------------------------------------------------------------------------------------------------
-   function Get_Videos_Related (Video : in T_Video) return Video_Vectors.Vector is
+   function Get_Related_Videos (Video : in T_Song) return T_Song_Vector is
    begin
       return Parse_Video_Search_Results
-       (Get_Request_Response (Get_Videos_Related_Request (To_String (Video.Video_ID))));
+          (Get_Request_Response (Get_Videos_Related_Request (Video.Get_Id)));
 
    exception
-      when others => return Video_Vectors.Empty_Vector;
-   end Get_Videos_Related;
+      when others =>
+         return Song_Vector.Constructors.Initialize;
+   end Get_Related_Videos;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist (Playlist_ID : in String) return Video_Vectors.Vector is
-      Videos : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
-      Total_Results      : Natural := 0;
+   function Get_Playlist (Playlist_Id : in String) return T_Song_Vector is
+      Videos             : T_Song_Vector    := Song_Vector.Constructors.Initialize;
+      Total_Results      : Natural          := 0;
       Current_Page_Token : Unbounded_String := To_Unbounded_String ("");
       Next_Page_Token    : Unbounded_String := To_Unbounded_String ("");
-      Unavailable_Videos : Natural := 0;
+      Unavailable_Videos : Natural          := 0;
    begin
-      Videos.Append (Parse_Playlist_Item_Results (Get_Request_Response
-        (Get_Playlist_Items_Request (Playlist_ID, To_String (Current_Page_Token))),
-         Total_Results, Next_Page_Token, Unavailable_Videos));
+      Videos.Append
+      (Parse_Playlist_Item_Results
+         (Get_Request_Response
+            (Get_Playlist_Items_Request (Playlist_Id, To_String (Current_Page_Token))),
+          Total_Results,
+          Next_Page_Token,
+          Unavailable_Videos));
 
       while Natural (Videos.Length) < Total_Results - Unavailable_Videos loop
          Current_Page_Token := Next_Page_Token;
 
-         Videos.Append (Parse_Playlist_Item_Results (Get_Request_Response
-           (Get_Playlist_Items_Request (Playlist_ID, To_String (Current_Page_Token))),
-            Total_Results, Next_Page_Token, Unavailable_Videos));
+         Videos.Append
+         (Parse_Playlist_Item_Results
+            (Get_Request_Response
+               (Get_Playlist_Items_Request (Playlist_Id, To_String (Current_Page_Token))),
+             Total_Results,
+             Next_Page_Token,
+             Unavailable_Videos));
       end loop;
 
       return Videos;
@@ -113,16 +135,17 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    -- Get_Request_Response
    -------------------------------------------------------------------------------------------------
-   function Get_Request_Response (URL_Request : in String) return String is
+   function Get_Request_Response (Url_Request : in String) return String is
       Response      : Unbounded_String := To_Unbounded_String ("GET request error.");
-      Number_Of_Try : Natural := Natural'First;
+      Number_Of_Try : Natural          := Natural'First;
    begin
-      Put_Line ("YT API request: " & URL_Request);
+      Put_Line ("YT API request: " & Url_Request);
 
-      while Index (To_String (Response), "GET request error.") = 1
-        and Number_Of_Try < MAX_NUMBER_OF_REQUEST_RETRY loop
+      while Index (To_String (Response), "GET request error.") = 1 and
+        Number_Of_Try < Max_Number_Of_Request_Retry
+      loop
          Response :=
-           To_Unbounded_String (AWS.Response.Message_Body (AWS.Client.Get (URL => URL_Request)));
+           To_Unbounded_String (Aws.Response.Message_Body (Aws.Client.Get (Url => Url_Request)));
 
          Number_Of_Try := Number_Of_Try + 1;
       end loop;
@@ -139,66 +162,84 @@ package body YT_API is
    -------------------------------------------------------------------------------------------------
    function Get_Search_Request (Search_Input : in String) return String is
    begin
-      return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
-        & "&q=" & Search_Input
-        & "&maxResults=" & MAX_VIDEO_SEARCH_RESULTS
-        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
+      return Api_Url &
+        "search?key=" &
+        To_String (Api_Key) &
+        "&q=" &
+        Search_Input &
+        "&maxResults=" &
+        Max_Video_Search_Results &
+        "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Get_Search_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Video_Request
    -------------------------------------------------------------------------------------------------
-   function Get_Video_Request (Video_ID : in String) return String is
+   function Get_Video_Request (Video_Id : in String) return String is
    begin
-      return YT_API_URL & "videos?key=" & To_String (YT_API_KEY)
-        & "&id=" & Video_ID
-        & "&part=contentDetails";
+      return Api_Url &
+        "videos?key=" &
+        To_String (Api_Key) &
+        "&id=" &
+        Video_Id &
+        "&part=contentDetails";
    end Get_Video_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Videos_Related_Request
    -------------------------------------------------------------------------------------------------
-   function Get_Videos_Related_Request (Video_ID : in String) return String is
+   function Get_Videos_Related_Request (Video_Id : in String) return String is
    begin
-      return YT_API_URL & "search?key=" & To_String (YT_API_KEY)
-        & "&relatedToVideoId=" & Video_ID
-        & "&maxResults=" & MAX_VIDEO_SEARCH_RESULTS
-        & "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
+      return Api_Url &
+        "search?key=" &
+        To_String (Api_Key) &
+        "&relatedToVideoId=" &
+        Video_Id &
+        "&maxResults=" &
+        Max_Video_Search_Results &
+        "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Get_Videos_Related_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist_Items_Request
    -------------------------------------------------------------------------------------------------
-   function Get_Playlist_Items_Request (Playlist_ID : in String; Page_Token : in String)
-     return String is
+   function Get_Playlist_Items_Request
+     (Playlist_Id : in String;
+      Page_Token  : in String) return String
+   is
    begin
-      return YT_API_URL & "playlistItems?key=" & To_String (YT_API_KEY)
-        & "&playlistId=" & Playlist_ID
-        & "&pageToken=" & Page_Token
-        & "&maxResults=50&part=snippet";
+      return Api_Url &
+        "playlistItems?key=" &
+        To_String (Api_Key) &
+        "&playlistId=" &
+        Playlist_Id &
+        "&pageToken=" &
+        Page_Token &
+        "&maxResults=50&part=snippet";
    end Get_Playlist_Items_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Parse_Video_Search_Results (Search_Results : in String) return Video_Vectors.Vector is
-      JSON_String_Response : aliased String := Search_Results;
+   function Parse_Video_Search_Results (Search_Results : in String) return T_Song_Vector is
+      Json_String_Response : aliased String := Search_Results;
 
-      JSON_Stream    : JSON.Streams.Stream'Class :=
-        JSON.Streams.Create_Stream (JSON_String_Response'Access);
-      JSON_Allocator : Types.Memory_Allocator;
-      JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
+      Json_Stream : Json.Streams.Stream'Class :=
+        Json.Streams.Create_Stream (Json_String_Response'Access);
+      Json_Allocator : Types.Memory_Allocator;
+      Json_Result    : constant Types.Json_Value := Parsers.Parse (Json_Stream, Json_Allocator);
 
-      Video         : T_Video;
-      Videos_Result : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Video         : T_Song;
+      Videos_Result : T_Song_Vector := Song_Vector.Constructors.Initialize;
    begin
-      for Item of JSON_Result.Get ("items") loop
-         Video.Video_ID := To_Unbounded_String (Item.Get ("id").Get ("videoId").Value);
-
-         Video.Video_Title := To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
-
-         Video.Video_Thumbnail := To_Unbounded_String
-           (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
+      for Item of Json_Result.Get ("items") loop
+         Video :=
+           Song.Constructors.Initialize
+             (Id             => Item.Get ("id").Get ("videoId").Value,
+              Title          => Item.Get ("snippet").Get ("title").Value,
+              Thumbnail_Link =>
+                Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
+              Provider => Api_Provider.Youtube);
 
          Videos_Result.Append (Video);
       end loop;
@@ -210,43 +251,41 @@ package body YT_API is
    -- Parse_Playlist_Item_Results
    -------------------------------------------------------------------------------------------------
    function Parse_Playlist_Item_Results
-     (Search_Results     : in String;
-      Total_Results      : out Natural;
-      Next_Page_Token    : out Unbounded_String;
-      Unavailable_Videos : in out Natural)
-     return Video_Vectors.Vector is
-      JSON_String_Response : aliased String := Search_Results;
+     (Search_Results     : in     String;
+      Total_Results      :    out Natural;
+      Next_Page_Token    :    out Unbounded_String;
+      Unavailable_Videos : in out Natural) return T_Song_Vector
+   is
+      Json_String_Response : aliased String := Search_Results;
 
-      JSON_Stream    : JSON.Streams.Stream'Class :=
-        JSON.Streams.Create_Stream (JSON_String_Response'Access);
-      JSON_Allocator : Types.Memory_Allocator;
-      JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
+      Json_Stream : Json.Streams.Stream'Class :=
+        Json.Streams.Create_Stream (Json_String_Response'Access);
+      Json_Allocator : Types.Memory_Allocator;
+      Json_Result    : constant Types.Json_Value := Parsers.Parse (Json_Stream, Json_Allocator);
 
-      Video         : T_Video;
-      Videos_Result : Video_Vectors.Vector := Video_Vectors.Empty_Vector;
+      Video         : T_Song;
+      Videos_Result : T_Song_Vector := Song_Vector.Constructors.Initialize;
 
       Results_Per_Page : Natural;
    begin
-      Total_Results :=
-        Natural'Value (JSON_Result.Get ("pageInfo").Get ("totalResults").Image);
-      Results_Per_Page :=
-        Natural'Value (JSON_Result.Get ("pageInfo").Get ("resultsPerPage").Image);
+      Total_Results    := Natural'Value (Json_Result.Get ("pageInfo").Get ("totalResults").Image);
+      Results_Per_Page := Natural'Value (Json_Result.Get ("pageInfo").Get ("resultsPerPage").Image);
 
-      if JSON_Result.Contains ("nextPageToken") then
-         Next_Page_Token := To_Unbounded_String (JSON_Result.Get ("nextPageToken").Value);
+      if Json_Result.Contains ("nextPageToken") then
+         Next_Page_Token := To_Unbounded_String (Json_Result.Get ("nextPageToken").Value);
       else
          Next_Page_Token := To_Unbounded_String ("");
       end if;
 
-      for Item of JSON_Result.Get ("items") loop
-         Video.Video_Title := To_Unbounded_String (Item.Get ("snippet").Get ("title").Value);
-
-         if Video.Video_Title /= To_Unbounded_String ("Private video") then
-            Video.Video_ID :=
-              To_Unbounded_String (Item.Get ("snippet").Get ("resourceId").Get ("videoId").Value);
-
-            Video.Video_Thumbnail := To_Unbounded_String
-              (Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value);
+      for Item of Json_Result.Get ("items") loop
+         if Item.Get ("snippet").Get ("title").Value /= "Private video" then
+            Video :=
+              Song.Constructors.Initialize
+                (Id             => Item.Get ("snippet").Get ("resourceId").Get ("videoId").Value,
+                 Title          => Item.Get ("snippet").Get ("title").Value,
+                 Thumbnail_Link =>
+                   Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
+                 Provider => Api_Provider.Youtube);
 
             Videos_Result.Append (Video);
          end if;
@@ -261,55 +300,59 @@ package body YT_API is
    -- Parse_Video_Duration_Result
    -------------------------------------------------------------------------------------------------
    function Parse_Video_Duration_Result (Search_Result : in String) return Natural is
-      JSON_String_Response : aliased String := Search_Result;
+      Json_String_Response : aliased String := Search_Result;
 
-      JSON_Stream    : JSON.Streams.Stream'Class :=
-        JSON.Streams.Create_Stream (JSON_String_Response'Access);
-      JSON_Allocator : Types.Memory_Allocator;
-      JSON_Result    : constant Types.JSON_Value := Parsers.Parse (JSON_Stream, JSON_Allocator);
+      Json_Stream : Json.Streams.Stream'Class :=
+        Json.Streams.Create_Stream (Json_String_Response'Access);
+      Json_Allocator : Types.Memory_Allocator;
+      Json_Result    : constant Types.Json_Value := Parsers.Parse (Json_Stream, Json_Allocator);
 
       Duration : Natural := 0;
    begin
-      for Item of JSON_Result.Get ("items") loop
+      for Item of Json_Result.Get ("items") loop
          -- Normally there is only one item
-         Duration := Parse_Duration (Item.Get ("contentDetails").Get ("duration").Value);
+         Duration :=
+           Convert_Iso_8601_Duration_To_Seconds
+             (Item.Get ("contentDetails").Get ("duration").Value);
       end loop;
 
       return Duration;
    end Parse_Video_Duration_Result;
 
    -------------------------------------------------------------------------------------------------
-   -- Parse_Duration
+   -- Convert_Iso_8601_Duration_To_Seconds
    -------------------------------------------------------------------------------------------------
-   function Parse_Duration (Duration_String : in String) return Natural is
+   function Convert_Iso_8601_Duration_To_Seconds
+     (Iso_8601_Duration_String : in String) return Natural
+   is
       Hours_Pattern   : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)H");
       Minutes_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)M");
       Seconds_Pattern : constant GNAT.Regpat.Pattern_Matcher := GNAT.Regpat.Compile ("([0-9]+)S");
-      Result  : GNAT.Regpat.Match_Array (0 .. 1);
+      Result          : GNAT.Regpat.Match_Array (0 .. 1);
 
       Hours   : Natural := 0;
       Minutes : Natural := 0;
       Seconds : Natural := 0;
    begin
-      GNAT.Regpat.Match (Hours_Pattern, Duration_String, Result);
+      GNAT.Regpat.Match (Hours_Pattern, Iso_8601_Duration_String, Result);
 
       if Result (1) /= GNAT.Regpat.No_Match then
-         Hours := Natural'Value (Duration_String (Result (1).First .. Result (1).Last));
+         Hours := Natural'Value (Iso_8601_Duration_String (Result (1).First .. Result (1).Last));
       end if;
 
-      GNAT.Regpat.Match (Minutes_Pattern, Duration_String, Result);
+      GNAT.Regpat.Match (Minutes_Pattern, Iso_8601_Duration_String, Result);
 
       if Result (1) /= GNAT.Regpat.No_Match then
-         Minutes := Natural'Value (Duration_String (Result (1).First .. Result (1).Last));
+         Minutes := Natural'Value (Iso_8601_Duration_String (Result (1).First .. Result (1).Last));
       end if;
 
-      GNAT.Regpat.Match (Seconds_Pattern, Duration_String, Result);
+      GNAT.Regpat.Match (Seconds_Pattern, Iso_8601_Duration_String, Result);
 
       if Result (1) /= GNAT.Regpat.No_Match then
-         Seconds := Natural'Value (Duration_String (Result (1).First .. Result (1).Last));
+         Seconds := Natural'Value (Iso_8601_Duration_String (Result (1).First .. Result (1).Last));
       end if;
 
       return (Hours * 3600) + (Minutes * 60) + Seconds;
-   end Parse_Duration;
+   end Convert_Iso_8601_Duration_To_Seconds;
 
-end YT_API;
+end Yt_Api;

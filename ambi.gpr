@@ -17,4 +17,8 @@ project Ambi is
       for Default_Switches ("Ada") use ("-O", "-gnato", "-gnatwa", "-gnatwh", "-gnatwl", "-gnatwt");
    end Compiler;
 
+   package Pretty_Printer is
+      for Default_Switches ("Ada") use ("-nM", "-M100");
+   end Pretty_Printer;
+
 end Ambi;

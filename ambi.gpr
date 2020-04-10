@@ -7,7 +7,7 @@ project Ambi is
 
    for Main use ("ambi.adb");
 
-   for Source_Dirs use ("ada");
+   for Source_Dirs use ("ada/impl/**");
 
    for Object_Dir use "obj";
 

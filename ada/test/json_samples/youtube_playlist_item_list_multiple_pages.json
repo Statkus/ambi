@@ -1,0 +1,236 @@
+{
+ "kind": "youtube#playlistItemListResponse",
+ "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/7kW_lVG34A2sfxkTO4qxFULr5Xg\"",
+ "nextPageToken": "CAUQAA",
+ "pageInfo": {
+  "totalResults": 74,
+  "resultsPerPage": 5
+ },
+ "items": [
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/Whjo7jQJ4au9vdbwAdzUMCdbwaU\"",
+   "id": "UEx1UkE1YjRFT0V3UFNCMWZkaDdXREFWZWd2azlWSFJqbC41NkI0NEY2RDEwNTU3Q0M2",
+   "snippet": {
+    "publishedAt": "2016-07-05T15:43:44.000Z",
+    "channelId": "UC4TtcNIKSnnJa-WKf82R65w",
+    "title": "Electro-Light - Throwback [NCS Release]",
+    "description": "NCS: Music Without Limitations\n\nNCS Spotify: http://spoti.fi/NCS\n\nFree Download / Stream: http://ncs.io/throwback\n\nConnect with NCS:\nSnapchat: ncsmusic\n• http://soundcloud.com/nocopyrightsounds\n• http://instagram.com/nocopyrightsounds_\n• http://facebook.com/NoCopyrightSounds\n• http://twitter.com/NCSounds\n• http://spoti.fi/NCS\n\nElectro-Light\n• https://soundcloud.com/maskedacoustic\n• https://www.youtube.com/user/ElectroLightOfficial\n• https://twitter.com/ElectroLightEDM\n• https://www.facebook.com/ElectroLightOfficial\n\nNCS YouTube Playlists\nNCS Trap http://bit.ly/NCStrap\nNCS House http://bit.ly/NCShouse\nNCS Dubstep http://bit.ly/NCSdubstep\nNCS Drumstep http://bit.ly/NCSdrumstep\nNCS Hardstyle http://bit.ly/NCShardstyle\nNCS Drum&Bass http://bit.ly/NCSdrumandbass\nNCS Electronic Playlist: http://bit.ly/NCSelectronic\nALL NCS MUSIC FULL PLAYLIST: http://bit.ly/ALLNCSmusic\n\n© Check out our Usage Policy on how to use NCS music in your videos: http://ncs.io/UsagePolicy\n\nTo request a commercial license visit: http://ncs.io/Commercial",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/cXLadJlS_nA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/cXLadJlS_nA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/cXLadJlS_nA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/cXLadJlS_nA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/cXLadJlS_nA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "PLuRA5b4EOEwPSB1fdh7WDAVegvk9VHRjl",
+    "position": 0,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "cXLadJlS_nA"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/0rI3vpVDb5nv6xX9yrMW9PDXmOU\"",
+   "id": "UEx1UkE1YjRFT0V3UFNCMWZkaDdXREFWZWd2azlWSFJqbC4yODlGNEE0NkRGMEEzMEQy",
+   "snippet": {
+    "publishedAt": "2016-07-05T15:43:55.000Z",
+    "channelId": "UC4TtcNIKSnnJa-WKf82R65w",
+    "title": "THB - Bossfight",
+    "description": "♫ Free Download: https://theartistunion.com/tracks/8430aa\n\n[Genre: Future House]\n\nLabel: ILLICIT/Infinity Records\n\n\n►THB:\nhttps://soundcloud.com/thbofficial\nhttps://www.facebook.com/thb.official98/?fref=ts\n\n\n►ILLICIT:\nhttps://soundcloud.com/illicitofficial\nhttps://www.facebook.com/officialillicit/?fref=ts\nhttp://illicit.org.uk/\n\n\n►Infinity Records:\nhttps://soundcloud.com/infinityweare\nhttps://www.facebook.com/infinityrecording\n\n\n►xKito Music:\nhttps://www.facebook.com/xKitoMusic\nhttps://twitter.com/xkito_music\nhttps://instagram.com/xkito_m/\nhttps://soundcloud.com/xkitomusic\nhttps://www.youtube.com/c/xKitoMusic\n\n\n►Submit your music to xKito:\nhttps://www.toneden.io/xkito\n\n\n►PICTURE → http://thatsanj.deviantart.com/art/Final-Battle-220129310\n©Artwork by: thatSanj\n\n\n►Usage Policy:\n✖ Please get in touch with the label for usage of this track in your Youtube videos.\n\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n•IMPORTANT: \nIf any artist or label has copyright issues with my videos (including artists of the images used), please send an e-mail to: xkitomusic@gmail.com and I will remove it immediately!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/ZfnFMNhSJLA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/ZfnFMNhSJLA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/ZfnFMNhSJLA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/ZfnFMNhSJLA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/ZfnFMNhSJLA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "PLuRA5b4EOEwPSB1fdh7WDAVegvk9VHRjl",
+    "position": 1,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "ZfnFMNhSJLA"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/tBUamGS2dcLUEP8jo3Lxsn6Di48\"",
+   "id": "UEx1UkE1YjRFT0V3UFNCMWZkaDdXREFWZWd2azlWSFJqbC4wMTcyMDhGQUE4NTIzM0Y5",
+   "snippet": {
+    "publishedAt": "2016-07-05T15:44:11.000Z",
+    "channelId": "UC4TtcNIKSnnJa-WKf82R65w",
+    "title": "Owl Vision - Lightshy",
+    "description": "Owl Vision - Lightshy\n\n⬙  FAVOURITES ON SPOTIFY ⬙\n⇥ http://mrsuicidesheep.com/favourites\n\nCan you feel the adrenalin coursing through your veins!!\nPurchase... http://www.beatport.com/release/light...\nDownload for free.. https://soundcloud.com/owlvision/owl-...\n\nOwl Vision\nhttps://soundcloud.com/owlvision\nhttp://owlvision.se/\nhttps://www.facebook.com/owlvision\nhttps://twitter.com/owlvision\n\nArtwork by Chris Cold\nhttp://fav.me/d74rpqz\nhttps://www.facebook.com/dramargu\nhttp://chris-cold.tumblr.com\n\n⬗ Sheepy Store ⬗\n⇥ http://mrsuicidesheep.com/store\n\n⬖ Submit Music & Art ⬖\n⇥ http://mrsuicidesheep.com/submit\n\n⬙ Sheepy Instagram ⬙\n⇥ http://mrsuicidesheep.com/insta\n\n⬘ Spotify: Channel Uploads ⬘\n⇥ http://mrsuicidesheep.com/channeluploads\n\n⬗ Spotify: Seeking Blue ⬗\n⇥ http://mrsuicidesheep.com/skblueplaylist",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/GcI79CmxHM4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/GcI79CmxHM4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/GcI79CmxHM4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/GcI79CmxHM4/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/GcI79CmxHM4/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "PLuRA5b4EOEwPSB1fdh7WDAVegvk9VHRjl",
+    "position": 2,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "GcI79CmxHM4"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/4j3H3DHIVV1M9lLrWaqvb5FNtM0\"",
+   "id": "UEx1UkE1YjRFT0V3UFNCMWZkaDdXREFWZWd2azlWSFJqbC41MjE1MkI0OTQ2QzJGNzNG",
+   "snippet": {
+    "publishedAt": "2016-07-05T15:44:47.000Z",
+    "channelId": "UC4TtcNIKSnnJa-WKf82R65w",
+    "title": "AdhesiveWombat - Organ Freeman",
+    "description": "On the album Sticky Tracks.\nGet it on \nbandcamp: https://adhesivewombat.bandcamp.com/album/sticky-tracks\nitunes: https://itunes.apple.com/us/album/sticky-tracks/id1112175927\ngoogle play: https://play.google.com/store/music/album/Adhesive_Wombat_Sticky_Tracks?id=B4saaculmgtio4ejw4fwmsuckju&hl=en\namazon music: https://www.amazon.com/s/ref=ntt_srch_drd_B00L38IJ42?ie=UTF8&field-keywords=Adhesive%20Wombat&index=digital-music&search-type=ss\nspotify: https://play.spotify.com/album/3nmK6Fo8dhzDcsIIon0eyh",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/dnSPu2Jore0/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/dnSPu2Jore0/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/dnSPu2Jore0/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/dnSPu2Jore0/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/dnSPu2Jore0/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "PLuRA5b4EOEwPSB1fdh7WDAVegvk9VHRjl",
+    "position": 3,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "dnSPu2Jore0"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/eF0t6IBQV5pF1sXNJgFTAWdqPTI\"",
+   "id": "UEx1UkE1YjRFT0V3UFNCMWZkaDdXREFWZWd2azlWSFJqbC4wOTA3OTZBNzVEMTUzOTMy",
+   "snippet": {
+    "publishedAt": "2016-07-05T15:45:18.000Z",
+    "channelId": "UC4TtcNIKSnnJa-WKf82R65w",
+    "title": "Slagsmålsklubben - Sponsored by destiny",
+    "description": "School assignment to reinterpret the fairytale Little red ridning hood.\r\nInspired by Röyksopps Remind me.\r\n\r\nMusic: Slagsmålsklubben, Sponsored by destiny\r\nwww.smk.just.nu\r\nAnimation: Tomas Nilsson\r\nwww.tomas-nilsson.se",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Y54ABqSOScQ/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Y54ABqSOScQ/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Y54ABqSOScQ/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/Y54ABqSOScQ/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/Y54ABqSOScQ/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "PLuRA5b4EOEwPSB1fdh7WDAVegvk9VHRjl",
+    "position": 4,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "Y54ABqSOScQ"
+    }
+   }
+  }
+ ]
+}

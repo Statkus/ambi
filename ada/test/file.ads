@@ -1,10 +1,8 @@
-with Aunit.Test_Suites;
-
-package Ambi_Suite is
+package File is
 
    -------------------------------------------------------------------------------------------------
-   -- Suite
+   -- Read_File
    -------------------------------------------------------------------------------------------------
-   function Suite return Aunit.Test_Suites.Access_Test_Suite;
+   function Read_File (File_Name : in String) return String;
 
-end Ambi_Suite;
+end File;

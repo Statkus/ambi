@@ -3,6 +3,9 @@ with Aunit.Reporter.Text;
 
 with Ambi_Suite;
 
+----------------------------------------------------------------------------------------------------
+-- Ambi_Test
+----------------------------------------------------------------------------------------------------
 procedure Ambi_Test is
    procedure Run is new Aunit.Run.Test_Runner (Ambi_Suite.Suite);
 

@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with Api_Provider;
+with Api;
 
 package body Database is
 
@@ -213,8 +213,7 @@ package body Database is
              Title          => Db.String_Vectors.Element (Db_Row_Title_Cursor),
              Thumbnail_Link => Db.String_Vectors.Element (Db_Row_Thumbnail_Cursor),
              Provider       =>
-               Api_Provider.T_Api_Provider'Value
-                 (Db.String_Vectors.Element (Db_Row_Provider_Cursor))));
+               Api.T_Api_Provider'Value (Db.String_Vectors.Element (Db_Row_Provider_Cursor))));
       end loop;
 
       Db.Sqlite.End_Select (Db_Iterator);
@@ -256,8 +255,7 @@ package body Database is
              Title          => Db.String_Vectors.Element (Db_Row_Title_Cursor),
              Thumbnail_Link => Db.String_Vectors.Element (Db_Row_Thumbnail_Cursor),
              Provider       =>
-               Api_Provider.T_Api_Provider'Value
-                 (Db.String_Vectors.Element (Db_Row_Provider_Cursor))));
+               Api.T_Api_Provider'Value (Db.String_Vectors.Element (Db_Row_Provider_Cursor))));
       end loop;
 
       Db.Sqlite.End_Select (Db_Iterator);

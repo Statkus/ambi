@@ -1,8 +1,6 @@
-with Api_Provider;
+with Api;
 
 package body Client is
-
-   use type Api_Provider.T_Api_Provider;
 
    -------------------------------------------------------------------------------------------------
    -- Set_Session_ID
@@ -30,9 +28,10 @@ package body Client is
    -- Set_Current_Song
    -------------------------------------------------------------------------------------------------
    procedure Set_Current_Song (This : in out T_Client; Current_Song : in T_Song) is
+      use type Api.T_Api_Provider;
    begin
       This.Client_Current_Song := Current_Song;
-      This.Nothing_To_Play     := Current_Song.Get_Provider = Api_Provider.No_Provider;
+      This.Nothing_To_Play     := Current_Song.Get_Provider = Api.No_Provider;
    end Set_Current_Song;
 
    -------------------------------------------------------------------------------------------------

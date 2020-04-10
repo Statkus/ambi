@@ -3,6 +3,7 @@ with Ada.Containers.Vectors;
 with Aws.Response;
 with Aws.Status;
 
+with Api.Dispatcher;
 with Database;
 with Room;
 
@@ -34,5 +35,8 @@ private
    Db : Database.T_Database_Class_Access := null;
 
    Rooms : Room_Vectors.Vector := Room_Vectors.Empty_Vector;
+
+   Api_Dispatcher : Api.Dispatcher.T_Dispatcher_Access :=
+     Api.Dispatcher.Constructors.New_And_Initialize;
 
 end Callback;

@@ -4,6 +4,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Aws.Session;
 
+with Api.Dispatcher;
 with Client;
 with Database;
 with Playlist;      use Playlist;
@@ -14,7 +15,6 @@ with Song_Vector;   use Song_Vector;
 package Room is
 
    type T_Room is tagged limited private;
-
    type T_Room_Class_Access is access all T_Room'Class;
 
    task type T_Room_Sync_Task (This : T_Room_Class_Access := null) is
@@ -25,8 +25,9 @@ package Room is
    type T_Room_Sync_Task_Access is access T_Room_Sync_Task;
 
    function New_And_Initialize
-     (Name : in String;
-      Db   : in not null Database.T_Database_Class_Access) return T_Room_Class_Access;
+     (Name           : in String;
+      Db             : in not null Database.T_Database_Class_Access;
+      Api_Dispatcher : in Api.Dispatcher.T_Dispatcher_Access) return T_Room_Class_Access;
 
    procedure Set_Room_Sync_Task
      (This      : in out T_Room;
@@ -171,6 +172,7 @@ private
       Number_Of_Clients_Sync   : Natural               := 0;
       Last_Request_Time        : Ada.Real_Time.Time    := Ada.Real_Time.Clock;
       Db                       : Database.T_Database_Class_Access;
+      Api_Dispatcher           : Api.Dispatcher.T_Dispatcher_Access;
    end record;
 
 end Room;

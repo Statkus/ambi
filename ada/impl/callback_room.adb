@@ -7,7 +7,7 @@ with Aws.Session; use Aws.Session;
 
 with Templates_Parser;
 
-with Api_Provider;
+with Api;
 with Playlist;      use Playlist;
 with Playlist_Item; use Playlist_Item;
 with Song;          use Song;
@@ -228,7 +228,7 @@ package body Callback_Room is
           (Id             => Aws.Status.Parameter (Request, "VideoId"),
            Title          => Aws.Status.Parameter (Request, "videoTitle"),
            Thumbnail_Link => Aws.Status.Parameter (Request, "videoThumbnail"),
-           Provider       => Api_Provider.Youtube);
+           Provider       => Api.Youtube_Api);
 
       Rcp : constant Aws.Net.Websocket.Registry.Recipient :=
         Aws.Net.Websocket.Registry.Create (Uri => "/" & Current_Room.Get_Name & "Socket");
@@ -274,7 +274,7 @@ package body Callback_Room is
           (Id             => Aws.Status.Parameter (Request, "videoId"),
            Title          => Aws.Status.Parameter (Request, "videoTitle"),
            Thumbnail_Link => Aws.Status.Parameter (Request, "videoThumbnail"),
-           Provider       => Api_Provider.Youtube);
+           Provider       => Api.Youtube_Api);
       Liked : constant Boolean := Boolean'Value (Aws.Status.Parameter (Request, "liked"));
 
       Rcp : constant Aws.Net.Websocket.Registry.Recipient :=

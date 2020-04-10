@@ -4,9 +4,8 @@ with Ada.Unchecked_Deallocation;
 with Aws.Net.Websocket.Registry;
 with Aws.Session; use Aws.Session;
 
-with Api_Dispatcher;
-with Api_Provider; use Api_Provider;
-with Client;       use Client;
+with Api;
+with Client; use Client;
 
 package body Room is
 
@@ -16,6 +15,8 @@ package body Room is
    -- T_Room_Sync_Task
    -------------------------------------------------------------------------------------------------
    task body T_Room_Sync_Task is
+      use type Api.T_Api_Provider;
+
       Playlist_Empty : Boolean := False;
 
       Rcp : constant Aws.Net.Websocket.Registry.Recipient :=
@@ -41,7 +42,7 @@ package body Room is
             select
                accept Next_Room_Song;
             or
-               delay Duration (Api_Dispatcher.Get_Song_Duration (This.Get_Song));
+               delay Duration (This.Api_Dispatcher.Get_Song_Duration (This.Get_Song));
             end select;
 
             -- Remove all expired sessions
@@ -59,9 +60,10 @@ package body Room is
                   -- There is at least one client sync with the room with the player activated, play
                   -- a song following Youtube suggestion
                   This.Set_Song
-                  (This.Select_Related_Song (Api_Dispatcher.Get_Related_Songs (This.Get_Song)));
+                  (This.Select_Related_Song
+                   (This.Api_Dispatcher.Get_Related_Songs (This.Get_Song)));
 
-                  if This.Get_Song.Get_Provider = Api_Provider.No_Provider then
+                  if This.Get_Song.Get_Provider = Api.No_Provider then
                      -- There is no suggestion, go back at waiting for the start of a new
                      -- playlist
                      This.Room_Current_Song_Active := False;
@@ -90,11 +92,16 @@ package body Room is
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
    function New_And_Initialize
-     (Name : in String;
-      Db   : in not null Database.T_Database_Class_Access) return T_Room_Class_Access
+     (Name           : in String;
+      Db             : in not null Database.T_Database_Class_Access;
+      Api_Dispatcher : in Api.Dispatcher.T_Dispatcher_Access) return T_Room_Class_Access
    is
       New_Room : constant T_Room_Class_Access :=
-        new T_Room'(Name => To_Unbounded_String (Name), Db => Db, others => <>);
+        new T_Room'
+          (Name           => To_Unbounded_String (Name),
+           Db             => Db,
+           Api_Dispatcher => Api_Dispatcher,
+           others         => <>);
    begin
       Db.Add_To_Rooms (Name);
 
@@ -376,13 +383,13 @@ package body Room is
       Search_Input : in     String;
       Direct_Link  :    out Boolean) return T_Song_Vector
    is
-      Search_Type : Api_Provider.T_Search_Type;
+      Search_Type : Api.T_Search_Type;
       Songs       : T_Song_Vector :=
-        Api_Dispatcher.Get_Song_Search_Results (Api_Provider.Youtube, Search_Input, Search_Type);
+        This.Api_Dispatcher.Get_Song_Search_Results (Api.Youtube_Api, Search_Input, Search_Type);
       Songs_Cursor : Song_Vectors.Cursor := Songs.First;
    begin
       case Search_Type is
-         when Api_Provider.Video_Link =>
+         when Api.Video_Link =>
             if not Songs.Is_Empty then
                This.Add_Song_To_Playlists (Session_Id, Songs.First_Element, False);
                Direct_Link := True;
@@ -391,7 +398,7 @@ package body Room is
                Direct_Link := False;
             end if;
 
-         when Api_Provider.Playlist_Link =>
+         when Api.Playlist_Link =>
             while Song_Vectors.Has_Element (Songs_Cursor) loop
                This.Add_Song_To_Playlists (Session_Id, Song_Vectors.Element (Songs_Cursor), True);
 
@@ -400,7 +407,7 @@ package body Room is
             Direct_Link := True;
             Songs       := Song_Vector.Constructors.Initialize;
 
-         when Api_Provider.Words =>
+         when Api.Words =>
             Direct_Link := False;
       end case;
 
@@ -468,12 +475,14 @@ package body Room is
      (This       : in out T_Room;
       Session_Id : in     Aws.Session.Id) return Boolean
    is
+      use type Api.T_Api_Provider;
+
       Current_Client : constant Client.T_Client_Class_Access :=
         This.Find_Client_From_Session_Id (Session_Id);
       Nothing_To_Play : Boolean := False;
    begin
       if Current_Client.Get_Sync_With_Room then
-         if This.Get_Song.Get_Provider = Api_Provider.No_Provider then
+         if This.Get_Song.Get_Provider = Api.No_Provider then
             Nothing_To_Play := True;
          end if;
       else

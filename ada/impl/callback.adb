@@ -59,7 +59,8 @@ package body Callback is
             Response := Callback_Room.Callback (Request, Current_Room);
          elsif Aws.Status.Parameter (Request, "roomName") = Uri (Uri'First + 1 .. Uri'Last) then
             -- Create room
-            Rooms.Append (Room.New_And_Initialize (Uri (Uri'First + 1 .. Uri'Last), Db));
+            Rooms.Append
+            (Room.New_And_Initialize (Uri (Uri'First + 1 .. Uri'Last), Db, Api_Dispatcher));
             Current_Room := Rooms.Last_Element;
 
             Put_Line

@@ -8,7 +8,6 @@ with AWS.Session;
 
 with Callback;
 with Database;
-with YT_API;
 
 ----------------------------------------------------------------------------------------------------
 -- Ambi
@@ -23,11 +22,6 @@ begin
    -- Read server address
    Open (File => Config_File, Mode => In_File, Name => "server_address.txt");
    Callback.Set_Server_Address (Get_Line (Config_File));
-   Close (Config_File);
-
-   -- Read Youtube API key
-   Open (File => Config_File, Mode => In_File, Name => "yt_api_key.txt");
-   YT_API.Set_API_Key (Get_Line (Config_File));
    Close (Config_File);
 
    -- Open or create the ambi database

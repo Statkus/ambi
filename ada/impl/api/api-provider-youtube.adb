@@ -31,7 +31,7 @@ package body Api.Provider.Youtube is
    -- Get_Song_Search_Results
    -------------------------------------------------------------------------------------------------
    function Get_Song_Search_Results
-     (This         : in     T_Youtube;
+     (This         : in out T_Youtube;
       Search_Input : in     String;
       Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector
    is
@@ -82,7 +82,10 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
    -------------------------------------------------------------------------------------------------
-   function Get_Song_Duration (This : in T_Youtube; Source_Song : in Song.T_Song) return Natural is
+   function Get_Song_Duration
+     (This        : in out T_Youtube;
+      Source_Song : in     Song.T_Song) return Natural
+   is
    begin
       return Parse_Video_Duration_Result
           (This.Get_Request_Response (This.Format_Video_Request (Source_Song.Get_Id)));
@@ -92,8 +95,8 @@ package body Api.Provider.Youtube is
    -- Get_Related_songs
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
-     (This        : in T_Youtube;
-      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector
+     (This        : in out T_Youtube;
+      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector
    is
    begin
       return Parse_Video_Search_Results

@@ -1,6 +1,7 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;           use Ada.Text_IO;
 
+with Api.Provider.No_Provider;
 with Api.Provider.Youtube;
 with Http_Methods;
 
@@ -21,11 +22,15 @@ package body Api.Dispatcher is
          Close (Config_File);
 
          return new T_Dispatcher'
-             (Youtube =>
-                Api.Provider.T_Provider_Class_Access
-                  (Api.Provider.Youtube.Constructors.New_And_Initialize
-                     (To_String (Yt_Api_Key),
-                      new Http_Methods.T_Http_Methods)));
+             (Provider_List =>
+                (No_Provider_Api =>
+                   Api.Provider.T_Provider_Class_Access
+                     (Api.Provider.No_Provider.Constructors.New_And_Initialize),
+                 Youtube_Api =>
+                   Api.Provider.T_Provider_Class_Access
+                     (Api.Provider.Youtube.Constructors.New_And_Initialize
+                        (To_String (Yt_Api_Key),
+                         new Http_Methods.T_Http_Methods))));
       end New_And_Initialize;
 
    end Constructors;
@@ -37,59 +42,23 @@ package body Api.Dispatcher is
      (This         : in     T_Dispatcher;
       Api_Provider : in     T_Api_Provider;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector
-   is
-      Song_Search_Results : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
-   begin
-      case Api_Provider is
-         when Api.Youtube_Api =>
-            Song_Search_Results := This.Youtube.Get_Song_Search_Results (Search_Input, Search_Type);
-
-         when Api.No_Provider =>
-            null;
-      end case;
-
-      return Song_Search_Results;
-   end Get_Song_Search_Results;
+      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector is
+     (This.Provider_List (Api_Provider).Get_Song_Search_Results (Search_Input, Search_Type));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
    -------------------------------------------------------------------------------------------------
    function Get_Song_Duration
      (This        : in T_Dispatcher;
-      Source_Song : in Song.T_Song) return Natural
-   is
-      Duration : Natural := Natural'First;
-   begin
-      case Source_Song.Get_Provider is
-         when Api.Youtube_Api =>
-            Duration := This.Youtube.Get_Song_Duration (Source_Song);
-
-         when Api.No_Provider =>
-            null;
-      end case;
-
-      return Duration;
-   end Get_Song_Duration;
+      Source_Song : in Song.T_Song) return Natural is
+     (This.Provider_List (Source_Song.Get_Provider).Get_Song_Duration (Source_Song));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Related_Songs
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in T_Dispatcher;
-      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector
-   is
-      Related_Songs : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
-   begin
-      case Source_Song.Get_Provider is
-         when Api.Youtube_Api =>
-            Related_Songs := This.Youtube.Get_Related_Songs (Source_Song);
-
-         when Api.No_Provider =>
-            null;
-      end case;
-
-      return Related_Songs;
-   end Get_Related_Songs;
+      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector is
+     (This.Provider_List (Source_Song.Get_Provider).Get_Related_Songs (Source_Song));
 
 end Api.Dispatcher;

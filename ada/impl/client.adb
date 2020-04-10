@@ -31,7 +31,7 @@ package body Client is
       use type Api.T_Api_Provider;
    begin
       This.Client_Current_Song := Current_Song;
-      This.Nothing_To_Play     := Current_Song.Get_Provider = Api.No_Provider;
+      This.Nothing_To_Play     := Current_Song.Get_Provider = Api.No_Provider_Api;
    end Set_Current_Song;
 
    -------------------------------------------------------------------------------------------------

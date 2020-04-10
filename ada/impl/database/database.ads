@@ -1,19 +1,22 @@
-with Db;
 with Db.Sqlite;
 
-with Room_Name_Vector; use Room_Name_Vector;
-with Song;             use Song;
-with Song_Vector;      use Song_Vector;
+with Room_Name_Vector;
+with Song;
+with Song_Vector;
 
 package Database is
 
    type T_Database is tagged limited private;
-   type T_Database_Class_Access is access all T_Database'Class;
+   type T_Database_Access is access all T_Database;
 
-   -------------------------------------------------------------------------------------------------
-   -- Open
-   -------------------------------------------------------------------------------------------------
-   procedure Open (This : in out T_Database);
+   package Constructors is
+
+      ----------------------------------------------------------------------------------------------
+      -- New_And_Initialize
+      ----------------------------------------------------------------------------------------------
+      function New_And_Initialize (File_Name : in String) return T_Database_Access;
+
+   end Constructors;
 
    -------------------------------------------------------------------------------------------------
    -- Close
@@ -31,7 +34,7 @@ package Database is
    procedure Add_To_Room_Historic
      (This      : in out T_Database;
       Room_Name : in     String;
-      New_Song  : in     T_Song);
+      New_Song  : in     Song.T_Song);
 
    -------------------------------------------------------------------------------------------------
    -- Add_To_Room_Likes
@@ -39,7 +42,7 @@ package Database is
    procedure Add_To_Room_Likes
      (This      : in out T_Database;
       Room_Name : in     String;
-      New_Song  : in     T_Song);
+      New_Song  : in     Song.T_Song);
 
    -------------------------------------------------------------------------------------------------
    -- Remove_From_Room_Likes
@@ -47,17 +50,19 @@ package Database is
    procedure Remove_From_Room_Likes
      (This      : in out T_Database;
       Room_Name : in     String;
-      Old_Song  : in     T_Song);
+      Old_Song  : in     Song.T_Song);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Rooms
    -------------------------------------------------------------------------------------------------
-   function Get_Rooms (This : in T_Database) return T_Room_Name_Vector;
+   function Get_Rooms (This : in T_Database) return Room_Name_Vector.T_Room_Name_Vector;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Historic
    -------------------------------------------------------------------------------------------------
-   function Get_Room_Historic (This : in T_Database; Room_Name : in String) return T_Song_Vector;
+   function Get_Room_Historic
+     (This      : in T_Database;
+      Room_Name : in String) return Song_Vector.T_Song_Vector;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Last_Songs
@@ -65,12 +70,14 @@ package Database is
    function Get_Room_Last_Songs
      (This            : in T_Database;
       Room_Name       : in String;
-      Number_Of_Songs : in Natural) return T_Song_Vector;
+      Number_Of_Songs : in Natural) return Song_Vector.T_Song_Vector;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Likes
    -------------------------------------------------------------------------------------------------
-   function Get_Room_Likes (This : in T_Database; Room_Name : in String) return T_Song_Vector;
+   function Get_Room_Likes
+     (This      : in T_Database;
+      Room_Name : in String) return Song_Vector.T_Song_Vector;
 
    -------------------------------------------------------------------------------------------------
    -- Is_Room_Song_Liked
@@ -78,20 +85,21 @@ package Database is
    function Is_Room_Song_Liked
      (This          : in T_Database;
       Room_Name     : in String;
-      Song_To_Check : in T_Song) return Boolean;
+      Song_To_Check : in Song.T_Song) return Boolean;
 
 private
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Rooms
+   -- Read_Rooms_In_Db
    -------------------------------------------------------------------------------------------------
    procedure Read_Rooms_In_Db (This : in out T_Database);
 
-   Max_Historic_Songs : constant := 500;
+   Historic_Length : constant := 50;
 
    type T_Database is tagged limited record
       Db_Handle : Db.Sqlite.Handle;
-      Rooms     : T_Room_Name_Vector := Room_Name_Vector.Constructors.Initialize;
+      Open      : Boolean;
+      Rooms     : Room_Name_Vector.T_Room_Name_Vector;
    end record;
 
 end Database;

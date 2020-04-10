@@ -10,7 +10,7 @@ package body Song is
            (Id             => Null_Unbounded_String,
             Title          => To_Unbounded_String ("no song played"),
             Thumbnail_Link => Null_Unbounded_String,
-            Provider       => Api.No_Provider));
+            Provider       => Api.No_Provider_Api));
 
       ----------------------------------------------------------------------------------------------
       -- Initialize

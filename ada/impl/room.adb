@@ -33,7 +33,7 @@ package body Room is
          Playlist_Empty := False;
          loop
             -- Send request to the clients, the current room song has changed
-            Aws.Net.Websocket.Registry.Send (Rcp, "update_room_current_song_request");
+            Aws.Net.Websocket.Registry.Send (Rcp, "update_room_current_video_request");
             This.Last_Request_Time := Ada.Real_Time.Clock;
 
             exit when Playlist_Empty;
@@ -63,7 +63,7 @@ package body Room is
                   (This.Select_Related_Song
                    (This.Api_Dispatcher.Get_Related_Songs (This.Get_Song)));
 
-                  if This.Get_Song.Get_Provider = Api.No_Provider then
+                  if This.Get_Song.Get_Provider = Api.No_Provider_Api then
                      -- There is no suggestion, go back at waiting for the start of a new
                      -- playlist
                      This.Room_Current_Song_Active := False;
@@ -93,7 +93,7 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    function New_And_Initialize
      (Name           : in String;
-      Db             : in not null Database.T_Database_Class_Access;
+      Db             : in not null Database.T_Database_Access;
       Api_Dispatcher : in Api.Dispatcher.T_Dispatcher_Access) return T_Room_Class_Access
    is
       New_Room : constant T_Room_Class_Access :=
@@ -482,7 +482,7 @@ package body Room is
       Nothing_To_Play : Boolean := False;
    begin
       if Current_Client.Get_Sync_With_Room then
-         if This.Get_Song.Get_Provider = Api.No_Provider then
+         if This.Get_Song.Get_Provider = Api.No_Provider_Api then
             Nothing_To_Play := True;
          end if;
       else

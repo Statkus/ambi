@@ -11,7 +11,7 @@ package Callback is
 
    procedure Set_Server_Address (Address : in String);
 
-   procedure Set_Database (Ambi_Database : in not null Database.T_Database_Class_Access);
+   procedure Set_Database (Ambi_Database : in not null Database.T_Database_Access);
 
    function Ambi_Callback (Request : in Aws.Status.Data) return Aws.Response.Data;
 
@@ -32,7 +32,7 @@ private
       Room.T_Room_Class_Access,
       Room_Compare);
 
-   Db : Database.T_Database_Class_Access := null;
+   Db : Database.T_Database_Access := null;
 
    Rooms : Room_Vectors.Vector := Room_Vectors.Empty_Vector;
 

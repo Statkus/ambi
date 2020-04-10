@@ -26,7 +26,7 @@ package Room is
 
    function New_And_Initialize
      (Name           : in String;
-      Db             : in not null Database.T_Database_Class_Access;
+      Db             : in not null Database.T_Database_Access;
       Api_Dispatcher : in Api.Dispatcher.T_Dispatcher_Access) return T_Room_Class_Access;
 
    procedure Set_Room_Sync_Task
@@ -171,7 +171,7 @@ private
       Client_List              : Client_Vectors.Vector := Client_Vectors.Empty_Vector;
       Number_Of_Clients_Sync   : Natural               := 0;
       Last_Request_Time        : Ada.Real_Time.Time    := Ada.Real_Time.Clock;
-      Db                       : Database.T_Database_Class_Access;
+      Db                       : Database.T_Database_Access;
       Api_Dispatcher           : Api.Dispatcher.T_Dispatcher_Access;
    end record;
 

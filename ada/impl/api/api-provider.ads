@@ -10,7 +10,7 @@ package Api.Provider is
    -- Get_Song_Search_Results
    -------------------------------------------------------------------------------------------------
    function Get_Song_Search_Results
-     (This         : in     T_Provider;
+     (This         : in out T_Provider;
       Search_Input : in     String;
       Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector is abstract;
 
@@ -18,15 +18,15 @@ package Api.Provider is
    -- Get_Song_Duration
    -------------------------------------------------------------------------------------------------
    function Get_Song_Duration
-     (This        : in T_Provider;
-      Source_Song : in Song.T_Song) return Natural is abstract;
+     (This        : in out T_Provider;
+      Source_Song : in     Song.T_Song) return Natural is abstract;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Related_Songs
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
-     (This        : in T_Provider;
-      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector is abstract;
+     (This        : in out T_Provider;
+      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector is abstract;
 
 private
 

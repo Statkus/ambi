@@ -25,21 +25,23 @@ package Api.Provider.Youtube is
    -- Get_Song_Search_Results
    -------------------------------------------------------------------------------------------------
    function Get_Song_Search_Results
-     (This         : in     T_Youtube;
+     (This         : in out T_Youtube;
       Search_Input : in     String;
       Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
    -------------------------------------------------------------------------------------------------
-   function Get_Song_Duration (This : in T_Youtube; Source_Song : in Song.T_Song) return Natural;
+   function Get_Song_Duration
+     (This        : in out T_Youtube;
+      Source_Song : in     Song.T_Song) return Natural;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Related_Songs
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
-     (This        : in T_Youtube;
-      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector;
+     (This        : in out T_Youtube;
+      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector;
 
 private
 

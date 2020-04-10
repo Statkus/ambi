@@ -21,7 +21,7 @@ package body Callback is
    -------------------------------------------------------------------------------------------------
    -- Set_Database
    -------------------------------------------------------------------------------------------------
-   procedure Set_Database (Ambi_Database : in not null Database.T_Database_Class_Access) is
+   procedure Set_Database (Ambi_Database : in not null Database.T_Database_Access) is
    begin
       Db := Ambi_Database;
    end Set_Database;

@@ -10,15 +10,9 @@ package body Api.Dispatcher.Test is
    procedure Register_Tests (This : in out T_Dispatcher_Test_Case) is
       use Aunit.Test_Cases.Registration;
    begin
-      Register_Routine
-        (This,
-         Test_Constructors_New_And_Initialize'Access,
-         "Test New_And_Initialize constructor");
-
+      Register_Routine (This, Test_New_And_Initialize'Access, "Test New_And_Initialize");
       Register_Routine (This, Test_Get_Song_Search_Results'Access, "Test Get_Song_Search_Results");
-
       Register_Routine (This, Test_Get_Song_Duration'Access, "Test Get_Song_Duration");
-
       Register_Routine (This, Test_Get_Related_Songs'Access, "Test Get_Related_Songs");
    end Register_Tests;
 
@@ -32,13 +26,13 @@ package body Api.Dispatcher.Test is
    end Name;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Constructors_New_And_Initialize
+   -- Test_New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   procedure Test_Constructors_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
+   procedure Test_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
    begin
-      Assert (Api.Dispatcher.Constructors.New_And_Initialize /= null, "Null dispatcher returned.");
-   end Test_Constructors_New_And_Initialize;
+      Assert (Api.Dispatcher.New_And_Initialize /= null, "Null dispatcher returned.");
+   end Test_New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Get_Song_Search_Results
@@ -98,7 +92,7 @@ package body Api.Dispatcher.Test is
         new Api.Provider.Mock.T_Mock;
 
       Source_Song : Song.T_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "test",
            Title          => "test",
            Thumbnail_Link => "test",
@@ -120,7 +114,7 @@ package body Api.Dispatcher.Test is
       Provider_Mock_Youtube.Reset_Calls;
 
       Source_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "test",
            Title          => "test",
            Thumbnail_Link => "test",
@@ -146,7 +140,7 @@ package body Api.Dispatcher.Test is
         new Api.Provider.Mock.T_Mock;
 
       Source_Song : Song.T_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "test",
            Title          => "test",
            Thumbnail_Link => "test",
@@ -170,7 +164,7 @@ package body Api.Dispatcher.Test is
       Provider_Mock_Youtube.Reset_Calls;
 
       Source_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "test",
            Title          => "test",
            Thumbnail_Link => "test",

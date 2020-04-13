@@ -1,5 +1,0 @@
-<div videoId="@_VIDEO_ID_@">
-  <img src="@_VIDEO_THUMBNAIL_@" class="clickable" onclick="addToPlaylist(this)">
-  <button class="add_playlist_buttons" onclick="addToPlaylist(this)">@_VIDEO_TITLE_@</button>
-  <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKE_@ fa-heart"></i></button>
-</div>

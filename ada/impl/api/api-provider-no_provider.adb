@@ -1,13 +1,9 @@
 package body Api.Provider.No_Provider is
 
-   package body Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize return T_No_Provider_Access is (new T_No_Provider);
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize return T_No_Provider_Access is (new T_No_Provider);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -15,8 +11,8 @@ package body Api.Provider.No_Provider is
    function Get_Song_Search_Results
      (This         : in out T_No_Provider;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector is
-     (Song_Vector.Constructors.Initialize);
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List is
+     (Song.List.Initialize);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
@@ -31,7 +27,7 @@ package body Api.Provider.No_Provider is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_No_Provider;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector is
-     (Song_Vector.Constructors.Initialize);
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List is
+     (Song.List.Initialize);
 
 end Api.Provider.No_Provider;

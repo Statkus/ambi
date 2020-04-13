@@ -161,22 +161,22 @@ input:checked + .slider:before {
   max-width: 100%;
 }
 
-/* Next room video button *************************************************************************/
-#next_room_video_button {
+/* Next room song button **************************************************************************/
+#next_room_song_button {
   background-color: inherit;
   color: inherit;
   border: none;
   outline: none;
 }
 
-/* Video list buttons *****************************************************************************/
-#video_list_buttons {
+/* Song list buttons ******************************************************************************/
+#song_list_buttons {
   display: inline-block;
   background-color: rgb(30, 30, 30);
   width: 640px;
 }
 
-#video_list_buttons button {
+#song_list_buttons button {
   background-color: inherit;
   color: inherit;
   float: left;
@@ -186,37 +186,37 @@ input:checked + .slider:before {
   padding: 14px 16px;
 }
 
-#video_list_buttons button:hover {
+#song_list_buttons button:hover {
   background-color: rgb(50, 50, 50);
 }
 
-#video_list_buttons button.active {
+#song_list_buttons button.active {
   background-color: rgb(100, 100, 100);
 }
 
-/* Video list *************************************************************************************/
-#video_list {
+/* Song list **************************************************************************************/
+#song_list {
   position: relative;
   width: 640px;
   left: calc(50% - 320px);
 }
 
-#video_list div {
+#song_list div {
   text-align: left;
   padding: 10px;
   background-color: rgb(30, 30, 30);
   border-bottom: 1px solid rgb(70, 70, 70);
 }
 
-#video_list div:hover {
+#song_list div:hover {
   background-color: rgb(50, 50, 50);
 }
 
-#video_list div img.clickable:hover {
+#song_list div img.clickable:hover {
   cursor: pointer;
 }
 
-.playlist_videos_titles {
+.playlist_songs_titles {
   text-align: left;
   line-height: 90px;
   position: absolute;
@@ -306,12 +306,12 @@ input:checked + .slider:before {
     width: 100%;
   }
 
-  #video_list_buttons {
+  #song_list_buttons {
     position: relative;
     width: 100%;
   }
 
-  #video_list {
+  #song_list {
     width: 100%;
     left: 0px;
   }

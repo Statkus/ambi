@@ -1,21 +1,17 @@
 with Db.Sqlite;
 
-with Room_Name_Vector;
-with Song_Vector;
+with Room_Name_List;
+with Song.List;
 
 package Database_Wrapper is
 
    type T_Database_Wrapper (File_Name_Length : Natural) is tagged limited private;
    type T_Database_Wrapper_Access is access all T_Database_Wrapper;
 
-   package Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize (File_Name : in String) return T_Database_Wrapper_Access;
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize (File_Name : in String) return T_Database_Wrapper_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Close
@@ -43,7 +39,7 @@ package Database_Wrapper is
    -------------------------------------------------------------------------------------------------
    -- Get_Rooms
    -------------------------------------------------------------------------------------------------
-   function Get_Rooms (This : in T_Database_Wrapper) return Room_Name_Vector.T_Room_Name_Vector;
+   function Get_Rooms (This : in T_Database_Wrapper) return Room_Name_List.T_Room_Name_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Table
@@ -51,7 +47,7 @@ package Database_Wrapper is
    function Get_Song_Table
      (This       : in T_Database_Wrapper;
       Room_Name  : in String;
-      Table_Name : in String) return Song_Vector.T_Song_Vector;
+      Table_Name : in String) return Song.List.T_Song_List;
 
 private
 

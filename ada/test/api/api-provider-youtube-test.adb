@@ -2,12 +2,12 @@ with Aunit.Assertions; use Aunit.Assertions;
 
 with File; use File;
 
-with Http_Methods;
-with Http_Methods.Mock;
+with Web_Methods.Http;
+with Web_Methods.Http.Mock;
 
 package body Api.Provider.Youtube.Test is
 
-   use Song_Vector;
+   use Song.List;
 
    -------------------------------------------------------------------------------------------------
    -- Register_Tests
@@ -15,10 +15,7 @@ package body Api.Provider.Youtube.Test is
    procedure Register_Tests (This : in out T_Youtube_Test_Case) is
       use Aunit.Test_Cases.Registration;
    begin
-      Register_Routine
-        (This,
-         Test_Constructors_New_And_Initialize'Access,
-         "Test New_And_Initialize constructor");
+      Register_Routine (This, Test_New_And_Initialize'Access, "Test New_And_Initialize");
 
       Register_Routine (This, Test_Get_Song_Search_Results'Access, "Test Get_Song_Search_Results");
 
@@ -64,21 +61,19 @@ package body Api.Provider.Youtube.Test is
    end Name;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Constructors_New_And_Initialize
+   -- Test_New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   procedure Test_Constructors_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
-      use type Http_Methods.T_Http_Methods_Class_Access;
+   procedure Test_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
+      use type Web_Methods.Http.T_Http_Class_Access;
 
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor : constant Http_Methods.T_Http_Methods_Class_Access :=
-        new Http_Methods.T_Http_Methods;
-      Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize ("test_key", Http_Accessor);
+      Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access := new Web_Methods.Http.T_Http;
+      Yt_Api        : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
    begin
       Assert (Yt_Api.Api_Key = "test_key", "Wrong API key.");
       Assert (Yt_Api.Http_Accessor /= null, "Null HTTP accessor given.");
-   end Test_Constructors_New_And_Initialize;
+   end Test_New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Get_Song_Search_Results
@@ -86,13 +81,11 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Get_Song_Search_Results (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor_Mock : constant Http_Methods.Mock.T_Http_Methods_Mock_Access :=
-        new Http_Methods.Mock.T_Http_Methods_Mock;
+      Http_Accessor_Mock : constant Web_Methods.Http.Mock.T_Http_Mock_Access :=
+        new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize
-          ("test_key",
-           Http_Methods.T_Http_Methods_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
 
       Search_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
@@ -100,7 +93,7 @@ package body Api.Provider.Youtube.Test is
         Read_File ("ada/test/json_samples/youtube_playlist_item_list.json");
       Wrong_Json : constant String := "";
 
-      Videos      : T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos      : T_Song_List := Song.List.Initialize;
       Search_Type : T_Search_Type;
    begin
       ----------------------------------------------------------------------------------------------
@@ -287,20 +280,18 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Get_Song_Duration (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor_Mock : constant Http_Methods.Mock.T_Http_Methods_Mock_Access :=
-        new Http_Methods.Mock.T_Http_Methods_Mock;
+      Http_Accessor_Mock : constant Web_Methods.Http.Mock.T_Http_Mock_Access :=
+        new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize
-          ("test_key",
-           Http_Methods.T_Http_Methods_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_video_content_details.json");
       Wrong_Json : constant String := "";
 
       Video : constant Song.T_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "UbQgXeY_zi4",
            Title          => "test",
            Thumbnail_Link => "test",
@@ -341,25 +332,23 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Get_Related_Songs (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor_Mock : constant Http_Methods.Mock.T_Http_Methods_Mock_Access :=
-        new Http_Methods.Mock.T_Http_Methods_Mock;
+      Http_Accessor_Mock : constant Web_Methods.Http.Mock.T_Http_Mock_Access :=
+        new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize
-          ("test_key",
-           Http_Methods.T_Http_Methods_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
       Wrong_Json : constant String := "";
 
       Video : constant Song.T_Song :=
-        Song.Constructors.Initialize
+        Song.Initialize
           (Id             => "test",
            Title          => "test",
            Thumbnail_Link => "test",
            Provider       => Api.Youtube_Api);
-      Videos : T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos : T_Song_List := Song.List.Initialize;
    begin
       ----------------------------------------------------------------------------------------------
       -- Correct JSON
@@ -426,13 +415,11 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Get_Playlist (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor_Mock : constant Http_Methods.Mock.T_Http_Methods_Mock_Access :=
-        new Http_Methods.Mock.T_Http_Methods_Mock;
+      Http_Accessor_Mock : constant Web_Methods.Http.Mock.T_Http_Mock_Access :=
+        new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize
-          ("test_key",
-           Http_Methods.T_Http_Methods_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
 
       Single_Page_Playlist_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_playlist_item_list.json");
@@ -444,9 +431,9 @@ package body Api.Provider.Youtube.Test is
         Read_File ("ada/test/json_samples/youtube_playlist_item_list_multiple_pages_3.json");
       Wrong_Json : constant String := "";
 
-      Multiple_Pages_Playlist_Json : Http_Methods.Mock.T_Get_Response_Vector;
+      Multiple_Pages_Playlist_Json : Web_Methods.Http.Mock.T_Get_Response_Vector;
 
-      Videos : T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos : T_Song_List := Song.List.Initialize;
    begin
       ----------------------------------------------------------------------------------------------
       -- Single page playlist
@@ -557,10 +544,8 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Format_Requests (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor : constant Http_Methods.T_Http_Methods_Class_Access :=
-        new Http_Methods.T_Http_Methods;
-      Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize ("test_key", Http_Accessor);
+      Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access := new Web_Methods.Http.T_Http;
+      Yt_Api        : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
    begin
       Assert
         (Yt_Api.Format_Search_Request ("test") =
@@ -589,13 +574,11 @@ package body Api.Provider.Youtube.Test is
    procedure Test_Get_Request_Response (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor_Mock : constant Http_Methods.Mock.T_Http_Methods_Mock_Access :=
-        new Http_Methods.Mock.T_Http_Methods_Mock;
+      Http_Accessor_Mock : constant Web_Methods.Http.Mock.T_Http_Mock_Access :=
+        new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        Constructors.New_And_Initialize
-          ("test_key",
-           Http_Methods.T_Http_Methods_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
    begin
       Http_Accessor_Mock.Set_Get_Response ("test");
       Http_Accessor_Mock.Reset_Number_Of_Get_Called;
@@ -626,7 +609,7 @@ package body Api.Provider.Youtube.Test is
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
       Wrong_Json : constant String := "";
 
-      Videos : T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos : T_Song_List := Song.List.Initialize;
    begin
       Videos := Parse_Video_Search_Results (Correct_Json);
 
@@ -681,10 +664,10 @@ package body Api.Provider.Youtube.Test is
         Read_File ("ada/test/json_samples/youtube_playlist_item_list_unavailable_video.json");
       Wrong_Json : constant String := "";
 
-      Videos             : T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos             : T_Song_List := Song.List.Initialize;
       Total_Results      : Natural;
       Next_Page_Token    : Unbounded_String;
-      Unavailable_Videos : Natural       := Natural'First;
+      Unavailable_Videos : Natural     := Natural'First;
    begin
       ----------------------------------------------------------------------------------------------
       -- Single page playlist

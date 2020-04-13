@@ -1,0 +1,5 @@
+<div songId="@_SONG_ID_@">
+  <img src="@_SONG_THUMBNAIL_LINK_@" class="clickable" onclick="addToPlaylist(this)">
+  <button class="add_playlist_buttons" onclick="addToPlaylist(this)">@_SONG_TITLE_@</button>
+  <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKED_@ fa-heart"></i></button>
+</div>

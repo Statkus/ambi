@@ -1,21 +1,17 @@
 with Api.Provider;
 
 with Song;
-with Song_Vector;
+with Song.List;
 
 package Api.Dispatcher is
 
    type T_Dispatcher is tagged limited private;
    type T_Dispatcher_Access is access all T_Dispatcher;
 
-   package Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize return T_Dispatcher_Access;
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize return T_Dispatcher_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -24,7 +20,7 @@ package Api.Dispatcher is
      (This         : in     T_Dispatcher;
       Api_Provider : in     T_Api_Provider;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector;
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
@@ -36,7 +32,7 @@ package Api.Dispatcher is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in T_Dispatcher;
-      Source_Song : in Song.T_Song) return Song_Vector.T_Song_Vector;
+      Source_Song : in Song.T_Song) return Song.List.T_Song_List;
 
 private
 

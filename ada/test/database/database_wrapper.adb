@@ -6,22 +6,18 @@ with Song;
 
 package body Database_Wrapper is
 
-   package body Constructors is
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize (File_Name : in String) return T_Database_Wrapper_Access is
+      Test_Db : constant T_Database_Wrapper_Access :=
+        new T_Database_Wrapper'
+          (File_Name_Length => File_Name'Length, File_Name => File_Name, others => <>);
+   begin
+      Db.Sqlite.Connect (Test_Db.Db_Handle, File_Name);
 
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize (File_Name : in String) return T_Database_Wrapper_Access is
-         Test_Db : constant T_Database_Wrapper_Access :=
-           new T_Database_Wrapper'
-             (File_Name_Length => File_Name'Length, File_Name => File_Name, others => <>);
-      begin
-         Db.Sqlite.Connect (Test_Db.Db_Handle, File_Name);
-
-         return Test_Db;
-      end New_And_Initialize;
-
-   end Constructors;
+      return Test_Db;
+   end New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Close
@@ -90,11 +86,11 @@ package body Database_Wrapper is
    -------------------------------------------------------------------------------------------------
    -- Get_Rooms
    -------------------------------------------------------------------------------------------------
-   function Get_Rooms (This : in T_Database_Wrapper) return Room_Name_Vector.T_Room_Name_Vector is
+   function Get_Rooms (This : in T_Database_Wrapper) return Room_Name_List.T_Room_Name_List is
       Db_Iterator : Db.Sqlite.Iterator;
       Db_Row      : Db.String_Vectors.Vector;
 
-      Rooms : Room_Name_Vector.T_Room_Name_Vector := Room_Name_Vector.Constructors.Initialize;
+      Rooms : Room_Name_List.T_Room_Name_List := Room_Name_List.Initialize;
    begin
       Db.Sqlite.Prepare_Select (This.Db_Handle, Db_Iterator, "SELECT * FROM rooms;");
 
@@ -115,7 +111,7 @@ package body Database_Wrapper is
    function Get_Song_Table
      (This       : in T_Database_Wrapper;
       Room_Name  : in String;
-      Table_Name : in String) return Song_Vector.T_Song_Vector
+      Table_Name : in String) return Song.List.T_Song_List
    is
       Db_Iterator             : Db.Sqlite.Iterator;
       Db_Row                  : Db.String_Vectors.Vector;
@@ -124,7 +120,7 @@ package body Database_Wrapper is
       Db_Row_Thumbnail_Cursor : Db.String_Vectors.Cursor;
       Db_Row_Provider_Cursor  : Db.String_Vectors.Cursor;
 
-      Song_List : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Song_List : Song.List.T_Song_List := Song.List.Initialize;
    begin
       Db.Sqlite.Prepare_Select
         (This.Db_Handle,
@@ -150,7 +146,7 @@ package body Database_Wrapper is
          Db_Row_Provider_Cursor  := Db.String_Vectors.Next (Db_Row_Thumbnail_Cursor);
 
          Song_List.Append
-         (Song.Constructors.Initialize
+         (Song.Initialize
             (Id             => Db.String_Vectors.Element (Db_Row_Id_Cursor),
              Title          => Db.String_Vectors.Element (Db_Row_Title_Cursor),
              Thumbnail_Link => Db.String_Vectors.Element (Db_Row_Thumbnail_Cursor),

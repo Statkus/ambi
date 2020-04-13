@@ -6,51 +6,46 @@ package body Database is
 
    use type Api.T_Api_Provider;
 
-   package body Constructors is
+   ----------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   ----------------------------------------------------------------------------------------------
+   function New_And_Initialize (File_Name : in String) return T_Database_Class_Access is
+      Ambi_Db : constant T_Database_Class_Access :=
+        new T_Database'(Open => False, Rooms => Room_Name_List.Initialize, others => <>);
+   begin
+      Db.Sqlite.Connect (Ambi_Db.Db_Handle, File_Name);
 
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize (File_Name : in String) return T_Database_Access is
-         Ambi_Db : constant T_Database_Access :=
-           new T_Database'
-             (Open => False, Rooms => Room_Name_Vector.Constructors.Initialize, others => <>);
-      begin
-         Db.Sqlite.Connect (Ambi_Db.Db_Handle, File_Name);
+      Ambi_Db.Open := True;
 
-         Ambi_Db.Open := True;
+      -- Create the rooms table if it does not exist yet
+      Db.Sqlite.Execute
+        (Ambi_Db.Db_Handle,
+         "CREATE TABLE IF NOT EXISTS rooms (room_name TEXT NOT NULL PRIMARY KEY);");
 
-         -- Create the rooms table if it does not exist yet
-         Db.Sqlite.Execute
-           (Ambi_Db.Db_Handle,
-            "CREATE TABLE IF NOT EXISTS rooms (room_name TEXT NOT NULL PRIMARY KEY);");
+      -- Create the historic table if it does not exist yet
+      Db.Sqlite.Execute
+        (Ambi_Db.Db_Handle,
+         "CREATE TABLE IF NOT EXISTS historic (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, song_id TEXT NOT NULL, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
 
-         -- Create the historic table if it does not exist yet
-         Db.Sqlite.Execute
-           (Ambi_Db.Db_Handle,
-            "CREATE TABLE IF NOT EXISTS historic (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, song_id TEXT NOT NULL, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
+      -- Add an index on room_name for historic table if it does not exist yet
+      Db.Sqlite.Execute
+        (Ambi_Db.Db_Handle,
+         "CREATE INDEX IF NOT EXISTS room_index_on_historic ON historic (room_name);");
 
-         -- Add an index on room_name for historic table if it does not exist yet
-         Db.Sqlite.Execute
-           (Ambi_Db.Db_Handle,
-            "CREATE INDEX IF NOT EXISTS room_index_on_historic ON historic (room_name);");
+      -- Create the likes table if it does not exist yet
+      Db.Sqlite.Execute
+        (Ambi_Db.Db_Handle,
+         "CREATE TABLE IF NOT EXISTS likes (song_id TEXT NOT NULL PRIMARY KEY, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
 
-         -- Create the likes table if it does not exist yet
-         Db.Sqlite.Execute
-           (Ambi_Db.Db_Handle,
-            "CREATE TABLE IF NOT EXISTS likes (song_id TEXT NOT NULL PRIMARY KEY, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
+      -- Add an index on room_name for likes table if it does not exist yet
+      Db.Sqlite.Execute
+        (Ambi_Db.Db_Handle,
+         "CREATE INDEX IF NOT EXISTS room_index_on_likes ON likes (room_name);");
 
-         -- Add an index on room_name for likes table if it does not exist yet
-         Db.Sqlite.Execute
-           (Ambi_Db.Db_Handle,
-            "CREATE INDEX IF NOT EXISTS room_index_on_likes ON likes (room_name);");
+      Ambi_Db.Read_Rooms_In_Db;
 
-         Ambi_Db.Read_Rooms_In_Db;
-
-         return Ambi_Db;
-      end New_And_Initialize;
-
-   end Constructors;
+      return Ambi_Db;
+   end New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Close
@@ -178,16 +173,14 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    -- Get_Rooms
    -------------------------------------------------------------------------------------------------
-   function Get_Rooms
-     (This : in T_Database) return Room_Name_Vector.T_Room_Name_Vector is
-     (This.Rooms);
+   function Get_Rooms (This : in T_Database) return Room_Name_List.T_Room_Name_List is (This.Rooms);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Historic
    -------------------------------------------------------------------------------------------------
    function Get_Room_Historic
      (This      : in T_Database;
-      Room_Name : in String) return Song_Vector.T_Song_Vector is
+      Room_Name : in String) return Song.List.T_Song_List is
      (This.Get_Room_Last_Songs (Room_Name, Historic_Length));
 
    -------------------------------------------------------------------------------------------------
@@ -196,7 +189,7 @@ package body Database is
    function Get_Room_Last_Songs
      (This            : in T_Database;
       Room_Name       : in String;
-      Number_Of_Songs : in Natural) return Song_Vector.T_Song_Vector
+      Number_Of_Songs : in Natural) return Song.List.T_Song_List
    is
       Db_Iterator             : Db.Sqlite.Iterator;
       Db_Row                  : Db.String_Vectors.Vector;
@@ -205,7 +198,7 @@ package body Database is
       Db_Row_Thumbnail_Cursor : Db.String_Vectors.Cursor;
       Db_Row_Provider_Cursor  : Db.String_Vectors.Cursor;
 
-      Song_List : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Song_List : Song.List.T_Song_List := Song.List.Initialize;
    begin
       if This.Open and then This.Rooms.Contains (To_Unbounded_String (Room_Name)) then
          Db.Sqlite.Prepare_Select
@@ -224,7 +217,7 @@ package body Database is
             Db_Row_Provider_Cursor  := Db.String_Vectors.Next (Db_Row_Thumbnail_Cursor);
 
             Song_List.Prepend
-            (Song.Constructors.Initialize
+            (Song.Initialize
                (Id             => Db.String_Vectors.Element (Db_Row_Id_Cursor),
                 Title          => Db.String_Vectors.Element (Db_Row_Title_Cursor),
                 Thumbnail_Link => Db.String_Vectors.Element (Db_Row_Thumbnail_Cursor),
@@ -243,7 +236,7 @@ package body Database is
    -------------------------------------------------------------------------------------------------
    function Get_Room_Likes
      (This      : in T_Database;
-      Room_Name : in String) return Song_Vector.T_Song_Vector
+      Room_Name : in String) return Song.List.T_Song_List
    is
       Db_Iterator             : Db.Sqlite.Iterator;
       Db_Row                  : Db.String_Vectors.Vector;
@@ -252,7 +245,7 @@ package body Database is
       Db_Row_Thumbnail_Cursor : Db.String_Vectors.Cursor;
       Db_Row_Provider_Cursor  : Db.String_Vectors.Cursor;
 
-      Song_List : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Song_List : Song.List.T_Song_List := Song.List.Initialize;
    begin
       if This.Open and then This.Rooms.Contains (To_Unbounded_String (Room_Name)) then
          Db.Sqlite.Prepare_Select
@@ -271,7 +264,7 @@ package body Database is
             Db_Row_Provider_Cursor  := Db.String_Vectors.Next (Db_Row_Thumbnail_Cursor);
 
             Song_List.Append
-            (Song.Constructors.Initialize
+            (Song.Initialize
                (Id             => Db.String_Vectors.Element (Db_Row_Id_Cursor),
                 Title          => Db.String_Vectors.Element (Db_Row_Title_Cursor),
                 Thumbnail_Link => Db.String_Vectors.Element (Db_Row_Thumbnail_Cursor),

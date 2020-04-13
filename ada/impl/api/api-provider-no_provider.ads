@@ -3,14 +3,10 @@ package Api.Provider.No_Provider is
    type T_No_Provider is new T_Provider with private;
    type T_No_Provider_Access is access all T_No_Provider;
 
-   package Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize return T_No_Provider_Access;
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize return T_No_Provider_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -18,7 +14,7 @@ package Api.Provider.No_Provider is
    function Get_Song_Search_Results
      (This         : in out T_No_Provider;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector;
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
@@ -32,7 +28,7 @@ package Api.Provider.No_Provider is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_No_Provider;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector;
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List;
 
 private
 

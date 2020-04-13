@@ -6,14 +6,14 @@ package body Api.Provider.Mock is
    function Get_Song_Search_Results
      (This         : in out T_Mock;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List
    is
       pragma Unreferenced (Search_Input);
       pragma Unreferenced (Search_Type);
    begin
       This.Get_Song_Search_Results_Called := True;
 
-      return Song_Vector.Constructors.Initialize;
+      return Song.List.Initialize;
    end Get_Song_Search_Results;
 
    -------------------------------------------------------------------------------------------------
@@ -32,13 +32,13 @@ package body Api.Provider.Mock is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_Mock;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List
    is
       pragma Unreferenced (Source_Song);
    begin
       This.Get_Related_Songs_Called := True;
 
-      return Song_Vector.Constructors.Initialize;
+      return Song.List.Initialize;
    end Get_Related_Songs;
 
    -------------------------------------------------------------------------------------------------

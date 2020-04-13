@@ -1,25 +1,18 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with Http_Methods;
-with Song;
-with Song_Vector;
+with Web_Methods.Http;
 
 package Api.Provider.Youtube is
 
    type T_Youtube (Api_Key_Length : Positive) is new T_Provider with private;
    type T_Youtube_Access is access all T_Youtube;
 
-   package Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize
-        (Api_Key       : in String;
-         Http_Accessor : in not null Http_Methods.T_Http_Methods_Class_Access)
-         return T_Youtube_Access;
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize
+     (Api_Key       : in String;
+      Http_Accessor : in not null Web_Methods.Http.T_Http_Class_Access) return T_Youtube_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -27,7 +20,7 @@ package Api.Provider.Youtube is
    function Get_Song_Search_Results
      (This         : in out T_Youtube;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector;
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
@@ -41,7 +34,7 @@ package Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_Youtube;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector;
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List;
 
 private
 
@@ -50,7 +43,7 @@ private
    -------------------------------------------------------------------------------------------------
    function Get_Playlist
      (This        : in T_Youtube;
-      Playlist_Id : in String) return Song_Vector.T_Song_Vector;
+      Playlist_Id : in String) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Search_Request
@@ -83,8 +76,7 @@ private
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Parse_Video_Search_Results
-     (Search_Results : in String) return Song_Vector.T_Song_Vector;
+   function Parse_Video_Search_Results (Search_Results : in String) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Playlist_Item_Results
@@ -93,7 +85,7 @@ private
      (Search_Results     : in     String;
       Total_Results      :    out Natural;
       Next_Page_Token    :    out Unbounded_String;
-      Unavailable_Videos : in out Natural) return Song_Vector.T_Song_Vector;
+      Unavailable_Videos : in out Natural) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Duration_Result
@@ -112,8 +104,8 @@ private
    Max_Number_Of_Request_Retry : constant        := 10;
 
    type T_Youtube (Api_Key_Length : Positive) is new T_Provider with record
-      Api_Key       : String (1 .. Api_Key_Length);
-      Http_Accessor : Http_Methods.T_Http_Methods_Class_Access;
+      Api_Key       : String (Positive'First .. Api_Key_Length);
+      Http_Accessor : Web_Methods.Http.T_Http_Class_Access;
    end record;
 
 end Api.Provider.Youtube;

@@ -17,10 +17,9 @@ package Database.Test is
    function Name (This : in T_Database_Test_Case) return Message_String;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Constructors_New_And_Initialize
+   -- Test_New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   procedure Test_Constructors_New_And_Initialize
-     (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
+   procedure Test_New_And_Initialize (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
    -- Test_Close

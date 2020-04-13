@@ -6,7 +6,8 @@
 
     <title>Ambi</title>
 
-    <script src="/javascripts/room_select_bar_autocomplete.js" type="text/javascript"></script>
+    <script src="/js/index.js" type="text/javascript"></script>
+    <script src="/js/room_select_bar_autocomplete.js" type="text/javascript"></script>
 
     <link rel="stylesheet" href="/css/index.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
@@ -34,14 +35,7 @@
     </footer>
 
     <script>
-      // Function to autocomplete room name
-      autocomplete();
-
-      function joinOrCreateRoom() {
-        var roomName = document.getElementById("room_name_input").value;
-        document.getElementById("input_form").action = "/" + roomName.toLowerCase();
-        document.getElementById("room_name_input").value = roomName.toLowerCase();
-      }
+      index();
     </script>
   </body>
 </html>

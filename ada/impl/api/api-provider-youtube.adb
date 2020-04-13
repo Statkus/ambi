@@ -13,19 +13,14 @@ package body Api.Provider.Youtube is
    use Types;
    package Parsers is new Json.Parsers (Types);
 
-   package body Constructors is
-
-      ----------------------------------------------------------------------------------------------
-      -- New_And_Initialize
-      ----------------------------------------------------------------------------------------------
-      function New_And_Initialize
-        (Api_Key       : in String;
-         Http_Accessor : in not null Http_Methods.T_Http_Methods_Class_Access)
-         return T_Youtube_Access is
-        (new T_Youtube'
-           (Api_Key_Length => Api_Key'Length, Api_Key => Api_Key, Http_Accessor => Http_Accessor));
-
-   end Constructors;
+   -------------------------------------------------------------------------------------------------
+   -- New_And_Initialize
+   -------------------------------------------------------------------------------------------------
+   function New_And_Initialize
+     (Api_Key       : in String;
+      Http_Accessor : in not null Web_Methods.Http.T_Http_Class_Access) return T_Youtube_Access is
+     (new T_Youtube'
+        (Api_Key_Length => Api_Key'Length, Api_Key => Api_Key, Http_Accessor => Http_Accessor));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -33,10 +28,8 @@ package body Api.Provider.Youtube is
    function Get_Song_Search_Results
      (This         : in out T_Youtube;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List
    is
-      use Song_Vector;
-
       Video_Pattern : constant GNAT.Regpat.Pattern_Matcher :=
         GNAT.Regpat.Compile ("www\.youtube\.com/watch\?v=([\w-]+)");
       Playlist_Pattern : constant GNAT.Regpat.Pattern_Matcher :=
@@ -45,7 +38,7 @@ package body Api.Provider.Youtube is
       Video_Match_Result    : GNAT.Regpat.Match_Array (0 .. 1);
       Playlist_Match_Result : GNAT.Regpat.Match_Array (0 .. 1);
 
-      Video_Search_Results : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Video_Search_Results : Song.List.T_Song_List := Song.List.Initialize;
    begin
       GNAT.Regpat.Match (Video_Pattern, Search_Input, Video_Match_Result);
       GNAT.Regpat.Match (Playlist_Pattern, Search_Input, Playlist_Match_Result);
@@ -96,7 +89,7 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_Youtube;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List
    is
    begin
       return Parse_Video_Search_Results
@@ -108,13 +101,13 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    function Get_Playlist
      (This        : in T_Youtube;
-      Playlist_Id : in String) return Song_Vector.T_Song_Vector
+      Playlist_Id : in String) return Song.List.T_Song_List
    is
-      Videos             : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
-      Total_Results      : Natural                   := Natural'Last;
-      Current_Page_Token : Unbounded_String          := To_Unbounded_String ("");
-      Next_Page_Token    : Unbounded_String          := To_Unbounded_String ("");
-      Unavailable_Videos : Natural                   := 0;
+      Videos             : Song.List.T_Song_List := Song.List.Initialize;
+      Total_Results      : Natural               := Natural'Last;
+      Current_Page_Token : Unbounded_String      := To_Unbounded_String ("");
+      Next_Page_Token    : Unbounded_String      := To_Unbounded_String ("");
+      Unavailable_Videos : Natural               := 0;
    begin
       while Natural (Videos.Length) < Total_Results - Unavailable_Videos loop
          Current_Page_Token := Next_Page_Token;
@@ -221,9 +214,7 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    -- Parse_Video_Search_Results
    -------------------------------------------------------------------------------------------------
-   function Parse_Video_Search_Results
-     (Search_Results : in String) return Song_Vector.T_Song_Vector
-   is
+   function Parse_Video_Search_Results (Search_Results : in String) return Song.List.T_Song_List is
       Json_String_Response : aliased String := Search_Results;
 
       Json_Stream : Json.Streams.Stream'Class :=
@@ -231,7 +222,7 @@ package body Api.Provider.Youtube is
       Json_Allocator : Types.Memory_Allocator;
 
       Video         : Song.T_Song;
-      Videos_Result : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos_Result : Song.List.T_Song_List := Song.List.Initialize;
    begin
       declare
          -- This declaration might raise an exception if the JSON is not well formatted
@@ -239,7 +230,7 @@ package body Api.Provider.Youtube is
       begin
          for Item of Json_Result.Get ("items") loop
             Video :=
-              Song.Constructors.Initialize
+              Song.Initialize
                 (Id             => Item.Get ("id").Get ("videoId").Value,
                  Title          => Item.Get ("snippet").Get ("title").Value,
                  Thumbnail_Link =>
@@ -254,7 +245,7 @@ package body Api.Provider.Youtube is
 
    exception
       when others =>
-         return Song_Vector.Constructors.Initialize;
+         return Song.List.Initialize;
    end Parse_Video_Search_Results;
 
    -------------------------------------------------------------------------------------------------
@@ -264,7 +255,7 @@ package body Api.Provider.Youtube is
      (Search_Results     : in     String;
       Total_Results      :    out Natural;
       Next_Page_Token    :    out Unbounded_String;
-      Unavailable_Videos : in out Natural) return Song_Vector.T_Song_Vector
+      Unavailable_Videos : in out Natural) return Song.List.T_Song_List
    is
       Json_String_Response : aliased String := Search_Results;
 
@@ -273,7 +264,7 @@ package body Api.Provider.Youtube is
       Json_Allocator : Types.Memory_Allocator;
 
       Video         : Song.T_Song;
-      Videos_Result : Song_Vector.T_Song_Vector := Song_Vector.Constructors.Initialize;
+      Videos_Result : Song.List.T_Song_List := Song.List.Initialize;
 
       Results_Per_Page : Natural;
    begin
@@ -298,7 +289,7 @@ package body Api.Provider.Youtube is
               Item.Get ("snippet").Get ("title").Value /= "Deleted video"
             then
                Video :=
-                 Song.Constructors.Initialize
+                 Song.Initialize
                    (Id             => Item.Get ("snippet").Get ("resourceId").Get ("videoId").Value,
                     Title          => Item.Get ("snippet").Get ("title").Value,
                     Thumbnail_Link =>
@@ -321,7 +312,7 @@ package body Api.Provider.Youtube is
 
    exception
       when others =>
-         return Song_Vector.Constructors.Initialize;
+         return Song.List.Initialize;
    end Parse_Playlist_Item_Results;
 
    -------------------------------------------------------------------------------------------------

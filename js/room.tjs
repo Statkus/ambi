@@ -1,0 +1,138 @@
+// Function to autocomplete search input
+autocomplete();
+
+// State of the Youtube player
+var playerState = "@_PLAYER_STATE_@";
+
+// Force checkboxes value to what the server expect from this client
+if (playerState == "no_player") {
+  document.getElementById("player_display_checkbox").checked = false;
+}
+else {
+  document.getElementById("player_display_checkbox").checked = true;
+}
+
+@@IF@@ @_CLIENT_SYNC_@
+  var clientState = "sync";
+  document.getElementById("player_sync_checkbox").checked = true;
+@@ELSE@@
+  var clientState = "no_sync";
+  document.getElementById("player_sync_checkbox").checked = false;
+@@END_IF@@
+
+// State of the song list
+var songListState = "playlist";
+
+// Simulate a click on the playlist button
+document.getElementById("playlist_button").click();
+
+// WebSocket to update playlist and current room song for all clients
+var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/@_ROOM_NAME_@Socket");
+
+ambiSocket.onmessage = function (event) {
+  if (event.data == "update_playlist") {
+    if (playerState == "end" || playerState == "error") {
+      ajaxGetRequestNoCallback("/@_ROOM_NAME_@/next_client_song", true);
+    }
+    else {
+      if (songListState == "playlist") {
+        ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=playlist");
+      }
+    }
+  }
+  else if (event.data == "update_historic") {
+    if (songListState == "historic") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=historic");
+    }
+  }
+  else if (event.data == "update_likes") {
+    if (songListState == "likes") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=likes");
+    }
+  }
+  else if (event.data == "update_room_current_song") {
+    if (songListState == "historic") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=historic");
+    }
+    else if (clientState == "sync" && songListState == "playlist") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=playlist");
+    }
+
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_current_room_song");
+  }
+  else if (event.data == "update_nb_clients") {
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_nb_clients");
+  }
+  else if (event.data == "force_next_song") {
+    if (clientState == "sync" && playerState != "no_player") {
+      location.reload();
+    }
+  }
+  else if (event.data == "clear_search_input") {
+    document.getElementById("search_input").value = "";
+  }
+}
+
+// Function called when an item of search_results or song_list is clicked
+function addToPlaylist(elm) {
+  if (elm.tagName == "DIV") {
+    document.getElementById("search_input").value = "";
+    ajaxGetRequestNoCallback
+     ("/@_ROOM_NAME_@/onclick$add_to_playlist?song_id=" + elm.getAttribute("songId") +
+      "&song_title=" + encodeURIComponent(elm.getElementsByTagName("span")[0].innerHTML) +
+      "&song_thumbnail_link=" + elm.getElementsByTagName("img")[0].getAttribute("src"));
+  }
+  else {
+    var parentElm = elm.parentNode;
+    ajaxGetRequestNoCallback
+     ("/@_ROOM_NAME_@/onclick$add_to_playlist?song_id=" + parentElm.getAttribute("songId") +
+      "&song_title=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+      "&song_thumbnail_link=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
+  }
+}
+
+// Function called when a like/unlike button is clicked
+function addRemoveLike(elm) {
+  var parentElm = elm.parentNode;
+
+  if (parentElm.getElementsByClassName("playlist_songs_titles").length > 0) {
+    ajaxGetRequestNoCallback
+     ("/@_ROOM_NAME_@/onclick$add_remove_like?song_id=" + parentElm.getAttribute("songId") +
+      "&song_title=" + encodeURIComponent(parentElm.getElementsByClassName("playlist_songs_titles")[0].innerHTML) +
+      "&song_thumbnail_link=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+      "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+  }
+  else {
+    ajaxGetRequestNoCallback
+     ("/@_ROOM_NAME_@/onclick$add_remove_like?song_id=" + parentElm.getAttribute("songId") +
+      "&song_title=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
+      "&song_thumbnail_link=" + parentElm.getElementsByTagName("img")[0].getAttribute("src") +
+      "&liked=" + String(elm.innerHTML == '<i class="fas fa-heart"></i>'));
+  }
+}
+
+// Function called when a remove from playlist button is clicked
+function removeFromPlaylist(elm) {
+  ajaxGetRequestNoCallback
+   ("/@_ROOM_NAME_@/onclick$remove_from_playlist?item_id=" + elm.parentNode.parentNode.getAttribute("itemId"));
+}
+
+// Function called when an up vote button is clicked
+function upVote(elm) {
+  ajaxGetRequestNoCallback
+   ("/@_ROOM_NAME_@/onclick$up_vote?item_id=" + elm.parentNode.parentNode.getAttribute("itemId"));
+}
+
+// Function called when a song list selection button is clicked
+function showSongList(list) {
+  var songListButtons = document.getElementsByClassName("song_list_button");
+  for (var i = 0; i < songListButtons.length; i++) {
+    songListButtons[i].className = songListButtons[i].className.replace(" active", "");
+  }
+
+  document.getElementById(list + "_button").className += " active";
+  if (songListState != list) {
+    songListState = list;
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=" + list);
+  }
+}

@@ -9,7 +9,7 @@ package Api.Provider.Mock is
    function Get_Song_Search_Results
      (This         : in out T_Mock;
       Search_Input : in     String;
-      Search_Type  :    out T_Search_Type) return Song_Vector.T_Song_Vector;
+      Search_Type  :    out T_Search_Type) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Duration
@@ -21,7 +21,7 @@ package Api.Provider.Mock is
    -------------------------------------------------------------------------------------------------
    function Get_Related_Songs
      (This        : in out T_Mock;
-      Source_Song : in     Song.T_Song) return Song_Vector.T_Song_Vector;
+      Source_Song : in     Song.T_Song) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Is_Get_Song_Search_Results_Called

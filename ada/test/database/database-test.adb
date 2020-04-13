@@ -8,7 +8,7 @@ with Api;
 
 package body Database.Test is
 
-   use Song_Vector;
+   use Song.List;
 
    use type Api.T_Api_Provider;
 
@@ -18,31 +18,17 @@ package body Database.Test is
    procedure Register_Tests (This : in out T_Database_Test_Case) is
       use Aunit.Test_Cases.Registration;
    begin
-      Register_Routine
-        (This,
-         Test_Constructors_New_And_Initialize'Access,
-         "Test New_And_Initialize constructor");
-
+      Register_Routine (This, Test_New_And_Initialize'Access, "Test New_And_Initialize");
       Register_Routine (This, Test_Close'Access, "Test Close");
-
       Register_Routine (This, Test_Add_To_Rooms'Access, "Test Add_To_Rooms");
-
       Register_Routine (This, Test_Add_To_Room_Historic'Access, "Test Add_To_Room_Historic");
-
       Register_Routine (This, Test_Add_To_Room_Likes'Access, "Test Add_To_Room_Likes");
-
       Register_Routine (This, Test_Remove_From_Room_Likes'Access, "Test Remove_From_Room_Likes");
-
       Register_Routine (This, Test_Get_Rooms'Access, "Test Get_Rooms");
-
       Register_Routine (This, Test_Get_Room_Historic'Access, "Test Get_Room_Historic");
-
       Register_Routine (This, Test_Get_Room_Last_Songs'Access, "Test Get_Room_Last_Songs");
-
       Register_Routine (This, Test_Get_Room_Likes'Access, "Test Get_Room_Likes");
-
       Register_Routine (This, Test_Is_Room_Song_Liked'Access, "Test Is_Room_Song_Liked");
-
       Register_Routine (This, Test_Read_Rooms_In_Db'Access, "Test Read_Rooms_In_Db");
    end Register_Tests;
 
@@ -56,16 +42,15 @@ package body Database.Test is
    end Name;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Constructors_New_And_Initialize
+   -- Test_New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   procedure Test_Constructors_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
+   procedure Test_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db : constant T_Database_Access :=
-        Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db : constant T_Database_Access := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
 
       Db_Wrapper : constant Database_Wrapper.T_Database_Wrapper_Access :=
-        Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+        Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
    begin
       Assert (Test_Db /= null, "Null database returned.");
       Test_Db.Close;
@@ -110,7 +95,7 @@ package body Database.Test is
          "No column song_provider in table likes.");
 
       Db_Wrapper.Close;
-   end Test_Constructors_New_And_Initialize;
+   end Test_New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Close
@@ -118,8 +103,7 @@ package body Database.Test is
    procedure Test_Close (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db : constant T_Database_Access :=
-        Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db : constant T_Database_Access := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
    begin
       Assert (Test_Db.Open, "Database not open.");
 
@@ -132,18 +116,18 @@ package body Database.Test is
    -- Test_Add_To_Rooms
    -------------------------------------------------------------------------------------------------
    procedure Test_Add_To_Rooms (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
-      use type Room_Name_Vector.T_Room_Name_Vector;
+      use type Room_Name_List.T_Room_Name_List;
 
       pragma Unreferenced (Test_Case);
 
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Rooms : Room_Name_Vector.T_Room_Name_Vector;
+      Rooms : Room_Name_List.T_Room_Name_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
 
       -- Add new rooms
       Test_Db.Add_To_Rooms ("test_1");
@@ -167,7 +151,7 @@ package body Database.Test is
       Assert (To_String (Rooms.Element (1)) = "test_2", "Wrong name for second room.");
       Assert (Rooms = Test_Db.Rooms, "Wrong rooms internally saved.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Add room after reading previously saved rooms
       Test_Db.Add_To_Rooms ("test_4");
       Test_Db.Close;
@@ -189,32 +173,32 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
       Test_Db.Add_To_Rooms ("test_2");
 
       Test_Db.Close;
       -- Add song to room historic while database is closed
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
 
       Songs := Db_Wrapper.Get_Song_Table ("test_1", "historic");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Add song to not existing room historic
-      Test_Db.Add_To_Room_Historic ("test_3", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Historic ("test_3", Song.Initialize);
 
       Songs := Db_Wrapper.Get_Song_Table ("test_3", "historic");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       -- Add songs to existing room historic
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Historic
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -246,7 +230,7 @@ package body Database.Test is
 
       -- Add song to other existing room historic
       Test_Db.Add_To_Room_Historic
-      ("test_2", Song.Constructors.Initialize
+      ("test_2", Song.Initialize
          (Id             => "IGBxWcu6iXE",
           Title          => "'test 2",
           Thumbnail_Link => "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
@@ -281,32 +265,32 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
       Test_Db.Add_To_Rooms ("test_2");
 
       Test_Db.Close;
       -- Add song to room likes while database is closed
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
 
       Songs := Db_Wrapper.Get_Song_Table ("test_1", "likes");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Add song to not existing room likes
-      Test_Db.Add_To_Room_Likes ("test_3", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_3", Song.Initialize);
 
       Songs := Db_Wrapper.Get_Song_Table ("test_3", "likes");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       -- Add songs to existing room likes
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -337,9 +321,9 @@ package body Database.Test is
          "Wrong last song provider.");
 
       -- Add already liked song to room likes
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -349,7 +333,7 @@ package body Database.Test is
 
       -- Add song to other existing room likes
       Test_Db.Add_To_Room_Likes
-      ("test_2", Song.Constructors.Initialize
+      ("test_2", Song.Initialize
          (Id             => "IGBxWcu6iXE",
           Title          => "'test 2",
           Thumbnail_Link => "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
@@ -384,22 +368,22 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
       Test_Db.Add_To_Rooms ("test_2");
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
           Provider       => Api.Youtube_Api));
       Test_Db.Add_To_Room_Likes
-      ("test_2", Song.Constructors.Initialize
+      ("test_2", Song.Initialize
          (Id             => "IGBxWcu6iXE",
           Title          => "'test 2",
           Thumbnail_Link => "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
@@ -445,19 +429,19 @@ package body Database.Test is
       Test_Db.Close;
       -- Remove song from room likes while database is closed
       Songs := Db_Wrapper.Get_Song_Table ("test_1", "likes");
-      Test_Db.Remove_From_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Remove_From_Room_Likes ("test_1", Song.Initialize);
 
       Assert (Songs = Db_Wrapper.Get_Song_Table ("test_1", "likes"), "Wrong songs liked.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Remove song from not existing room likes
-      Test_Db.Remove_From_Room_Likes ("test_3", Song.Constructors.Initialize);
+      Test_Db.Remove_From_Room_Likes ("test_3", Song.Initialize);
 
       Assert (Songs = Db_Wrapper.Get_Song_Table ("test_1", "likes"), "Wrong songs liked.");
 
       -- Remove song from existing room likes
       Test_Db.Remove_From_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -478,15 +462,15 @@ package body Database.Test is
          "Wrong first song provider.");
 
       -- Remove song from existing room likes
-      Test_Db.Remove_From_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Remove_From_Room_Likes ("test_1", Song.Initialize);
 
       Songs := Db_Wrapper.Get_Song_Table ("test_1", "likes");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       -- Remove not liked song from room likes
-      Test_Db.Remove_From_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Remove_From_Room_Likes ("test_1", Song.Initialize);
       Test_Db.Remove_From_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -497,7 +481,7 @@ package body Database.Test is
       -- Remove song from other existing room likes
       Songs := Db_Wrapper.Get_Song_Table ("test_1", "likes");
       Test_Db.Remove_From_Room_Likes
-      ("test_2", Song.Constructors.Initialize
+      ("test_2", Song.Initialize
          (Id             => "IGBxWcu6iXE",
           Title          => "'test 2",
           Thumbnail_Link => "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
@@ -517,16 +501,16 @@ package body Database.Test is
    -- Test_Get_Rooms
    -------------------------------------------------------------------------------------------------
    procedure Test_Get_Rooms (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
-      use type Room_Name_Vector.T_Room_Name_Vector;
+      use type Room_Name_List.T_Room_Name_List;
 
       pragma Unreferenced (Test_Case);
 
       Test_Db : T_Database_Access;
 
-      Rooms : Room_Name_Vector.T_Room_Name_Vector;
+      Rooms : Room_Name_List.T_Room_Name_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
 
       Test_Db.Add_To_Rooms ("test_1");
       Test_Db.Add_To_Rooms ("test_2");
@@ -547,15 +531,15 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Historic
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -567,7 +551,7 @@ package body Database.Test is
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Get song from not existing room historic
       Songs := Test_Db.Get_Room_Historic ("test_2");
 
@@ -583,7 +567,7 @@ package body Database.Test is
 
       -- Get songs from room historic while historic has more than 50 songs
       for I in Natural range 1 .. 60 loop
-         Test_Db.Add_To_Room_Historic ("test_1", Song.Constructors.Initialize);
+         Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
       end loop;
 
       Songs := Test_Db.Get_Room_Historic ("test_1");
@@ -600,15 +584,15 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Historic
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -620,7 +604,7 @@ package body Database.Test is
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Get song from not existing room historic
       Songs := Test_Db.Get_Room_Last_Songs ("test_2", 2);
 
@@ -652,15 +636,15 @@ package body Database.Test is
       Test_Db    : T_Database_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
-      Songs : Song_Vector.T_Song_Vector;
+      Songs : Song.List.T_Song_List;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
       Test_Db.Add_To_Room_Likes
-      ("test_1", Song.Constructors.Initialize
+      ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -672,7 +656,7 @@ package body Database.Test is
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Get song from not existing room likes
       Songs := Test_Db.Get_Room_Likes ("test_2");
 
@@ -694,29 +678,29 @@ package body Database.Test is
       Test_Db : T_Database_Access;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Likes ("test_1", Song.Constructors.Initialize);
+      Test_Db.Add_To_Room_Likes ("test_1", Song.Initialize);
 
       Test_Db.Close;
       -- Check if song is liked in room while database is closed
       Assert
-        (not Test_Db.Is_Room_Song_Liked ("test_1", Song.Constructors.Initialize),
+        (not Test_Db.Is_Room_Song_Liked ("test_1", Song.Initialize),
          "False not returned when database is closed.");
 
-      Test_Db := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       -- Check if song is liked in not existing room
       Assert
-        (not Test_Db.Is_Room_Song_Liked ("test_2", Song.Constructors.Initialize),
+        (not Test_Db.Is_Room_Song_Liked ("test_2", Song.Initialize),
          "False not returned when room does not exist.");
 
       -- Check if song is liked in existing room
       Assert
-        (Test_Db.Is_Room_Song_Liked ("test_1", Song.Constructors.Initialize),
+        (Test_Db.Is_Room_Song_Liked ("test_1", Song.Initialize),
          "True not returned for a liked song.");
       Assert
         (not Test_Db.Is_Room_Song_Liked
-         ("test_1", Song.Constructors.Initialize
+         ("test_1", Song.Initialize
             (Id             => "M0e_0P9OZuM",
              Title          => "test' 1",
              Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
@@ -728,7 +712,7 @@ package body Database.Test is
    -- Test_Read_Rooms_In_Db
    -------------------------------------------------------------------------------------------------
    procedure Test_Read_Rooms_In_Db (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
-      use type Room_Name_Vector.T_Room_Name_Vector;
+      use type Room_Name_List.T_Room_Name_List;
 
       pragma Unreferenced (Test_Case);
 
@@ -736,12 +720,12 @@ package body Database.Test is
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
-      Test_Db    := Database.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
-      Db_Wrapper := Database_Wrapper.Constructors.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
       Test_Db.Add_To_Rooms ("test_2");
 
-      Test_Db.Rooms := Room_Name_Vector.Constructors.Initialize;
+      Test_Db.Rooms := Room_Name_List.Initialize;
       Test_Db.Read_Rooms_In_Db;
 
       Assert (Db_Wrapper.Get_Rooms = Test_Db.Rooms, "Wrong rooms read from database.");

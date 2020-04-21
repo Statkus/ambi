@@ -1,6 +1,7 @@
 with Api.Dispatcher.Test;
 with Api.Provider.No_Provider.Test;
 with Api.Provider.Youtube.Test;
+with Database.Test;
 
 package body Ambi_Suite is
 
@@ -19,10 +20,14 @@ package body Ambi_Suite is
 
       Api_Provider_Youtube_Test : constant Api.Provider.Youtube.Test.T_Youtube_Test_Case_Access :=
         new Api.Provider.Youtube.Test.T_Youtube_Test_Case;
+
+      Database_Test : constant Database.Test.T_Database_Test_Case_Access :=
+        new Database.Test.T_Database_Test_Case;
    begin
       Result.Add_Test (Api_Dispatcher_Test);
       Result.Add_Test (Api_Provider_No_Provider_Test);
       Result.Add_Test (Api_Provider_Youtube_Test);
+      Result.Add_Test (Database_Test);
 
       return Result;
    end Suite;

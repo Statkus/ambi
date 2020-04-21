@@ -18,6 +18,7 @@ build-test:
 	gprbuild $(PROG_NAME)_test.gpr
 
 run-test:
+	rm -f obj/ambi_test.sqlite3
 	$(OBJ_DIR)/$(PROG_NAME)_test
 
 test: build-test run-test

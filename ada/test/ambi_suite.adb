@@ -6,6 +6,8 @@ with Client.List.Test;
 with Database.Test;
 with Song.Test;
 with Song.List.Test;
+with Song.Item.Test;
+with Song.Item.List.Test;
 
 package body Ambi_Suite is
 
@@ -38,6 +40,12 @@ package body Ambi_Suite is
 
       Song_List_Test : constant Song.List.Test.T_Song_List_Test_Case_Access :=
         new Song.List.Test.T_Song_List_Test_Case;
+
+      Song_Item_Test : constant Song.Item.Test.T_Song_Item_Test_Case_Access :=
+        new Song.Item.Test.T_Song_Item_Test_Case;
+
+      Song_Item_List_Test : constant Song.Item.List.Test.T_Song_Item_List_Test_Case_Access :=
+        new Song.Item.List.Test.T_Song_Item_List_Test_Case;
    begin
       Result.Add_Test (Api_Dispatcher_Test);
       Result.Add_Test (Api_Provider_No_Provider_Test);
@@ -47,6 +55,8 @@ package body Ambi_Suite is
       Result.Add_Test (Database_Test);
       Result.Add_Test (Song_Test);
       Result.Add_Test (Song_List_Test);
+      Result.Add_Test (Song_Item_Test);
+      Result.Add_Test (Song_Item_List_Test);
 
       return Result;
    end Suite;

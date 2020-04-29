@@ -2,6 +2,8 @@ with Api.Dispatcher.Test;
 with Api.Provider.No_Provider.Test;
 with Api.Provider.Youtube.Test;
 with Database.Test;
+with Song.Test;
+with Song.List.Test;
 
 package body Ambi_Suite is
 
@@ -23,11 +25,18 @@ package body Ambi_Suite is
 
       Database_Test : constant Database.Test.T_Database_Test_Case_Access :=
         new Database.Test.T_Database_Test_Case;
+
+      Song_Test : constant Song.Test.T_Song_Test_Case_Access := new Song.Test.T_Song_Test_Case;
+
+      Song_List_Test : constant Song.List.Test.T_Song_List_Test_Case_Access :=
+        new Song.List.Test.T_Song_List_Test_Case;
    begin
       Result.Add_Test (Api_Dispatcher_Test);
       Result.Add_Test (Api_Provider_No_Provider_Test);
       Result.Add_Test (Api_Provider_Youtube_Test);
       Result.Add_Test (Database_Test);
+      Result.Add_Test (Song_Test);
+      Result.Add_Test (Song_List_Test);
 
       return Result;
    end Suite;

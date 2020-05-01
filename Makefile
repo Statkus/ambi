@@ -7,7 +7,7 @@ FORMAT_CONTAINER_NAME = ambi_format_container
 
 FILE =
 
-.PHONY : build build-test run-test test clean build-server-image start-server-image stop-server-image remove-server-image format-file
+.PHONY : build build-test run-test test clean build-server-image start-server-image stop-server-image remove-server-image format format-file
 
 build:
 	mkdir -p $(OBJ_DIR)
@@ -39,6 +39,9 @@ stop-server-image:
 
 remove-server-image:
 	docker rmi $(IMAGE_NAME)
+
+format:
+	gnatpp -rnb -P ambi_test.gpr -U
 
 format-file:
 	@docker run -v $(CURDIR):/home/ubuntu/ambi --rm --name $(FORMAT_CONTAINER_NAME) $(IMAGE_NAME) /bin/bash -c "gnatpp -pipe -P $(PROG_NAME)_test.gpr $(FILE)"

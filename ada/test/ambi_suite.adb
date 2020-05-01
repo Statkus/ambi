@@ -4,6 +4,8 @@ with Api.Provider.Youtube.Test;
 with Client.Test;
 with Client.List.Test;
 with Database.Test;
+with Room.Test;
+with Room_Name_List.Test;
 with Song.Test;
 with Song.List.Test;
 with Song.Item.Test;
@@ -36,6 +38,11 @@ package body Ambi_Suite is
       Database_Test : constant Database.Test.T_Database_Test_Case_Access :=
         new Database.Test.T_Database_Test_Case;
 
+      Room_Test : constant Room.Test.T_Room_Test_Case_Access := new Room.Test.T_Room_Test_Case;
+
+      Room_Name_List_Test : constant Room_Name_List.Test.T_Room_Name_List_Test_Case_Access :=
+        new Room_Name_List.Test.T_Room_Name_List_Test_Case;
+
       Song_Test : constant Song.Test.T_Song_Test_Case_Access := new Song.Test.T_Song_Test_Case;
 
       Song_List_Test : constant Song.List.Test.T_Song_List_Test_Case_Access :=
@@ -53,6 +60,8 @@ package body Ambi_Suite is
       Result.Add_Test (Client_Test);
       Result.Add_Test (Client_List_Test);
       Result.Add_Test (Database_Test);
+      Result.Add_Test (Room_Test);
+      Result.Add_Test (Room_Name_List_Test);
       Result.Add_Test (Song_Test);
       Result.Add_Test (Song_List_Test);
       Result.Add_Test (Song_Item_Test);

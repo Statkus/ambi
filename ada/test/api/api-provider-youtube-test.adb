@@ -68,8 +68,9 @@ package body Api.Provider.Youtube.Test is
 
       pragma Unreferenced (Test_Case);
 
-      Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access := new Web_Methods.Http.T_Http;
-      Yt_Api        : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
+      Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access :=
+        Web_Methods.Http.New_And_Initialize;
+      Yt_Api : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
    begin
       Assert (Yt_Api.Api_Key = "test_key", "Wrong API key.");
       Assert (Yt_Api.Http_Accessor /= null, "Null HTTP accessor given.");

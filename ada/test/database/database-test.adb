@@ -47,7 +47,8 @@ package body Database.Test is
    procedure Test_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db : constant T_Database_Access := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db : constant T_Database_Class_Access :=
+        Database.New_And_Initialize ("obj/ambi_test.sqlite3");
 
       Db_Wrapper : constant Database_Wrapper.T_Database_Wrapper_Access :=
         Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
@@ -103,7 +104,8 @@ package body Database.Test is
    procedure Test_Close (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db : constant T_Database_Access := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
+      Test_Db : constant T_Database_Class_Access :=
+        Database.New_And_Initialize ("obj/ambi_test.sqlite3");
    begin
       Assert (Test_Db.Open, "Database not open.");
 
@@ -120,7 +122,7 @@ package body Database.Test is
 
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Rooms : Room_Name_List.T_Room_Name_List;
@@ -170,7 +172,7 @@ package body Database.Test is
    procedure Test_Add_To_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -262,7 +264,7 @@ package body Database.Test is
    procedure Test_Add_To_Room_Likes (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -365,7 +367,7 @@ package body Database.Test is
    procedure Test_Remove_From_Room_Likes (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -505,7 +507,7 @@ package body Database.Test is
 
       pragma Unreferenced (Test_Case);
 
-      Test_Db : T_Database_Access;
+      Test_Db : T_Database_Class_Access;
 
       Rooms : Room_Name_List.T_Room_Name_List;
    begin
@@ -528,7 +530,7 @@ package body Database.Test is
    procedure Test_Get_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -581,7 +583,7 @@ package body Database.Test is
    procedure Test_Get_Room_Last_Songs (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -633,7 +635,7 @@ package body Database.Test is
    procedure Test_Get_Room_Likes (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
 
       Songs : Song.List.T_Song_List;
@@ -675,7 +677,7 @@ package body Database.Test is
    procedure Test_Is_Room_Song_Liked (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
-      Test_Db : T_Database_Access;
+      Test_Db : T_Database_Class_Access;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");
       Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
@@ -716,7 +718,7 @@ package body Database.Test is
 
       pragma Unreferenced (Test_Case);
 
-      Test_Db    : T_Database_Access;
+      Test_Db    : T_Database_Class_Access;
       Db_Wrapper : Database_Wrapper.T_Database_Wrapper_Access;
    begin
       Database_Wrapper.Delete ("obj/ambi_test.sqlite3");

@@ -59,7 +59,7 @@
 
     <div id="song_list_buttons">
       <button id="playlist_button" class="song_list_button" onclick="showSongList('playlist')">Playlist</button>
-      <button id="historic_button" class="song_list_button" onclick="showSongList('historic')">Historic</button>
+      <button id="history_button" class="song_list_button" onclick="showSongList('history')">History</button>
       <button id="likes_button" class="song_list_button" onclick="showSongList('likes')">Likes</button>
     </div>
 

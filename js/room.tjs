@@ -40,9 +40,9 @@ ambiSocket.onmessage = function (event) {
       }
     }
   }
-  else if (event.data == "update_historic") {
-    if (songListState == "historic") {
-      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=historic");
+  else if (event.data == "update_history") {
+    if (songListState == "history") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=history");
     }
   }
   else if (event.data == "update_likes") {
@@ -51,8 +51,8 @@ ambiSocket.onmessage = function (event) {
     }
   }
   else if (event.data == "update_room_current_song") {
-    if (songListState == "historic") {
-      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=historic");
+    if (songListState == "history") {
+      ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=history");
     }
     else if (clientState == "sync" && songListState == "playlist") {
       ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=playlist");

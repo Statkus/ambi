@@ -107,7 +107,7 @@ package body Room is
          if This.Playlist.Is_Empty and This.Current_Song.Get_Provider = Api.No_Provider_Api then
             This.Current_Song := New_Song;
 
-            This.Db.Add_To_Room_Historic (This.Name, New_Song);
+            This.Db.Add_To_Room_History (This.Name, New_Song);
 
             This.Sync_Task.Start_Playing;
          else
@@ -159,7 +159,7 @@ package body Room is
       This.Db.Add_To_Room_Likes (This.Name, New_Song);
 
       This.Websocket.Send_Room_Request (This.Name, Update_Playlist);
-      This.Websocket.Send_Room_Request (This.Name, Update_Historic);
+      This.Websocket.Send_Room_Request (This.Name, Update_History);
       This.Websocket.Send_Room_Request (This.Name, Update_Likes);
       This.Last_Request_Time := Ada.Real_Time.Clock;
    end Add_Like;
@@ -172,7 +172,7 @@ package body Room is
       This.Db.Remove_From_Room_Likes (This.Name, Old_Song);
 
       This.Websocket.Send_Room_Request (This.Name, Update_Playlist);
-      This.Websocket.Send_Room_Request (This.Name, Update_Historic);
+      This.Websocket.Send_Room_Request (This.Name, Update_History);
       This.Websocket.Send_Room_Request (This.Name, Update_Likes);
       This.Last_Request_Time := Ada.Real_Time.Clock;
    end Remove_Like;
@@ -296,11 +296,11 @@ package body Room is
    end Get_Song_Search_Results;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Historic
+   -- Get_History
    -------------------------------------------------------------------------------------------------
-   function Get_Historic
+   function Get_History
      (This : in T_Room) return Song.List.T_Song_List is
-     (This.Db.Get_Room_Historic (This.Name));
+     (This.Db.Get_Room_History (This.Name));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Likes
@@ -354,8 +354,8 @@ package body Room is
 
                This.Playlist.Delete_First;
 
-               -- Add the current song to the historic
-               This.Db.Add_To_Room_Historic (This.Name, This.Current_Song);
+               -- Add the current song to the history
+               This.Db.Add_To_Room_History (This.Name, This.Current_Song);
             else
                if This.Client_List.Is_Auto_Playback_Requested then
                   -- Auto playback is requested, play a song following suggestion
@@ -368,8 +368,8 @@ package body Room is
                      -- There is no suggestion, go back at waiting for the start of a new playlist
                      Playlist_Empty := True;
                   else
-                     -- Add the current song to the historic
-                     This.Db.Add_To_Room_Historic (This.Name, This.Current_Song);
+                     -- Add the current song to the history
+                     This.Db.Add_To_Room_History (This.Name, This.Current_Song);
                   end if;
                else
                   -- The playlist is empty and there is no auto playback request, go back at waiting

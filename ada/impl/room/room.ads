@@ -119,9 +119,9 @@ package Room is
       Search_Input : in     String) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Historic
+   -- Get_History
    -------------------------------------------------------------------------------------------------
-   function Get_Historic (This : in T_Room) return Song.List.T_Song_List;
+   function Get_History (This : in T_Room) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Likes

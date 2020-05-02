@@ -11,9 +11,9 @@ package Database.Mock is
    function New_And_Initialize return T_Database_Mock_Access;
 
    -------------------------------------------------------------------------------------------------
-   -- Add_To_Room_Historic
+   -- Add_To_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Add_To_Room_Historic
+   procedure Add_To_Room_History
      (This      : in out T_Database_Mock;
       Room_Name : in     String;
       New_Song  : in     Song.T_Song);
@@ -24,15 +24,15 @@ package Database.Mock is
    function Get_Last_Room_Name (This : in out T_Database_Mock) return String;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Historic
+   -- Get_History
    -------------------------------------------------------------------------------------------------
-   function Get_Historic (This : in out T_Database_Mock) return Song.List.T_Song_List;
+   function Get_History (This : in out T_Database_Mock) return Song.List.T_Song_List;
 
 private
 
    type T_Database_Mock is new T_Database with record
       Last_Room_Name : Unbounded_String;
-      Historic       : Song.List.T_Song_List;
+      History        : Song.List.T_Song_List;
    end record;
 
 end Database.Mock;

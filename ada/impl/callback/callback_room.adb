@@ -507,8 +507,8 @@ package body Callback_Room is
 
       Songs : Song.List.T_Song_List := Song.List.Initialize;
    begin
-      if Source = Historic then
-         Songs := Current_Room.Get_Historic;
+      if Source = History then
+         Songs := Current_Room.Get_History;
       elsif Source = Likes then
          Songs := Current_Room.Get_Likes;
       end if;

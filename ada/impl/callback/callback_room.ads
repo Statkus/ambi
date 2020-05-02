@@ -23,7 +23,7 @@ package Callback_Room is
 
 private
 
-   type T_Song_List_Source is (Playlist, Historic, Likes);
+   type T_Song_List_Source is (Playlist, History, Likes);
 
    type T_Parameter is
      (Param_Search_Input,

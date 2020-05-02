@@ -32,9 +32,9 @@ package Database.Test is
    procedure Test_Add_To_Rooms (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Add_To_Room_Historic
+   -- Test_Add_To_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Test_Add_To_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
+   procedure Test_Add_To_Room_History (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
    -- Test_Add_To_Room_Likes
@@ -52,9 +52,9 @@ package Database.Test is
    procedure Test_Get_Rooms (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Get_Room_Historic
+   -- Test_Get_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Test_Get_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
+   procedure Test_Get_Room_History (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
    -- Test_Get_Room_Last_Songs

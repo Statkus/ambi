@@ -25,9 +25,9 @@ package Database is
    procedure Add_To_Rooms (This : in out T_Database; Room_Name : in String);
 
    -------------------------------------------------------------------------------------------------
-   -- Add_To_Room_Historic
+   -- Add_To_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Add_To_Room_Historic
+   procedure Add_To_Room_History
      (This      : in out T_Database;
       Room_Name : in     String;
       New_Song  : in     Song.T_Song);
@@ -54,9 +54,9 @@ package Database is
    function Get_Rooms (This : in T_Database) return Room_Name_List.T_Room_Name_List;
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Room_Historic
+   -- Get_Room_History
    -------------------------------------------------------------------------------------------------
-   function Get_Room_Historic
+   function Get_Room_History
      (This      : in T_Database;
       Room_Name : in String) return Song.List.T_Song_List;
 
@@ -90,7 +90,7 @@ private
    -------------------------------------------------------------------------------------------------
    procedure Read_Rooms_In_Db (This : in out T_Database);
 
-   Historic_Length : constant := 50;
+   History_Length : constant := 50;
 
    type T_Database is tagged limited record
       Db_Handle : Db.Sqlite.Handle;

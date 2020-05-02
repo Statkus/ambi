@@ -235,7 +235,7 @@ package body Room.Test is
 
       Assert (New_Room.Current_Song = Song.Initialize, "Wrong current song.");
       Assert (New_Room.Playlist.Is_Empty, "Playlist not empty.");
-      Assert (This.Db.Get_Historic.Is_Empty, "Historic not empty.");
+      Assert (This.Db.Get_History.Is_Empty, "History not empty.");
       Assert
         (New_Room.Get_Client (Aws.Session.No_Session).Get_Playlist.Is_Empty,
          "Client playlist not empty.");
@@ -248,7 +248,7 @@ package body Room.Test is
 
       Assert (New_Room.Current_Song = New_Song, "Wrong current song.");
       Assert (New_Room.Playlist.Is_Empty, "Playlist not empty.");
-      Assert (This.Db.Get_Historic.First_Element = New_Song, "Wrong first element in historic.");
+      Assert (This.Db.Get_History.First_Element = New_Song, "Wrong first element in history.");
       Assert
         (New_Room.Get_Client (Aws.Session.No_Session).Get_Playlist.First_Element.Get_Id = 0,
          "Wrong client first playlist element ID.");

@@ -22,15 +22,15 @@ package body Database is
         (Ambi_Db.Db_Handle,
          "CREATE TABLE IF NOT EXISTS rooms (room_name TEXT NOT NULL PRIMARY KEY);");
 
-      -- Create the historic table if it does not exist yet
+      -- Create the history table if it does not exist yet
       Db.Sqlite.Execute
         (Ambi_Db.Db_Handle,
-         "CREATE TABLE IF NOT EXISTS historic (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, song_id TEXT NOT NULL, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
+         "CREATE TABLE IF NOT EXISTS history (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, song_id TEXT NOT NULL, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
 
-      -- Add an index on room_name for historic table if it does not exist yet
+      -- Add an index on room_name for history table if it does not exist yet
       Db.Sqlite.Execute
         (Ambi_Db.Db_Handle,
-         "CREATE INDEX IF NOT EXISTS room_index_on_historic ON historic (room_name);");
+         "CREATE INDEX IF NOT EXISTS room_index_on_history ON history (room_name);");
 
       -- Create the likes table if it does not exist yet
       Db.Sqlite.Execute
@@ -73,9 +73,9 @@ package body Database is
    end Add_To_Rooms;
 
    -------------------------------------------------------------------------------------------------
-   -- Add_To_Room_Historic
+   -- Add_To_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Add_To_Room_Historic
+   procedure Add_To_Room_History
      (This      : in out T_Database;
       Room_Name : in     String;
       New_Song  : in     Song.T_Song)
@@ -94,7 +94,7 @@ package body Database is
 
          Db.Sqlite.Execute
            (This.Db_Handle,
-            "INSERT INTO historic (song_id, song_title, song_thumbnail_link, song_provider, room_name) VALUES ('" &
+            "INSERT INTO history (song_id, song_title, song_thumbnail_link, song_provider, room_name) VALUES ('" &
             New_Song.Get_Id &
             "', '" &
             To_String (Song_Title) &
@@ -106,7 +106,7 @@ package body Database is
             Room_Name &
             "');");
       end if;
-   end Add_To_Room_Historic;
+   end Add_To_Room_History;
 
    -------------------------------------------------------------------------------------------------
    -- Add_To_Room_Likes
@@ -176,12 +176,12 @@ package body Database is
    function Get_Rooms (This : in T_Database) return Room_Name_List.T_Room_Name_List is (This.Rooms);
 
    -------------------------------------------------------------------------------------------------
-   -- Get_Room_Historic
+   -- Get_Room_History
    -------------------------------------------------------------------------------------------------
-   function Get_Room_Historic
+   function Get_Room_History
      (This      : in T_Database;
       Room_Name : in String) return Song.List.T_Song_List is
-     (This.Get_Room_Last_Songs (Room_Name, Historic_Length));
+     (This.Get_Room_Last_Songs (Room_Name, History_Length));
 
    -------------------------------------------------------------------------------------------------
    -- Get_Room_Last_Songs
@@ -204,7 +204,7 @@ package body Database is
          Db.Sqlite.Prepare_Select
            (This.Db_Handle,
             Db_Iterator,
-            "SELECT * FROM historic INDEXED BY room_index_on_historic WHERE room_name = '" &
+            "SELECT * FROM history INDEXED BY room_index_on_history WHERE room_name = '" &
             Room_Name &
             "' ORDER BY id DESC;");
 

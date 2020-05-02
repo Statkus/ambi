@@ -7,7 +7,7 @@ package Web_Methods.Websocket is
      (Update_Room_Current_Song,
       Update_Nb_Clients,
       Update_Playlist,
-      Update_Historic,
+      Update_History,
       Update_Likes,
       Clear_Search_Input,
       Force_Next_Song);

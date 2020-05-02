@@ -21,11 +21,11 @@ package body Database.Test is
       Register_Routine (This, Test_New_And_Initialize'Access, "Test New_And_Initialize");
       Register_Routine (This, Test_Close'Access, "Test Close");
       Register_Routine (This, Test_Add_To_Rooms'Access, "Test Add_To_Rooms");
-      Register_Routine (This, Test_Add_To_Room_Historic'Access, "Test Add_To_Room_Historic");
+      Register_Routine (This, Test_Add_To_Room_History'Access, "Test Add_To_Room_History");
       Register_Routine (This, Test_Add_To_Room_Likes'Access, "Test Add_To_Room_Likes");
       Register_Routine (This, Test_Remove_From_Room_Likes'Access, "Test Remove_From_Room_Likes");
       Register_Routine (This, Test_Get_Rooms'Access, "Test Get_Rooms");
-      Register_Routine (This, Test_Get_Room_Historic'Access, "Test Get_Room_Historic");
+      Register_Routine (This, Test_Get_Room_History'Access, "Test Get_Room_History");
       Register_Routine (This, Test_Get_Room_Last_Songs'Access, "Test Get_Room_Last_Songs");
       Register_Routine (This, Test_Get_Room_Likes'Access, "Test Get_Room_Likes");
       Register_Routine (This, Test_Is_Room_Song_Liked'Access, "Test Is_Room_Song_Liked");
@@ -62,23 +62,23 @@ package body Database.Test is
         (Db_Wrapper.Is_Column_Of_Table_Exist ("rooms", "room_name"),
          "No column room_name in table rooms.");
 
-      -- Check historic table
-      Assert (Db_Wrapper.Is_Table_Exist ("historic"), "No table historic created.");
+      -- Check history table
+      Assert (Db_Wrapper.Is_Table_Exist ("history"), "No table history created.");
       Assert
-        (Db_Wrapper.Is_Column_Of_Table_Exist ("historic", "id"),
-         "No column id in table historic.");
+        (Db_Wrapper.Is_Column_Of_Table_Exist ("history", "id"),
+         "No column id in table history.");
       Assert
-        (Db_Wrapper.Is_Column_Of_Table_Exist ("historic", "song_id"),
-         "No column song_id in table historic.");
+        (Db_Wrapper.Is_Column_Of_Table_Exist ("history", "song_id"),
+         "No column song_id in table history.");
       Assert
-        (Db_Wrapper.Is_Column_Of_Table_Exist ("historic", "song_title"),
-         "No column song_title in table historic.");
+        (Db_Wrapper.Is_Column_Of_Table_Exist ("history", "song_title"),
+         "No column song_title in table history.");
       Assert
-        (Db_Wrapper.Is_Column_Of_Table_Exist ("historic", "song_thumbnail_link"),
-         "No column song_thumbnail_link in table historic.");
+        (Db_Wrapper.Is_Column_Of_Table_Exist ("history", "song_thumbnail_link"),
+         "No column song_thumbnail_link in table history.");
       Assert
-        (Db_Wrapper.Is_Column_Of_Table_Exist ("historic", "song_provider"),
-         "No column song_provider in table historic.");
+        (Db_Wrapper.Is_Column_Of_Table_Exist ("history", "song_provider"),
+         "No column song_provider in table history.");
 
       -- Check likes table
       Assert (Db_Wrapper.Is_Table_Exist ("likes"), "No table likes created.");
@@ -167,9 +167,9 @@ package body Database.Test is
    end Test_Add_To_Rooms;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Add_To_Room_Historic
+   -- Test_Add_To_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Test_Add_To_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
+   procedure Test_Add_To_Room_History (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
       Test_Db    : T_Database_Class_Access;
@@ -184,29 +184,29 @@ package body Database.Test is
       Test_Db.Add_To_Rooms ("test_2");
 
       Test_Db.Close;
-      -- Add song to room historic while database is closed
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
+      -- Add song to room history while database is closed
+      Test_Db.Add_To_Room_History ("test_1", Song.Initialize);
 
-      Songs := Db_Wrapper.Get_Song_Table ("test_1", "historic");
+      Songs := Db_Wrapper.Get_Song_Table ("test_1", "history");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
-      -- Add song to not existing room historic
-      Test_Db.Add_To_Room_Historic ("test_3", Song.Initialize);
+      -- Add song to not existing room history
+      Test_Db.Add_To_Room_History ("test_3", Song.Initialize);
 
-      Songs := Db_Wrapper.Get_Song_Table ("test_3", "historic");
+      Songs := Db_Wrapper.Get_Song_Table ("test_3", "history");
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      -- Add songs to existing room historic
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
-      Test_Db.Add_To_Room_Historic
+      -- Add songs to existing room history
+      Test_Db.Add_To_Room_History ("test_1", Song.Initialize);
+      Test_Db.Add_To_Room_History
       ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
           Thumbnail_Link => "https://i.ytimg.com/vi/M0e_0P9OZuM/default.jpg",
           Provider       => Api.Youtube_Api));
 
-      Songs := Db_Wrapper.Get_Song_Table ("test_1", "historic");
+      Songs := Db_Wrapper.Get_Song_Table ("test_1", "history");
       Assert (Natural (Songs.Length) = 2, "Wrong number of songs.");
       -- Check first song
       Assert (Song_Vectors.Element (Songs.First).Get_Id = "", "Wrong first song ID.");
@@ -230,21 +230,21 @@ package body Database.Test is
         (Song_Vectors.Element (Songs.Last).Get_Provider = Api.Youtube_Api,
          "Wrong last song provider.");
 
-      -- Add song to other existing room historic
-      Test_Db.Add_To_Room_Historic
+      -- Add song to other existing room history
+      Test_Db.Add_To_Room_History
       ("test_2", Song.Initialize
          (Id             => "IGBxWcu6iXE",
           Title          => "'test 2",
           Thumbnail_Link => "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
           Provider       => Api.Youtube_Api));
 
-      -- Check that first room historic has not changed
+      -- Check that first room history has not changed
       Assert
-        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "historic"),
-         "First room historic modified by second room.");
+        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "history"),
+         "First room history modified by second room.");
 
       -- Check second room
-      Songs := Db_Wrapper.Get_Song_Table ("test_2", "historic");
+      Songs := Db_Wrapper.Get_Song_Table ("test_2", "history");
       Assert (Natural (Songs.Length) = 1, "Wrong number of songs.");
       -- Check song
       Assert (Song_Vectors.Element (Songs.First).Get_Id = "IGBxWcu6iXE", "Wrong song ID.");
@@ -256,7 +256,7 @@ package body Database.Test is
       Assert
         (Song_Vectors.Element (Songs.First).Get_Provider = Api.Youtube_Api,
          "Wrong song provider.");
-   end Test_Add_To_Room_Historic;
+   end Test_Add_To_Room_History;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Add_To_Room_Likes
@@ -525,9 +525,9 @@ package body Database.Test is
    end Test_Get_Rooms;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Get_Room_Historic
+   -- Test_Get_Room_History
    -------------------------------------------------------------------------------------------------
-   procedure Test_Get_Room_Historic (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
+   procedure Test_Get_Room_History (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
 
       Test_Db    : T_Database_Class_Access;
@@ -539,8 +539,8 @@ package body Database.Test is
       Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
-      Test_Db.Add_To_Room_Historic
+      Test_Db.Add_To_Room_History ("test_1", Song.Initialize);
+      Test_Db.Add_To_Room_History
       ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
@@ -548,34 +548,34 @@ package body Database.Test is
           Provider       => Api.Youtube_Api));
 
       Test_Db.Close;
-      -- Get song from room historic while database is closed
-      Songs := Test_Db.Get_Room_Historic ("test_1");
+      -- Get song from room history while database is closed
+      Songs := Test_Db.Get_Room_History ("test_1");
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
-      -- Get song from not existing room historic
-      Songs := Test_Db.Get_Room_Historic ("test_2");
+      -- Get song from not existing room history
+      Songs := Test_Db.Get_Room_History ("test_2");
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      -- Get songs from existing room historic
-      Songs := Test_Db.Get_Room_Historic ("test_1");
+      -- Get songs from existing room history
+      Songs := Test_Db.Get_Room_History ("test_1");
 
       Assert (Natural (Songs.Length) = 2, "Wrong number of songs.");
       Assert
-        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "historic"),
-         "Wrong songs get from historic.");
+        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "history"),
+         "Wrong songs get from history.");
 
-      -- Get songs from room historic while historic has more than 50 songs
+      -- Get songs from room history while history has more than 50 songs
       for I in Natural range 1 .. 60 loop
-         Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
+         Test_Db.Add_To_Room_History ("test_1", Song.Initialize);
       end loop;
 
-      Songs := Test_Db.Get_Room_Historic ("test_1");
+      Songs := Test_Db.Get_Room_History ("test_1");
 
       Assert (Natural (Songs.Length) = 50, "Wrong number of songs.");
-   end Test_Get_Room_Historic;
+   end Test_Get_Room_History;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Get_Room_Last_Songs
@@ -592,8 +592,8 @@ package body Database.Test is
       Test_Db    := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
       Db_Wrapper := Database_Wrapper.New_And_Initialize ("obj/ambi_test.sqlite3");
       Test_Db.Add_To_Rooms ("test_1");
-      Test_Db.Add_To_Room_Historic ("test_1", Song.Initialize);
-      Test_Db.Add_To_Room_Historic
+      Test_Db.Add_To_Room_History ("test_1", Song.Initialize);
+      Test_Db.Add_To_Room_History
       ("test_1", Song.Initialize
          (Id             => "M0e_0P9OZuM",
           Title          => "test' 1",
@@ -601,32 +601,32 @@ package body Database.Test is
           Provider       => Api.Youtube_Api));
 
       Test_Db.Close;
-      -- Get song from room historic while database is closed
+      -- Get song from room history while database is closed
       Songs := Test_Db.Get_Room_Last_Songs ("test_1", 2);
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
       Test_Db := Database.New_And_Initialize ("obj/ambi_test.sqlite3");
-      -- Get song from not existing room historic
+      -- Get song from not existing room history
       Songs := Test_Db.Get_Room_Last_Songs ("test_2", 2);
 
       Assert (Songs.Is_Empty, "Wrong number of songs.");
 
-      -- Get songs from existing room historic
+      -- Get songs from existing room history
       Songs := Test_Db.Get_Room_Last_Songs ("test_1", 2);
 
       Assert (Natural (Songs.Length) = 2, "Wrong number of songs.");
       Assert
-        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "historic"),
-         "Wrong songs get from historic.");
+        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "history"),
+         "Wrong songs get from history.");
 
-      -- Request more than available song from room historic
+      -- Request more than available song from room history
       Songs := Test_Db.Get_Room_Last_Songs ("test_1", 25);
 
       Assert (Natural (Songs.Length) = 2, "Wrong number of songs.");
       Assert
-        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "historic"),
-         "Wrong songs get from historic.");
+        (Songs = Db_Wrapper.Get_Song_Table ("test_1", "history"),
+         "Wrong songs get from history.");
    end Test_Get_Room_Last_Songs;
 
    -------------------------------------------------------------------------------------------------

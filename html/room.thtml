@@ -17,14 +17,14 @@
   </head>
 
   <body>
-    <div id="show_settings_button" onclick="showSettings()"><i class="fas fa-bars"></i></div>
+    <div id="show_settings_button" onclick="showSettings()" title="Show settings"><i class="fas fa-bars"></i></div>
 
     <div id="settings">
       <span id="settings_title">Settings</span>
-      <div id="hide_settings_button" onclick="hideSettings()"><i class="fas fa-times"></i></div>
+      <div id="hide_settings_button" onclick="hideSettings()" title="Hide settings"><i class="fas fa-times"></i></div>
       <div id="sync_checkbox" class="checkbox">
         <span class="checkbox_title">Sync with room</span>
-        <label class="switch">
+        <label class="switch" title="Sync/unsync with the room current song and playlist. While unsync, the auto playback song based on suggestions is disabled.">
           <input type="checkbox" id="player_sync_checkbox" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_sync_checkbox?checked=' + this.checked, true)">
           <span class="slider"></span>
         </label>
@@ -44,7 +44,7 @@
 
     <div class="checkbox">
       <span class="checkbox_title">Player</span>
-      <label class="switch">
+      <label class="switch" title="Display/hide song player depending on if you want to play the songs or only add songs to the playlist">
         <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_display_checkbox?checked=' + this.checked, true)">
         <span class="slider"></span>
       </label>
@@ -55,7 +55,7 @@
     <p>
       Current room song: <span id="current_room_song">@_ROOM_SONG_@</span>
       @@IF@@ @_CLIENT_SYNC_@
-        <button id="next_room_song_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')"><i class="fas fa-step-forward"></i></button>
+        <button id="next_room_song_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')" title="Request next song, be careful the song will change for everybody in the room"><i class="fas fa-step-forward"></i></button>
       @@END_IF@@
     </p>
 
@@ -69,7 +69,7 @@
 
     <div id="song_list">@_SONG_LIST_@</div>
 
-    <a id="back_to_top_link" href="#top"><i class="fas fa-chevron-circle-up"></i></a>
+    <a id="back_to_top_link" href="#top" title="Go to the top of the page"><i class="fas fa-chevron-circle-up"></i></a>
 
     <script id="room_script">@_ROOM_SCRIPT_@</script>
     <script id="player_script">@_PLAYER_SCRIPT_@</script>

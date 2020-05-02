@@ -1,14 +1,14 @@
 <div itemId="@_ITEM_ID_@" songId="@_SONG_ID_@">
   <span class="playlist_management_buttons">
     @@IF@@ @_SOURCE_CLIENT_@
-      <button class="remove_from_playlist_buttons" onclick="removeFromPlaylist(this)"><i class="fas fa-times"></i></button>
+      <button class="remove_from_playlist_buttons" onclick="removeFromPlaylist(this)" title="Remove song from the playlist"><i class="fas fa-times"></i></button>
     @@END_IF@@
 
-    <button class="up_vote_buttons" onclick="upVote(this)"><i class="fas fa-arrow-alt-circle-up"></i></button>
+    <button class="up_vote_buttons" onclick="upVote(this)" title="Up vote song"><i class="fas fa-arrow-alt-circle-up"></i></button>
     <span class="up_vote_numbers">@_UP_VOTES_@</span>
   </span>
 
   <img src="@_SONG_THUMBNAIL_LINK_@">
   <span class="playlist_songs_titles">@_SONG_TITLE_@</span>
-  <button class="like_buttons" onclick="addRemoveLike(this)"><i class="fa@_LIKED_@ fa-heart"></i></button>
+  <button class="like_buttons" onclick="addRemoveLike(this)" title="Like/Unlike song"><i class="fa@_LIKED_@ fa-heart"></i></button>
 </div>

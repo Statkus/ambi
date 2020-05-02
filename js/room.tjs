@@ -98,6 +98,11 @@ function addToPlaylist(elm) {
      ("/@_ROOM_NAME_@/onclick$add_to_playlist?song_id=" + parentElm.getAttribute("songId") +
       "&song_title=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
       "&song_thumbnail_link=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
+
+      parentElm.style.backgroundColor = "rgb(100, 100, 100)";
+    setTimeout(function() {
+    parentElm.style.backgroundColor = "rgb(0, 0, 0)";
+    }, 100);
   }
 }
 

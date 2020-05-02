@@ -17,6 +17,20 @@
   </head>
 
   <body>
+    <div id="show_settings_button" onclick="showSettings()"><i class="fas fa-bars"></i></div>
+
+    <div id="settings">
+      <span id="settings_title">Settings</span>
+      <div id="hide_settings_button" onclick="hideSettings()"><i class="fas fa-times"></i></div>
+      <div id="sync_checkbox" class="checkbox">
+        <span class="checkbox_title">Sync with room</span>
+        <label class="switch">
+          <input type="checkbox" id="player_sync_checkbox" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_sync_checkbox?checked=' + this.checked, true)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
     <div>
       <div id="room_name">@_ROOM_NAME_@</div>
       <a id="change_room_link" href="/">Change room</a>
@@ -28,22 +42,12 @@
       <div id="search_results"></div>
     </div>
 
-    <div id="checkboxes">
-      <div class="checkboxe">
-        <p>Player</p>
-        <label class="switch">
-          <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_display_checkbox?checked=' + this.checked, true)">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div id="sync_checkbox" class="checkboxe" style="display:@_DISPLAY_SYNC_CHECKBOX_@">
-        <p>Sync with room</p>
-        <label class="switch">
-          <input type="checkbox" id="player_sync_checkbox" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_sync_checkbox?checked=' + this.checked, true)">
-          <span class="slider"></span>
-        </label>
-      </div>
+    <div class="checkbox">
+      <span class="checkbox_title">Player</span>
+      <label class="switch">
+        <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_display_checkbox?checked=' + this.checked, true)">
+        <span class="slider"></span>
+      </label>
     </div>
 
     <div id="player"></div>

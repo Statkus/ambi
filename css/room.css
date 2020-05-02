@@ -10,91 +10,16 @@ button {
   cursor: pointer;
 }
 
-/* Room name **************************************************************************************/
-#room_name {
-  font-size: 32px;
-  font-weight: bolder;
-}
-
-/* Change room link *******************************************************************************/
-#change_room_link {
-  color: inherit;
-  font-size: inherit;
-  text-decoration: none;
-  position: absolute;
-  top: 22px;
-  left: calc(50% + 223px);
-}
-
-/* Search bar *************************************************************************************/
-#search_bar {
-  width: 640px;
-  position: relative;
-  display: inline-block;
-  margin-top: 10px;
-}
-
-#search_input {
-  width: calc(100% - 10px - 35px - 5px);
-  height: 25px;
-  border-radius: 4px;
-  border: none;
-  padding: 0px 5px;
-  margin: 0px;
-}
-
-#search_button {
-  background-color: white;
-  color: black;
-  width: 35px;
-  height: 25px;
-  border-radius: 4px;
-  border: none;
-  padding: 0px;
-  margin: 0px;
-}
-
-#search_results {
-  position: absolute;
-  z-index: 99;
-  width: 100%;
-}
-
-#search_results div {
-  cursor: pointer;
-  text-align: left;
-  padding: 10px;
-  background-color: rgba(30, 30, 30, 0.95);
-  border-bottom: 1px solid rgb(70, 70, 70);
-}
-
-#search_results div span {
-  position: absolute;
-  width: calc(100% - 120px - 20px - 8px);
-  height: 90px;
-  padding-left: 8px;
-  overflow: hidden;
-}
-
-#search_results div:hover {
-  background-color: rgb(50, 50, 50);
-}
-
-.search_results_active {
-  background-color: DodgerBlue !important;
-}
-
 /* Checkboxes *************************************************************************************/
-#checkboxes {
-  margin-bottom: 15px;
+.checkbox {
+  margin: 15px;
 }
 
-.checkboxe {
-  display: inline-block;
-}
-
-#sync_checkbox {
-  margin-left: 20%;
+.checkbox_title {
+  font-weight: bolder;
+  position: relative;
+  top: 3px;
+  margin: 10px;
 }
 
 .switch {
@@ -154,6 +79,126 @@ input:checked + .slider:before {
 
 .slider:before {
   border-radius: 50%;
+}
+
+/* Show settings button ***************************************************************************/
+#show_settings_button {
+  cursor: pointer;
+  font-size: 32px;
+  position: absolute;
+  z-index: 1;
+}
+
+/* Settings side navigation ***********************************************************************/
+#settings {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  background-color: #111; /* Black*/
+  overflow-x: hidden;
+  padding-top: 60px;
+  transition: 0.5s;
+}
+
+/* Settings title *********************************************************************************/
+#settings_title {
+  font-size: 24px;
+  font-weight: bolder;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 7px;
+}
+
+/* Hide settings button ***************************************************************************/
+#hide_settings_button {
+  cursor: pointer;
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  font-size: 36px;
+}
+
+/* Sync with room checkbox ************************************************************************/
+#sync_checkbox {
+  white-space: nowrap;
+}
+
+/* Room name **************************************************************************************/
+#room_name {
+  font-size: 32px;
+  font-weight: bolder;
+}
+
+/* Change room link *******************************************************************************/
+#change_room_link {
+  color: inherit;
+  font-size: inherit;
+  text-decoration: none;
+  position: absolute;
+  top: 22px;
+  left: calc(50% + 223px);
+}
+
+/* Search bar *************************************************************************************/
+#search_bar {
+  width: 640px;
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+#search_input {
+  width: calc(100% - 10px - 35px - 5px);
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px 5px;
+  margin: 0px;
+}
+
+#search_button {
+  background-color: white;
+  color: black;
+  width: 35px;
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+#search_results {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+}
+
+#search_results div {
+  cursor: pointer;
+  text-align: left;
+  padding: 10px;
+  background-color: rgba(30, 30, 30, 0.95);
+  border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+#search_results div span {
+  position: absolute;
+  width: calc(100% - 120px - 20px - 8px);
+  height: 90px;
+  padding-left: 8px;
+  overflow: hidden;
+}
+
+#search_results div:hover {
+  background-color: rgb(50, 50, 50);
+}
+
+.search_results_active {
+  background-color: DodgerBlue !important;
 }
 
 /* Player *****************************************************************************************/

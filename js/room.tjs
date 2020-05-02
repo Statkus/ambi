@@ -73,6 +73,16 @@ ambiSocket.onmessage = function (event) {
   }
 }
 
+// Called to show the settings side navigaton
+function showSettings() {
+  document.getElementById("settings").style.width = "230px";
+}
+
+// Called to hide the settings side navigaton
+function hideSettings() {
+  document.getElementById("settings").style.width = "0";
+}
+
 // Function called when an item of search_results or song_list is clicked
 function addToPlaylist(elm) {
   if (elm.tagName == "DIV") {

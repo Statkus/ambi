@@ -23,6 +23,9 @@ else {
 // State of the song list
 var songListState = "playlist";
 
+// Playlist items already up voted
+var upVotedItems = [];
+
 // Simulate a click on the playlist button
 document.getElementById("playlist_button").click();
 
@@ -153,8 +156,12 @@ function removeFromPlaylist(elm) {
 
 // Function called when an up vote button is clicked
 function upVote(elm) {
-  ajaxGetRequestNoCallback
-   ("/@_ROOM_NAME_@/onclick$up_vote?item_id=" + elm.parentNode.parentNode.getAttribute("itemId"));
+  if (upVotedItems.indexOf(parseInt(elm.parentNode.parentNode.getAttribute("itemId"))) == -1) {
+    ajaxGetRequestNoCallback
+     ("/@_ROOM_NAME_@/onclick$up_vote?item_id=" + elm.parentNode.parentNode.getAttribute("itemId"));
+
+    upVotedItems.push(parseInt(elm.parentNode.parentNode.getAttribute("itemId")));
+  }
 }
 
 // Function called when a song list selection button is clicked

@@ -142,16 +142,17 @@ package body Callback_Room is
       Insert (Translations, Assoc (Room_Name'Img, Current_Room.Get_Name));
 
       if Current_Client.Is_Player_Displayed then
-         Insert (Translations, Assoc (Display_Sync_Checkbox'Img, "inline-block"));
          Insert (Translations, Assoc (Player_State'Img, "end"));
       else
-         Insert (Translations, Assoc (Display_Sync_Checkbox'Img, "none"));
          Insert (Translations, Assoc (Player_State'Img, "no_player"));
       end if;
 
       Insert (Translations, Assoc (Room_Song'Img, Current_Room.Get_Current_Song.Get_Title));
       Insert (Translations, Assoc (Nb_Clients'Img, Current_Room.Get_Number_Of_Clients'Img));
       Insert (Translations, Assoc (Song_List'Img, Build_Playlist (Current_Room, Current_Client)));
+      Insert
+        (Translations,
+         Assoc (Suggestions_List'Img, Build_Song_List (Current_Room, Suggestions)));
       Insert (Translations, Assoc (Client_Sync'Img, Current_Client.Is_Sync_With_Room));
       Insert (Translations, Assoc (Server_Address'Img, To_String (Server_Ip)));
 
@@ -342,6 +343,9 @@ package body Callback_Room is
      (Request      : in Aws.Status.Data;
       Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
    is
+      Source_To_Placeholder : constant array (T_Song_List_Source) of T_Placeholder :=
+        (Suggestions => Ph_Suggestions_List, others => Ph_Song_List);
+
       Source : constant T_Song_List_Source :=
         T_Song_List_Source'Value
           (Aws.Status.Parameter (Request, To_Parameter_String (Param_Source)));
@@ -362,7 +366,9 @@ package body Callback_Room is
 
       return Aws.Response.Build
           (Aws.Mime.Text_Xml,
-           Pack_Ajax_Xml_Response (To_Placeholder_String (Ph_Song_List), To_String (Response)));
+           Pack_Ajax_Xml_Response
+             (To_Placeholder_String (Source_To_Placeholder (Source)),
+              To_String (Response)));
    end Get_Song_List_Callback;
 
    -------------------------------------------------------------------------------------------------
@@ -507,13 +513,22 @@ package body Callback_Room is
 
       Songs : Song.List.T_Song_List := Song.List.Initialize;
    begin
-      if Source = History then
-         Songs := Current_Room.Get_History;
-      elsif Source = Likes then
-         Songs := Current_Room.Get_Likes;
-      end if;
+      case Source is
+         when History =>
+            Songs := Current_Room.Get_History;
+            Songs.Reverse_Iterate (Build_Song_List_Item'Access);
 
-      Songs.Reverse_Iterate (Build_Song_List_Item'Access);
+         when Likes =>
+            Songs := Current_Room.Get_Likes;
+            Songs.Reverse_Iterate (Build_Song_List_Item'Access);
+
+         when Suggestions =>
+            Songs := Current_Room.Get_Suggestions;
+            Songs.Iterate (Build_Song_List_Item'Access);
+
+         when others =>
+            null;
+      end case;
 
       return To_String (Response);
    end Build_Song_List;

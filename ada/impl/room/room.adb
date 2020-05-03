@@ -25,6 +25,7 @@ package body Room is
            Client_List       => Client.List.Initialize,
            Current_Song      => Song.Initialize,
            Playlist          => Song.Item.List.Initialize,
+           Song_Suggestions  => Song.List.Initialize,
            Current_Item_Id   => Song.Item.T_Item_Id'First,
            Sync_Task         => null,
            Next_Song_Ready   => False,
@@ -161,6 +162,7 @@ package body Room is
       This.Websocket.Send_Room_Request (This.Name, Update_Playlist);
       This.Websocket.Send_Room_Request (This.Name, Update_History);
       This.Websocket.Send_Room_Request (This.Name, Update_Likes);
+      This.Websocket.Send_Room_Request (This.Name, Update_Suggestions);
       This.Last_Request_Time := Ada.Real_Time.Clock;
    end Add_Like;
 
@@ -174,6 +176,7 @@ package body Room is
       This.Websocket.Send_Room_Request (This.Name, Update_Playlist);
       This.Websocket.Send_Room_Request (This.Name, Update_History);
       This.Websocket.Send_Room_Request (This.Name, Update_Likes);
+      This.Websocket.Send_Room_Request (This.Name, Update_Suggestions);
       This.Last_Request_Time := Ada.Real_Time.Clock;
    end Remove_Like;
 
@@ -244,6 +247,13 @@ package body Room is
          Item_List.Set (This.Playlist.Get);
       end return;
    end Get_Playlist;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Suggestions
+   -------------------------------------------------------------------------------------------------
+   function Get_Suggestions
+     (This : in T_Room) return Song.List.T_Song_List is
+     (This.Song_Suggestions);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -333,6 +343,13 @@ package body Room is
 
          Playlist_Empty := False;
          loop
+            This.Song_Suggestions :=
+              (This.Api_Dispatcher.Get_Related_Songs
+               (This.Current_Song).Select_First_Songs_Not_In_Exclusion_List
+               (Number_Of_Songs                         =>
+                  Number_Of_Suggestions, Exclusion_List =>
+                  This.Db.Get_Room_Last_Songs (This.Name, Number_Of_Excluded_Songs)));
+
             This.Websocket.Send_Room_Request (This.Name, Update_Room_Current_Song);
             This.Last_Request_Time := Ada.Real_Time.Clock;
 
@@ -357,12 +374,11 @@ package body Room is
                -- Add the current song to the history
                This.Db.Add_To_Room_History (This.Name, This.Current_Song);
             else
-               if This.Client_List.Is_Auto_Playback_Requested then
+               if This.Client_List.Is_Auto_Playback_Requested and
+                 not This.Song_Suggestions.Is_Empty
+               then
                   -- Auto playback is requested, play a song following suggestion
-                  This.Current_Song :=
-                    (This.Api_Dispatcher.Get_Related_Songs
-                     (This.Current_Song).Select_First_Song_Not_In_Exclusion_List
-                     (This.Db.Get_Room_Last_Songs (This.Name, Number_Of_Excluded_Songs)));
+                  This.Current_Song := This.Song_Suggestions.First_Element;
 
                   if This.Current_Song.Get_Provider = Api.No_Provider_Api then
                      -- There is no suggestion, go back at waiting for the start of a new playlist
@@ -374,7 +390,8 @@ package body Room is
                else
                   -- The playlist is empty and there is no auto playback request, go back at waiting
                   -- for the start of a new playlist
-                  This.Current_Song := Song.Initialize;
+                  This.Current_Song     := Song.Initialize;
+                  This.Song_Suggestions := Song.List.Initialize;
 
                   Playlist_Empty := True;
                end if;

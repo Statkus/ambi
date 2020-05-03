@@ -94,10 +94,10 @@ input:checked + .slider:before {
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   top: 0;
   left: 0;
-  background-color: #111; /* Black*/
+  background-color: rgb(17, 17, 17);
   overflow-x: hidden;
   padding-top: 60px;
   transition: 0.5s;
@@ -240,24 +240,24 @@ input:checked + .slider:before {
 }
 
 /* Song list **************************************************************************************/
-#song_list {
+.song_list {
   position: relative;
   width: 640px;
   left: calc(50% - 320px);
 }
 
-#song_list div {
+.song_list div {
   text-align: left;
   padding: 10px;
   background-color: rgb(30, 30, 30);
   border-bottom: 1px solid rgb(70, 70, 70);
 }
 
-#song_list div:hover {
+.song_list div:hover {
   background-color: rgb(50, 50, 50);
 }
 
-#song_list div img.clickable:hover {
+.song_list div img.clickable:hover {
   cursor: pointer;
 }
 
@@ -332,6 +332,61 @@ input:checked + .slider:before {
   padding: 7px;
 }
 
+/* Show suggestions button ************************************************************************/
+#show_suggestions_button {
+  cursor: pointer;
+  font-size: 36px;
+  background-color: white;
+  color: rgb(70, 70, 70);
+  padding: 3px;
+  border-top-left-radius: 50px;
+  border-bottom-left-radius: 50px;
+  position: absolute;
+  top: 5px;
+  right: 0;
+  z-index: 1;
+}
+
+/* Suggestions side navigation ********************************************************************/
+#suggestions {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  background-color: rgb(17, 17, 17);
+  overflow-x: hidden;
+  transition: 0.5s;
+}
+
+/* Suggestions title ******************************************************************************/
+#suggestions_title {
+  font-size: 24px;
+  font-weight: bolder;
+  position: absolute;
+  right: 0;
+  margin: 16px;
+}
+
+/* Suggestions list *******************************************************************************/
+#suggestions_list {
+  margin-top: 60px;
+}
+
+/* Hide suggestions button ************************************************************************/
+#hide_suggestions_button {
+  cursor: pointer;
+  font-size: 36px;
+  background-color: white;
+  color: rgb(70, 70, 70);
+  padding: 3px;
+  border-top-right-radius: 50px;
+  border-bottom-right-radius: 50px;
+  position: absolute;
+  top: 5px;
+}
+
 /* Back to top link *******************************************************************************/
 #back_to_top_link {
   color: inherit;
@@ -343,10 +398,6 @@ input:checked + .slider:before {
 
 /* Special rules for small screen *****************************************************************/
 @media all and (max-width: 666px) {
-  #change_room_link {
-    position: static;
-  }
-
   #search_bar {
     width: 100%;
   }
@@ -356,13 +407,17 @@ input:checked + .slider:before {
     width: 100%;
   }
 
-  #song_list {
+  .song_list {
     width: 100%;
     left: 0px;
   }
 }
 
 @media all and (max-width: 737px) {
+  #change_room_link {
+    position: static;
+  }
+
   #back_to_top_link {
     left: calc(100% - 38px);
   }

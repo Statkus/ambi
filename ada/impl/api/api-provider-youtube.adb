@@ -134,9 +134,7 @@ package body Api.Provider.Youtube is
         This.Api_Key &
         "&q=" &
         Search_Input &
-        "&maxResults=" &
-        Max_Video_Search_Results &
-        "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
+        "&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Format_Search_Request;
 
    -------------------------------------------------------------------------------------------------
@@ -160,9 +158,7 @@ package body Api.Provider.Youtube is
         This.Api_Key &
         "&relatedToVideoId=" &
         Video_Id &
-        "&maxResults=" &
-        Max_Video_Search_Results &
-        "&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
+        "&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Format_Videos_Related_Request;
 
    -------------------------------------------------------------------------------------------------

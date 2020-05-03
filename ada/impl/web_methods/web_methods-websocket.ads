@@ -9,6 +9,7 @@ package Web_Methods.Websocket is
       Update_Playlist,
       Update_History,
       Update_Likes,
+      Update_Suggestions,
       Clear_Search_Input,
       Force_Next_Song);
 

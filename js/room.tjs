@@ -50,6 +50,9 @@ ambiSocket.onmessage = function (event) {
       ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=likes");
     }
   }
+  else if (event.data == "update_suggestions") {
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=suggestions");
+  }
   else if (event.data == "update_room_current_song") {
     if (songListState == "history") {
       ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=history");
@@ -58,6 +61,7 @@ ambiSocket.onmessage = function (event) {
       ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=playlist");
     }
 
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=suggestions");
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_current_room_song");
   }
   else if (event.data == "update_nb_clients") {
@@ -83,6 +87,21 @@ function hideSettings() {
   document.getElementById("settings").style.width = "0";
 }
 
+// Called to show the suggestions side navigaton
+function showSuggestions() {
+  if (window.matchMedia("(min-width: 666px)").matches) {
+    document.getElementById("suggestions").style.width = "660px";
+  }
+  else {
+    document.getElementById("suggestions").style.width = "100%";
+  }
+}
+
+// Called to hide the suggestions side navigaton
+function hideSuggestions() {
+  document.getElementById("suggestions").style.width = "0";
+}
+
 // Function called when an item of search_results or song_list is clicked
 function addToPlaylist(elm) {
   if (elm.tagName == "DIV") {
@@ -102,7 +121,7 @@ function addToPlaylist(elm) {
       parentElm.style.backgroundColor = "rgb(100, 100, 100)";
     setTimeout(function() {
     parentElm.style.backgroundColor = "rgb(0, 0, 0)";
-    }, 100);
+    }, 50);
   }
 }
 

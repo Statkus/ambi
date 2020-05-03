@@ -23,7 +23,7 @@ package Callback_Room is
 
 private
 
-   type T_Song_List_Source is (Playlist, History, Likes);
+   type T_Song_List_Source is (Playlist, History, Likes, Suggestions);
 
    type T_Parameter is
      (Param_Search_Input,
@@ -35,17 +35,18 @@ private
       Param_Checked,
       Param_Source);
 
-   type T_Placeholder is (Ph_Search_Results, Ph_Song_List, Ph_Current_Room_Song, Ph_Nb_Clients);
+   type T_Placeholder is
+     (Ph_Search_Results, Ph_Song_List, Ph_Suggestions_List, Ph_Current_Room_Song, Ph_Nb_Clients);
 
    type T_Thtml_Field is
      (Room_Name,
       Room_Song,
       Nb_Clients,
-      Display_Sync_Checkbox,
       Player_State,
       Room_Script,
       Player_Script,
       Song_List,
+      Suggestions_List,
       Client_Sync,
       Server_Address,
       Song_Id,

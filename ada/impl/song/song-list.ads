@@ -12,11 +12,12 @@ package Song.List is
    function Initialize return T_Song_List;
 
    -------------------------------------------------------------------------------------------------
-   -- Select_First_Song_Not_In_Exclusion_List
+   -- Select_First_Songs_Not_In_Exclusion_List
    -------------------------------------------------------------------------------------------------
-   function Select_First_Song_Not_In_Exclusion_List
-     (This           : in T_Song_List;
-      Exclusion_List : in T_Song_List) return T_Song;
+   function Select_First_Songs_Not_In_Exclusion_List
+     (This            : in T_Song_List;
+      Number_Of_Songs : in Positive;
+      Exclusion_List  : in T_Song_List) return T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Iterate

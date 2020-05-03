@@ -100,8 +100,7 @@ private
 
    Api_Url : constant String := "https://www.googleapis.com/youtube/v3/";
 
-   Max_Video_Search_Results    : constant String := "10";
-   Max_Number_Of_Request_Retry : constant        := 10;
+   Max_Number_Of_Request_Retry : constant := 10;
 
    type T_Youtube (Api_Key_Length : Positive) is new T_Provider with record
       Api_Key       : String (Positive'First .. Api_Key_Length);

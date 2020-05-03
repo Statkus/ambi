@@ -67,7 +67,15 @@
       <button id="likes_button" class="song_list_button" onclick="showSongList('likes')">Likes</button>
     </div>
 
-    <div id="song_list">@_SONG_LIST_@</div>
+    <div id="song_list" class="song_list">@_SONG_LIST_@</div>
+
+    <div id="show_suggestions_button" onclick="showSuggestions()" title="Show suggestions"><i class="fas fa-chevron-left"></i></div>
+
+    <div id="suggestions">
+      <span id="suggestions_title">Suggestions</span>
+      <div id="hide_suggestions_button" onclick="hideSuggestions()" title="Hide suggestions"><i class="fas fa-chevron-right"></i></div>
+      <div id="suggestions_list" class="song_list">@_SUGGESTIONS_LIST_@</div>
+    </div>
 
     <a id="back_to_top_link" href="#top" title="Go to the top of the page"><i class="fas fa-chevron-circle-up"></i></a>
 

@@ -111,6 +111,11 @@ package Room is
    function Get_Playlist (This : in T_Room) return Song.Item.List.T_Item_List;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Suggestions
+   -------------------------------------------------------------------------------------------------
+   function Get_Suggestions (This : in T_Room) return Song.List.T_Song_List;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
    -------------------------------------------------------------------------------------------------
    function Get_Song_Search_Results
@@ -150,6 +155,7 @@ private
    -------------------------------------------------------------------------------------------------
    procedure Remove_Disconnected_Client (This : in out T_Room);
 
+   Number_Of_Suggestions    : constant := 5;
    Number_Of_Excluded_Songs : constant := 10;
 
    type T_Room (Name_Length : Positive) is tagged limited record
@@ -160,6 +166,7 @@ private
       Client_List       : Client.List.T_Client_List;
       Current_Song      : Song.T_Song;
       Playlist          : Song.Item.List.T_Item_List;
+      Song_Suggestions  : Song.List.T_Song_List;
       Current_Item_Id   : Song.Item.T_Item_Id;
       Sync_Task         : T_Sync_Task_Access;
       Next_Song_Ready   : Boolean;

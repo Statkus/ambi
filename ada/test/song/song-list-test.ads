@@ -22,9 +22,9 @@ package Song.List.Test is
    procedure Test_Initialize (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Select_First_Song_Not_In_Exclusion_List
+   -- Test_Select_First_Songs_Not_In_Exclusion_List
    -------------------------------------------------------------------------------------------------
-   procedure Test_Select_First_Song_Not_In_Exclusion_List
+   procedure Test_Select_First_Songs_Not_In_Exclusion_List
      (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------

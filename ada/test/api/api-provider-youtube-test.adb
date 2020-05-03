@@ -361,7 +361,7 @@ package body Api.Provider.Youtube.Test is
 
       Assert
         (Http_Accessor_Mock.Get_Get_Url =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
+         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
          "Wrong URL given.");
       Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
       Assert (Natural (Videos.Length) = 10, "Wrong number of videos returned.");
@@ -404,7 +404,7 @@ package body Api.Provider.Youtube.Test is
 
       Assert
         (Http_Accessor_Mock.Get_Get_Url =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
+         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
          "Wrong URL given.");
       Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
       Assert (Natural (Videos.Length) = 0, "Wrong number of videos returned.");
@@ -560,7 +560,7 @@ package body Api.Provider.Youtube.Test is
 
       Assert
         (Yt_Api.Format_Videos_Related_Request ("test") =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
+         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
          "Wrong URL request.");
 
       Assert

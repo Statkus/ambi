@@ -11,8 +11,8 @@ package body Song.List.Test is
       Register_Routine (This, Test_Initialize'Access, "Test Initialize");
       Register_Routine
         (This,
-         Test_Select_First_Song_Not_In_Exclusion_List'Access,
-         "Test Select_First_Song_Not_In_Exclusion_List");
+         Test_Select_First_Songs_Not_In_Exclusion_List'Access,
+         "Test Select_First_Songs_Not_In_Exclusion_List");
       Register_Routine (This, Test_Iterate'Access, "Test Iterate");
       Register_Routine (This, Test_Reverse_Iterate'Access, "Test Reverse_Iterate");
    end Register_Tests;
@@ -39,9 +39,9 @@ package body Song.List.Test is
    end Test_Initialize;
 
    -------------------------------------------------------------------------------------------------
-   -- Test_Select_First_Song_Not_In_Exclusion_List
+   -- Test_Select_First_Songs_Not_In_Exclusion_List
    -------------------------------------------------------------------------------------------------
-   procedure Test_Select_First_Song_Not_In_Exclusion_List
+   procedure Test_Select_First_Songs_Not_In_Exclusion_List
      (Test_Case : in out Test_Cases.Test_Case'Class)
    is
       pragma Unreferenced (Test_Case);
@@ -50,8 +50,8 @@ package body Song.List.Test is
       Exclusion_List : T_Song_List := Initialize;
    begin
       Assert
-        (Song_List.Select_First_Song_Not_In_Exclusion_List (Exclusion_List) = Initialize,
-         "Default song not returned.");
+        (Song_List.Select_First_Songs_Not_In_Exclusion_List (1, Exclusion_List) = Initialize,
+         "Default song list not returned.");
 
       Song_List.Append
       (Initialize
@@ -75,7 +75,9 @@ package body Song.List.Test is
           Provider       => Api.No_Provider_Api));
 
       Assert
-        (Song_List.Select_First_Song_Not_In_Exclusion_List (Exclusion_List).Get_Id = "test_1",
+        (Song_List.Select_First_Songs_Not_In_Exclusion_List
+         (1, Exclusion_List).First_Element.Get_Id =
+         "test_1",
          "Wrong song selected.");
 
       Exclusion_List.Append
@@ -86,7 +88,9 @@ package body Song.List.Test is
           Provider       => Api.No_Provider_Api));
 
       Assert
-        (Song_List.Select_First_Song_Not_In_Exclusion_List (Exclusion_List).Get_Id = "test_2",
+        (Song_List.Select_First_Songs_Not_In_Exclusion_List
+         (1, Exclusion_List).First_Element.Get_Id =
+         "test_2",
          "Wrong song selected.");
 
       Exclusion_List.Append
@@ -97,7 +101,9 @@ package body Song.List.Test is
           Provider       => Api.No_Provider_Api));
 
       Assert
-        (Song_List.Select_First_Song_Not_In_Exclusion_List (Exclusion_List).Get_Id = "test_3",
+        (Song_List.Select_First_Songs_Not_In_Exclusion_List
+         (1, Exclusion_List).First_Element.Get_Id =
+         "test_3",
          "Wrong song selected.");
 
       Exclusion_List.Append
@@ -108,9 +114,47 @@ package body Song.List.Test is
           Provider       => Api.No_Provider_Api));
 
       Assert
-        (Song_List.Select_First_Song_Not_In_Exclusion_List (Exclusion_List).Get_Id = "test_1",
+        (Song_List.Select_First_Songs_Not_In_Exclusion_List
+         (1, Exclusion_List).First_Element.Get_Id =
+         "test_1",
          "Wrong song selected.");
-   end Test_Select_First_Song_Not_In_Exclusion_List;
+
+      Song_List.Append
+      (Initialize
+         (Id             => "test_4",
+          Title          => "",
+          Thumbnail_Link => "",
+          Provider       => Api.No_Provider_Api));
+
+      Song_List.Append
+      (Initialize
+         (Id             => "test_5",
+          Title          => "",
+          Thumbnail_Link => "",
+          Provider       => Api.No_Provider_Api));
+
+      Song_List.Append
+      (Initialize
+         (Id             => "test_6",
+          Title          => "",
+          Thumbnail_Link => "",
+          Provider       => Api.No_Provider_Api));
+
+      Assert
+        (Natural (Song_List.Select_First_Songs_Not_In_Exclusion_List (2, Exclusion_List).Length) =
+         2,
+         "Wrong number of songs returned.");
+
+      Assert
+        (Natural (Song_List.Select_First_Songs_Not_In_Exclusion_List (3, Exclusion_List).Length) =
+         3,
+         "Wrong number of songs returned.");
+
+      Assert
+        (Natural (Song_List.Select_First_Songs_Not_In_Exclusion_List (4, Exclusion_List).Length) =
+         3,
+         "Wrong number of songs returned.");
+   end Test_Select_First_Songs_Not_In_Exclusion_List;
 
    -------------------------------------------------------------------------------------------------
    -- Test_Iterate

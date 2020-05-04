@@ -59,7 +59,7 @@ package body Room.Test is
    procedure Set_Up (This : in out T_Room_Test_Case) is
    begin
       This.Db         := Database.Mock.New_And_Initialize;
-      This.Dispatcher := Api.Dispatcher.New_And_Initialize;
+      This.Dispatcher := Api.Dispatcher.New_And_Initialize ("obj/yt_api_key.txt");
       This.Websocket  := Web_Methods.Websocket.Mock.New_And_Initialize;
    end Set_Up;
 

@@ -19,6 +19,7 @@ build-test:
 
 run-test:
 	rm -f obj/ambi_test.sqlite3
+	echo "test_key" > obj/yt_api_key.txt
 	$(OBJ_DIR)/$(PROG_NAME)_test
 
 test: build-test run-test

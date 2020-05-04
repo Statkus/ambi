@@ -37,6 +37,11 @@ package Api.Provider.Youtube.Test is
    procedure Test_Get_Related_Songs (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
 
    -------------------------------------------------------------------------------------------------
+   -- Test_Get_Key
+   -------------------------------------------------------------------------------------------------
+   procedure Test_Get_Key (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);
+
+   -------------------------------------------------------------------------------------------------
    -- Test_Get_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Test_Get_Playlist (Test_Case : in out Aunit.Test_Cases.Test_Case'Class);

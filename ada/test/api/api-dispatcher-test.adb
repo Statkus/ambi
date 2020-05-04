@@ -31,7 +31,9 @@ package body Api.Dispatcher.Test is
    procedure Test_New_And_Initialize (Test_Case : in out Test_Cases.Test_Case'Class) is
       pragma Unreferenced (Test_Case);
    begin
-      Assert (Api.Dispatcher.New_And_Initialize /= null, "Null dispatcher returned.");
+      Assert
+        (Api.Dispatcher.New_And_Initialize ("obj/yt_api_key.txt") /= null,
+         "Null dispatcher returned.");
    end Test_New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------

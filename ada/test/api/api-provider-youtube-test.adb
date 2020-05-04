@@ -16,34 +16,25 @@ package body Api.Provider.Youtube.Test is
       use Aunit.Test_Cases.Registration;
    begin
       Register_Routine (This, Test_New_And_Initialize'Access, "Test New_And_Initialize");
-
       Register_Routine (This, Test_Get_Song_Search_Results'Access, "Test Get_Song_Search_Results");
-
       Register_Routine (This, Test_Get_Song_Duration'Access, "Test Get_Song_Duration");
-
       Register_Routine (This, Test_Get_Related_Songs'Access, "Test Get_Related_Songs");
-
+      Register_Routine (This, Test_Get_Key'Access, "Test Get_Key");
       Register_Routine (This, Test_Get_Playlist'Access, "Test Get_Playlist");
-
       Register_Routine (This, Test_Format_Requests'Access, "Test Format_Requests");
-
       Register_Routine (This, Test_Get_Request_Response'Access, "Test Get_Request_Response");
-
       Register_Routine
         (This,
          Test_Parse_Video_Search_Results'Access,
          "Test Parse_Video_Search_Results");
-
       Register_Routine
         (This,
          Test_Parse_Playlist_Item_Results'Access,
          "Test Parse_Playlist_Item_Results");
-
       Register_Routine
         (This,
          Test_Parse_Video_Duration_Result'Access,
          "Test Parse_Video_Duration_Result");
-
       Register_Routine
         (This,
          Test_Convert_Iso_8601_Duration_To_Seconds'Access,
@@ -70,9 +61,13 @@ package body Api.Provider.Youtube.Test is
 
       Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access :=
         Web_Methods.Http.New_And_Initialize;
-      Yt_Api : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
+      Yt_Api : constant T_Youtube_Access :=
+        New_And_Initialize (Http_Accessor, "obj/yt_api_key.txt");
    begin
-      Assert (Yt_Api.Api_Key = "test_key", "Wrong API key.");
+      Assert (To_String (Yt_Api.Api_Keys.First_Element) = "test_key", "Wrong API key.");
+      Assert
+        (To_String (Api_Key_Vectors.Element (Yt_Api.Api_Key_Cursor)) = "test_key",
+         "Wrong API key cursor.");
       Assert (Yt_Api.Http_Accessor /= null, "Null HTTP accessor given.");
    end Test_New_And_Initialize;
 
@@ -86,7 +81,9 @@ package body Api.Provider.Youtube.Test is
         new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize
+          (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
+           "obj/yt_api_key.txt");
 
       Search_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
@@ -285,7 +282,9 @@ package body Api.Provider.Youtube.Test is
         new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize
+          (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
+           "obj/yt_api_key.txt");
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_video_content_details.json");
@@ -337,7 +336,9 @@ package body Api.Provider.Youtube.Test is
         new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize
+          (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
+           "obj/yt_api_key.txt");
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
@@ -411,6 +412,35 @@ package body Api.Provider.Youtube.Test is
    end Test_Get_Related_Songs;
 
    -------------------------------------------------------------------------------------------------
+   -- Test_Get_Key
+   -------------------------------------------------------------------------------------------------
+   procedure Test_Get_Key (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
+      pragma Unreferenced (Test_Case);
+
+      use Api_Key_Vectors;
+
+      Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access :=
+        Web_Methods.Http.New_And_Initialize;
+      Yt_Api : constant T_Youtube_Access :=
+        New_And_Initialize (Http_Accessor, "obj/yt_api_key.txt");
+   begin
+      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+
+      Yt_Api.Api_Keys.Append (To_Unbounded_String ("test_key_2"));
+
+      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key = "test_key_2", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+
+      Yt_Api.Api_Keys.Append (To_Unbounded_String ("test_key_3"));
+
+      Assert (Yt_Api.Get_Key = "test_key_2", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key = "test_key_3", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+   end Test_Get_Key;
+
+   -------------------------------------------------------------------------------------------------
    -- Test_Get_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Test_Get_Playlist (Test_Case : in out Aunit.Test_Cases.Test_Case'Class) is
@@ -420,7 +450,9 @@ package body Api.Provider.Youtube.Test is
         new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize
+          (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
+           "obj/yt_api_key.txt");
 
       Single_Page_Playlist_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_playlist_item_list.json");
@@ -546,7 +578,8 @@ package body Api.Provider.Youtube.Test is
       pragma Unreferenced (Test_Case);
 
       Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access := new Web_Methods.Http.T_Http;
-      Yt_Api        : constant T_Youtube_Access := New_And_Initialize ("test_key", Http_Accessor);
+      Yt_Api        : constant T_Youtube_Access                     :=
+        New_And_Initialize (Http_Accessor, "obj/yt_api_key.txt");
    begin
       Assert
         (Yt_Api.Format_Search_Request ("test") =
@@ -579,7 +612,9 @@ package body Api.Provider.Youtube.Test is
         new Web_Methods.Http.Mock.T_Http_Mock;
 
       Yt_Api : constant T_Youtube_Access :=
-        New_And_Initialize ("test_key", Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock));
+        New_And_Initialize
+          (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
+           "obj/yt_api_key.txt");
    begin
       Http_Accessor_Mock.Set_Get_Response ("test");
       Http_Accessor_Mock.Reset_Number_Of_Get_Called;

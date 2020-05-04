@@ -370,18 +370,28 @@ package body Client.List.Test is
       Display_Player (Client_1.all, False);
       Display_Player (Client_2.all, False);
       Display_Player (Client_3.all, False);
+
+      Assert (not Client_List.Is_Auto_Playback_Requested, "Auto playback requested.");
+
       Sync_With_Room (Client_1.all, False, Song.Initialize, Song.Item.List.Initialize);
       Sync_With_Room (Client_2.all, False, Song.Initialize, Song.Item.List.Initialize);
       Sync_With_Room (Client_3.all, False, Song.Initialize, Song.Item.List.Initialize);
 
       Assert (not Client_List.Is_Auto_Playback_Requested, "Auto playback requested.");
 
-      Display_Player (Client_1.all, True);
-      Sync_With_Room (Client_2.all, True, Song.Initialize, Song.Item.List.Initialize);
+      Display_Player (Client_1.all, False);
+      Display_Player (Client_3.all, False);
 
       Assert (not Client_List.Is_Auto_Playback_Requested, "Auto playback requested.");
 
-      Display_Player (Client_3.all, True);
+      Sync_With_Room (Client_1.all, True, Song.Initialize, Song.Item.List.Initialize);
+
+      Assert (Client_List.Is_Auto_Playback_Requested, "Auto playback not requested.");
+
+      Sync_With_Room (Client_2.all, True, Song.Initialize, Song.Item.List.Initialize);
+
+      Assert (Client_List.Is_Auto_Playback_Requested, "Auto playback not requested.");
+
       Sync_With_Room (Client_3.all, True, Song.Initialize, Song.Item.List.Initialize);
 
       Assert (Client_List.Is_Auto_Playback_Requested, "Auto playback not requested.");

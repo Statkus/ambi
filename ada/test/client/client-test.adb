@@ -65,8 +65,7 @@ package body Client.Test is
       Assert (New_Client.Id = Aws.Session.No_Session, "Wrong client ID.");
       Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
       Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
-      Assert (New_Client.Display_Player, "Player not displayed.");
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
+      Assert (New_Client.State = Sync, "Not synced with the room.");
       Assert
         (Ada.Real_Time.To_Duration (Current_Time - New_Client.Last_Request_Time) < 0.001,
          "Wrong last request time.");
@@ -98,34 +97,35 @@ package body Client.Test is
 
       New_Client : T_Client_Access := New_And_Initialize (Session_Id => Aws.Session.No_Session);
    begin
+      New_Client.State := Sync;
       Display_Player (New_Client.all, True);
 
-      Assert (New_Client.Display_Player, "Player not displayed.");
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
+      Assert (New_Client.State = Sync, "Not synced with the room.");
 
-      Display_Player (New_Client.all, False);
-
-      Assert (not New_Client.Display_Player, "Player displayed.");
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
-
-      New_Client.Sync_With_Room := False;
+      New_Client.State := Desync;
       Display_Player (New_Client.all, True);
 
-      Assert (New_Client.Display_Player, "Player not displayed.");
-      Assert (not New_Client.Sync_With_Room, "Synced with the room.");
+      Assert (New_Client.State = Desync, "Synced with the room.");
 
-      New_Client.Sync_With_Room := False;
-      New_Client.Display_Player := False;
+      New_Client.State := No_Player;
+      Display_Player (New_Client.all, True);
+
+      Assert (New_Client.State = Sync, "Not synced with the room.");
+
+      New_Client.State := Sync;
       Display_Player (New_Client.all, False);
 
-      Assert (not New_Client.Display_Player, "Player displayed.");
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
+      Assert (New_Client.State = No_Player, "Player displayed.");
 
-      New_Client.Display_Player := True;
+      New_Client.State := Desync;
       Display_Player (New_Client.all, False);
 
-      Assert (not New_Client.Display_Player, "Player displayed.");
-      Assert (New_Client.Sync_With_Room, "Not Synced with the room.");
+      Assert (New_Client.State = No_Player, "player displayed.");
+
+      New_Client.State := No_Player;
+      Display_Player (New_Client.all, False);
+
+      Assert (New_Client.State = No_Player, "player displayed.");
 
       Free_Client (New_Client);
    end Test_Display_Player;
@@ -155,21 +155,47 @@ package body Client.Test is
             Item_Song => Room_Song,
             Client_Id => Aws.Session.No_Session));
 
+      New_Client.State := Sync;
       Sync_With_Room (New_Client.all, True, Room_Song, Room_Playlist);
 
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
+      Assert (New_Client.State = Sync, "Not synced with the room.");
       Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
       Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
 
+      New_Client.State := Desync;
+      Sync_With_Room (New_Client.all, True, Room_Song, Room_Playlist);
+
+      Assert (New_Client.State = Sync, "Not synced with the room.");
+      Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
+      Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
+
+      New_Client.State := No_Player;
+      Sync_With_Room (New_Client.all, True, Room_Song, Room_Playlist);
+
+      Assert (New_Client.State = Sync, "Not synced with the room.");
+      Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
+      Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
+
+      New_Client.State := Sync;
       Sync_With_Room (New_Client.all, False, Room_Song, Room_Playlist);
 
-      Assert (not New_Client.Sync_With_Room, "Synced with the room.");
+      Assert (New_Client.State = Desync, "Synced with the room.");
       Assert (New_Client.Current_Song = Room_Song, "Wrong current song.");
       Assert (New_Client.Playlist.Get = Room_Playlist.Get, "Wrong playlist.");
 
-      Sync_With_Room (New_Client.all, True, Song.Initialize, Song.Item.List.Initialize);
+      New_Client.State        := Desync;
+      New_Client.Current_Song := Song.Initialize;
+      New_Client.Playlist.Set (Song.Item.List.Initialize.Get);
+      Sync_With_Room (New_Client.all, False, Room_Song, Room_Playlist);
 
-      Assert (New_Client.Sync_With_Room, "Not synced with the room.");
+      Assert (New_Client.State = Desync, "Synced with the room.");
+      Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
+      Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
+
+      New_Client.State := No_Player;
+      Sync_With_Room (New_Client.all, False, Room_Song, Room_Playlist);
+
+      Assert (New_Client.State = Desync, "Synced with the room.");
       Assert (New_Client.Current_Song = Room_Song, "Wrong current song.");
       Assert (New_Client.Playlist.Get = Room_Playlist.Get, "Wrong playlist.");
 
@@ -225,7 +251,7 @@ package body Client.Test is
       Assert (New_Client.Current_Song = Client_Song, "Wrong current song.");
       Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
 
-      New_Client.Sync_With_Room := False;
+      New_Client.State := Desync;
       New_Client.Next_Song;
 
       Assert (New_Client.Current_Song = Song.Initialize, "Wrong current song.");
@@ -269,7 +295,7 @@ package body Client.Test is
 
       Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
 
-      New_Client.Sync_With_Room := False;
+      New_Client.State := Desync;
       New_Client.Add_Item_To_Playlist (New_Item);
 
       Assert (Natural (New_Client.Playlist.Get.Length) = 1, "Wrong playlist length.");
@@ -308,7 +334,7 @@ package body Client.Test is
       Assert (Natural (New_Client.Playlist.Get.Length) = 1, "Wrong playlist length.");
       Assert (New_Client.Playlist.First_Element = New_Item, "Wrong playlist first element.");
 
-      New_Client.Sync_With_Room := False;
+      New_Client.State := Desync;
       New_Client.Remove_Item_From_Playlist (1);
 
       Assert (New_Client.Playlist.Is_Empty, "Playlist not empty.");
@@ -344,7 +370,7 @@ package body Client.Test is
 
       Assert (New_Client.Playlist.First_Element.Get_Up_Votes = 0, "Wrong playlist item up votes.");
 
-      New_Client.Sync_With_Room := False;
+      New_Client.State := Desync;
       New_Client.Up_Vote_Playlist_Item (1);
 
       Assert (New_Client.Playlist.First_Element.Get_Up_Votes = 1, "Wrong playlist item up votes.");

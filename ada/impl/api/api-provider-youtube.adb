@@ -17,10 +17,34 @@ package body Api.Provider.Youtube is
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
    function New_And_Initialize
-     (Api_Key       : in String;
-      Http_Accessor : in not null Web_Methods.Http.T_Http_Class_Access) return T_Youtube_Access is
-     (new T_Youtube'
-        (Api_Key_Length => Api_Key'Length, Api_Key => Api_Key, Http_Accessor => Http_Accessor));
+     (Http_Accessor     : in not null Web_Methods.Http.T_Http_Class_Access;
+      Api_Key_File_Name : in String) return T_Youtube_Access
+   is
+      New_Api : constant T_Youtube_Access :=
+        new T_Youtube'(Http_Accessor => Http_Accessor, others => <>);
+
+      Config_File : File_Type;
+      Api_Keys    : Api_Key_Vectors.Vector;
+   begin
+      -- Read API keys
+      Open (File => Config_File, Mode => In_File, Name => Api_Key_File_Name);
+      declare
+      begin
+         loop
+            Api_Keys.Append (To_Unbounded_String (Get_Line (Config_File)));
+         end loop;
+
+      exception
+         when End_Error =>
+            null;
+      end;
+      Close (Config_File);
+
+      New_Api.Api_Keys       := Api_Keys;
+      New_Api.Api_Key_Cursor := New_Api.Api_Keys.First;
+
+      return New_Api;
+   end New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -97,11 +121,28 @@ package body Api.Provider.Youtube is
    end Get_Related_Songs;
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Key
+   -------------------------------------------------------------------------------------------------
+   function Get_Key (This : in out T_Youtube) return String is
+      use Api_Key_Vectors;
+
+      Key : constant String := To_String (Element (This.Api_Key_Cursor));
+   begin
+      Next (This.Api_Key_Cursor);
+
+      if This.Api_Key_Cursor = No_Element then
+         This.Api_Key_Cursor := This.Api_Keys.First;
+      end if;
+
+      return Key;
+   end Get_Key;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
    function Get_Playlist
-     (This        : in T_Youtube;
-      Playlist_Id : in String) return Song.List.T_Song_List
+     (This        : in out T_Youtube;
+      Playlist_Id : in     String) return Song.List.T_Song_List
    is
       Videos             : Song.List.T_Song_List := Song.List.Initialize;
       Total_Results      : Natural               := Natural'Last;
@@ -127,11 +168,14 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    -- Format_Search_Request
    -------------------------------------------------------------------------------------------------
-   function Format_Search_Request (This : in T_Youtube; Search_Input : in String) return String is
+   function Format_Search_Request
+     (This         : in out T_Youtube;
+      Search_Input : in     String) return String
+   is
    begin
       return Api_Url &
         "search?key=" &
-        This.Api_Key &
+        This.Get_Key &
         "&q=" &
         Search_Input &
         "&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
@@ -140,22 +184,22 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    -- Format_Video_Request
    -------------------------------------------------------------------------------------------------
-   function Format_Video_Request (This : in T_Youtube; Video_Id : in String) return String is
+   function Format_Video_Request (This : in out T_Youtube; Video_Id : in String) return String is
    begin
-      return Api_Url & "videos?key=" & This.Api_Key & "&id=" & Video_Id & "&part=contentDetails";
+      return Api_Url & "videos?key=" & This.Get_Key & "&id=" & Video_Id & "&part=contentDetails";
    end Format_Video_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Videos_Related_Request
    -------------------------------------------------------------------------------------------------
    function Format_Videos_Related_Request
-     (This     : in T_Youtube;
-      Video_Id : in String) return String
+     (This     : in out T_Youtube;
+      Video_Id : in     String) return String
    is
    begin
       return Api_Url &
         "search?key=" &
-        This.Api_Key &
+        This.Get_Key &
         "&relatedToVideoId=" &
         Video_Id &
         "&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
@@ -165,14 +209,14 @@ package body Api.Provider.Youtube is
    -- Format_Playlist_Items_Request
    -------------------------------------------------------------------------------------------------
    function Format_Playlist_Items_Request
-     (This        : in T_Youtube;
-      Playlist_Id : in String;
-      Page_Token  : in String) return String
+     (This        : in out T_Youtube;
+      Playlist_Id : in     String;
+      Page_Token  : in     String) return String
    is
    begin
       return Api_Url &
         "playlistItems?key=" &
-        This.Api_Key &
+        This.Get_Key &
         "&playlistId=" &
         Playlist_Id &
         "&pageToken=" &

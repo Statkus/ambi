@@ -11,7 +11,8 @@ package Api.Dispatcher is
    -------------------------------------------------------------------------------------------------
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   function New_And_Initialize return T_Dispatcher_Access;
+   function New_And_Initialize
+     (Youtube_Api_Key_File_Name : in String := "yt_api_key.txt") return T_Dispatcher_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results

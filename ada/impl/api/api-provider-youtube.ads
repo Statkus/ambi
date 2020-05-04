@@ -1,18 +1,19 @@
+with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Web_Methods.Http;
 
 package Api.Provider.Youtube is
 
-   type T_Youtube (Api_Key_Length : Positive) is new T_Provider with private;
+   type T_Youtube is new T_Provider with private;
    type T_Youtube_Access is access all T_Youtube;
 
    -------------------------------------------------------------------------------------------------
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
    function New_And_Initialize
-     (Api_Key       : in String;
-      Http_Accessor : in not null Web_Methods.Http.T_Http_Class_Access) return T_Youtube_Access;
+     (Http_Accessor     : in not null Web_Methods.Http.T_Http_Class_Access;
+      Api_Key_File_Name : in String) return T_Youtube_Access;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_Search_Results
@@ -39,34 +40,41 @@ package Api.Provider.Youtube is
 private
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Key
+   -------------------------------------------------------------------------------------------------
+   function Get_Key (This : in out T_Youtube) return String;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Playlist
    -------------------------------------------------------------------------------------------------
    function Get_Playlist
-     (This        : in T_Youtube;
-      Playlist_Id : in String) return Song.List.T_Song_List;
+     (This        : in out T_Youtube;
+      Playlist_Id : in     String) return Song.List.T_Song_List;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Search_Request
    -------------------------------------------------------------------------------------------------
-   function Format_Search_Request (This : in T_Youtube; Search_Input : in String) return String;
+   function Format_Search_Request (This : in out T_Youtube; Search_Input : in String) return String;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Video_Request
    -------------------------------------------------------------------------------------------------
-   function Format_Video_Request (This : in T_Youtube; Video_Id : in String) return String;
+   function Format_Video_Request (This : in out T_Youtube; Video_Id : in String) return String;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Videos_Related_Request
    -------------------------------------------------------------------------------------------------
-   function Format_Videos_Related_Request (This : in T_Youtube; Video_Id : in String) return String;
+   function Format_Videos_Related_Request
+     (This     : in out T_Youtube;
+      Video_Id : in     String) return String;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Playlist_Items_Request
    -------------------------------------------------------------------------------------------------
    function Format_Playlist_Items_Request
-     (This        : in T_Youtube;
-      Playlist_Id : in String;
-      Page_Token  : in String) return String;
+     (This        : in out T_Youtube;
+      Playlist_Id : in     String;
+      Page_Token  : in     String) return String;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Request_Response
@@ -98,13 +106,16 @@ private
    function Convert_Iso_8601_Duration_To_Seconds
      (Iso_8601_Duration_String : in String) return Natural;
 
+   package Api_Key_Vectors is new Ada.Containers.Vectors (Natural, Unbounded_String);
+
    Api_Url : constant String := "https://www.googleapis.com/youtube/v3/";
 
    Max_Number_Of_Request_Retry : constant := 10;
 
-   type T_Youtube (Api_Key_Length : Positive) is new T_Provider with record
-      Api_Key       : String (Positive'First .. Api_Key_Length);
-      Http_Accessor : Web_Methods.Http.T_Http_Class_Access;
+   type T_Youtube is new T_Provider with record
+      Api_Keys       : Api_Key_Vectors.Vector;
+      Api_Key_Cursor : Api_Key_Vectors.Cursor;
+      Http_Accessor  : Web_Methods.Http.T_Http_Class_Access;
    end record;
 
 end Api.Provider.Youtube;

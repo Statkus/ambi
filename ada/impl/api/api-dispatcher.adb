@@ -1,6 +1,3 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Text_IO;           use Ada.Text_IO;
-
 with Api.Provider.No_Provider;
 with Api.Provider.Youtube;
 with Web_Methods.Http;
@@ -10,18 +7,12 @@ package body Api.Dispatcher is
    -------------------------------------------------------------------------------------------------
    -- New_And_Initialize
    -------------------------------------------------------------------------------------------------
-   function New_And_Initialize return T_Dispatcher_Access is
-      Config_File : File_Type;
-      Yt_Api_Key  : Unbounded_String;
-
+   function New_And_Initialize
+     (Youtube_Api_Key_File_Name : in String := "yt_api_key.txt") return T_Dispatcher_Access
+   is
       Http_Accessor : constant Web_Methods.Http.T_Http_Class_Access :=
         Web_Methods.Http.New_And_Initialize;
    begin
-      -- Read Youtube API key
-      Open (File => Config_File, Mode => In_File, Name => "yt_api_key.txt");
-      Yt_Api_Key := To_Unbounded_String (Get_Line (Config_File));
-      Close (Config_File);
-
       return new T_Dispatcher'
           (Provider_List =>
              (No_Provider_Api =>
@@ -29,8 +20,8 @@ package body Api.Dispatcher is
               Youtube_Api =>
                 Api.Provider.T_Provider_Class_Access
                   (Api.Provider.Youtube.New_And_Initialize
-                     (To_String (Yt_Api_Key),
-                      Http_Accessor))));
+                     (Http_Accessor     => Http_Accessor,
+                      Api_Key_File_Name => Youtube_Api_Key_File_Name))));
    end New_And_Initialize;
 
    -------------------------------------------------------------------------------------------------

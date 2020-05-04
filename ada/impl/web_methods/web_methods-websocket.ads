@@ -11,7 +11,9 @@ package Web_Methods.Websocket is
       Update_Likes,
       Update_Suggestions,
       Clear_Search_Input,
-      Force_Next_Song);
+      Force_Next_Song,
+      Show_Next_Room_Song_Button,
+      Hide_Next_Room_Song_Button);
 
    -------------------------------------------------------------------------------------------------
    -- New_And_Initialize

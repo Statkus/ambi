@@ -54,9 +54,7 @@
 
     <p>
       Current room song: <span id="current_room_song">@_ROOM_SONG_@</span>
-      @@IF@@ @_CLIENT_SYNC_@
-        <button id="next_room_song_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')" title="Request next song, be careful the song will change for everybody in the room"><i class="fas fa-step-forward"></i></button>
-      @@END_IF@@
+      <button id="next_room_song_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')" style="display:@_NEXT_ROOM_SONG_@" title="Request next song, be careful the song will change for everybody in the room"><i class="fas fa-step-forward"></i></button>
     </p>
 
     <p>People connected:<span id="nb_clients">@_NB_CLIENTS_@</span></p>

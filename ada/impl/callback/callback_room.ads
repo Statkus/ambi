@@ -41,6 +41,7 @@ private
    type T_Thtml_Field is
      (Room_Name,
       Room_Song,
+      Next_Room_Song,
       Nb_Clients,
       Player_State,
       Room_Script,

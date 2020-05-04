@@ -78,6 +78,16 @@ ambiSocket.onmessage = function (event) {
   else if (event.data == "clear_search_input") {
     document.getElementById("search_input").value = "";
   }
+  else if (event.data == "show_next_room_song_button") {
+    if (clientState == "sync") {
+      document.getElementById("next_room_song_button").style = "display:inline";
+    }
+  }
+  else if (event.data == "hide_next_room_song_button") {
+    if (clientState == "sync") {
+      document.getElementById("next_room_song_button").style = "display:none";
+    }
+  }
 }
 
 // Called to show the settings side navigaton

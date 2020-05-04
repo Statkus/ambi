@@ -342,6 +342,7 @@ package body Room is
          end select;
 
          Playlist_Empty := False;
+         This.Websocket.Send_Room_Request (This.Name, Show_Next_Room_Song_Button);
          loop
             if This.Current_Song.Get_Provider /= Api.No_Provider_Api then
                This.Song_Suggestions :=
@@ -385,6 +386,7 @@ package body Room is
                   if This.Current_Song.Get_Provider = Api.No_Provider_Api then
                      -- There is no suggestion, go back at waiting for the start of a new playlist
                      Playlist_Empty := True;
+                     This.Websocket.Send_Room_Request (This.Name, Hide_Next_Room_Song_Button);
                   else
                      -- Add the current song to the history
                      This.Db.Add_To_Room_History (This.Name, This.Current_Song);
@@ -395,6 +397,7 @@ package body Room is
                   This.Current_Song := Song.Initialize;
 
                   Playlist_Empty := True;
+                  This.Websocket.Send_Room_Request (This.Name, Hide_Next_Room_Song_Button);
                end if;
             end if;
 

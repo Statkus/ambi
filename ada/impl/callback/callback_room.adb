@@ -147,6 +147,14 @@ package body Callback_Room is
          Insert (Translations, Assoc (Player_State'Img, "no_player"));
       end if;
 
+      if Current_Room.Get_Current_Song.Get_Provider /= Api.No_Provider_Api and
+        Current_Client.Is_Sync_With_Room
+      then
+         Insert (Translations, Assoc (Next_Room_Song'Img, "inline"));
+      else
+         Insert (Translations, Assoc (Next_Room_Song'Img, "none"));
+      end if;
+
       Insert (Translations, Assoc (Room_Song'Img, Current_Room.Get_Current_Song.Get_Title));
       Insert (Translations, Assoc (Nb_Clients'Img, Current_Room.Get_Number_Of_Clients'Img));
       Insert (Translations, Assoc (Song_List'Img, Build_Playlist (Current_Room, Current_Client)));

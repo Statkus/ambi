@@ -343,12 +343,14 @@ package body Room is
 
          Playlist_Empty := False;
          loop
-            This.Song_Suggestions :=
-              (This.Api_Dispatcher.Get_Related_Songs
-               (This.Current_Song).Select_First_Songs_Not_In_Exclusion_List
-               (Number_Of_Songs                         =>
-                  Number_Of_Suggestions, Exclusion_List =>
-                  This.Db.Get_Room_Last_Songs (This.Name, Number_Of_Excluded_Songs)));
+            if This.Current_Song.Get_Provider /= Api.No_Provider_Api then
+               This.Song_Suggestions :=
+                 (This.Api_Dispatcher.Get_Related_Songs
+                  (This.Current_Song).Select_First_Songs_Not_In_Exclusion_List
+                  (Number_Of_Songs                         =>
+                     Number_Of_Suggestions, Exclusion_List =>
+                     This.Db.Get_Room_Last_Songs (This.Name, Number_Of_Excluded_Songs)));
+            end if;
 
             This.Websocket.Send_Room_Request (This.Name, Update_Room_Current_Song);
             This.Last_Request_Time := Ada.Real_Time.Clock;
@@ -390,8 +392,7 @@ package body Room is
                else
                   -- The playlist is empty and there is no auto playback request, go back at waiting
                   -- for the start of a new playlist
-                  This.Current_Song     := Song.Initialize;
-                  This.Song_Suggestions := Song.List.Initialize;
+                  This.Current_Song := Song.Initialize;
 
                   Playlist_Empty := True;
                end if;

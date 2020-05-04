@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    <div id="show_settings_button" onclick="showSettings()" title="Show settings"><i class="fas fa-bars"></i></div>
+    <div id="show_settings_button" onclick="showSettings()" title="Show settings"><i class="fas fa-cog"></i></div>
 
     <div id="settings">
       <span id="settings_title">Settings</span>

@@ -44,6 +44,7 @@ private
       Next_Room_Song,
       Nb_Clients,
       Player_State,
+      Player_Checkbox,
       Room_Script,
       Player_Script,
       Song_List,

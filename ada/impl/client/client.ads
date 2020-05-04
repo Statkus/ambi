@@ -29,7 +29,7 @@ package Client is
    -------------------------------------------------------------------------------------------------
    procedure Sync_With_Room
      (This              : in out T_Client;
-      Sync              : in     Boolean;
+      Synced            : in     Boolean;
       Room_Current_Song : in     Song.T_Song;
       Room_Playlist     : in     Song.Item.List.T_Item_List);
 
@@ -90,12 +90,13 @@ package Client is
 
 private
 
+   type T_Client_State is (Sync, Desync, No_Player);
+
    type T_Client is tagged limited record
       Id                : Aws.Session.Id;
       Current_Song      : Song.T_Song;
       Playlist          : Song.Item.List.T_Item_List;
-      Display_Player    : Boolean;
-      Sync_With_Room    : Boolean;
+      State             : T_Client_State;
       Last_Request_Time : Ada.Real_Time.Time;
    end record;
 

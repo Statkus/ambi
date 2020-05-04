@@ -11,8 +11,7 @@ package body Client is
         (Id                => Session_Id,
          Current_Song      => Song.Initialize,
          Playlist          => Song.Item.List.Initialize,
-         Display_Player    => True,
-         Sync_With_Room    => True,
+         State             => Sync,
          Last_Request_Time => Ada.Real_Time.Clock));
 
    -------------------------------------------------------------------------------------------------
@@ -24,12 +23,10 @@ package body Client is
    -- Display_Player
    -------------------------------------------------------------------------------------------------
    procedure Display_Player (This : in out T_Client; Display : in Boolean) is
+      Display_To_State : constant array (Boolean, T_Client_State) of T_Client_State :=
+        (False => (others => No_Player), True => (Desync => Desync, others => Sync));
    begin
-      This.Display_Player := Display;
-
-      if not This.Display_Player then
-         This.Sync_With_Room := True;
-      end if;
+      This.State := Display_To_State (Display, This.State);
    end Display_Player;
 
    -------------------------------------------------------------------------------------------------
@@ -37,17 +34,18 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Sync_With_Room
      (This              : in out T_Client;
-      Sync              : in     Boolean;
+      Synced            : in     Boolean;
       Room_Current_Song : in     Song.T_Song;
       Room_Playlist     : in     Song.Item.List.T_Item_List)
    is
+      Sync_To_State : constant array (Boolean) of T_Client_State := (False => Desync, True => Sync);
    begin
-      if This.Sync_With_Room and not Sync then
+      if This.State /= Desync and not Synced then
          This.Current_Song := Room_Current_Song;
          This.Playlist.Set (Room_Playlist.Get);
       end if;
 
-      This.Sync_With_Room := Sync;
+      This.State := Sync_To_State (Synced);
    end Sync_With_Room;
 
    -------------------------------------------------------------------------------------------------
@@ -63,7 +61,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Next_Song (This : in out T_Client) is
    begin
-      if not This.Sync_With_Room then
+      if This.State = Desync then
          if not This.Playlist.Is_Empty then
             This.Current_Song := This.Playlist.First_Element.Get_Song;
             This.Playlist.Delete_First;
@@ -78,7 +76,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Add_Item_To_Playlist (This : in out T_Client; Item : in Song.Item.T_Item) is
    begin
-      if not This.Sync_With_Room then
+      if This.State = Desync then
          This.Playlist.Append (Item);
       end if;
    end Add_Item_To_Playlist;
@@ -88,7 +86,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Remove_Item_From_Playlist (This : in out T_Client; Item_Id : in Song.Item.T_Item_Id) is
    begin
-      if not This.Sync_With_Room then
+      if This.State = Desync then
          This.Playlist.Delete (Item_Id);
       end if;
    end Remove_Item_From_Playlist;
@@ -98,7 +96,7 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    procedure Up_Vote_Playlist_Item (This : in out T_Client; Item_Id : in Song.Item.T_Item_Id) is
    begin
-      if not This.Sync_With_Room then
+      if This.State = Desync then
          This.Playlist.Up_Vote (Item_Id);
       end if;
    end Up_Vote_Playlist_Item;
@@ -126,12 +124,12 @@ package body Client is
    -------------------------------------------------------------------------------------------------
    -- Is_Player_Displayed
    -------------------------------------------------------------------------------------------------
-   function Is_Player_Displayed (This : in T_Client) return Boolean is (This.Display_Player);
+   function Is_Player_Displayed (This : in T_Client) return Boolean is (This.State /= No_Player);
 
    -------------------------------------------------------------------------------------------------
    -- Is_Sync_With_Room
    -------------------------------------------------------------------------------------------------
-   function Is_Sync_With_Room (This : in T_Client) return Boolean is (This.Sync_With_Room);
+   function Is_Sync_With_Room (This : in T_Client) return Boolean is (This.State /= Desync);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Last_Request_Time

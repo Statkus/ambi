@@ -81,11 +81,15 @@ ambiSocket.onmessage = function (event) {
   else if (event.data == "show_next_room_song_button") {
     if (clientState == "sync") {
       document.getElementById("next_room_song_button").style = "display:inline";
+      document.getElementById("player_checkbox").style = "display:block";
     }
   }
   else if (event.data == "hide_next_room_song_button") {
     if (clientState == "sync") {
       document.getElementById("next_room_song_button").style = "display:none";
+    }
+    if (clientState == "sync" && playerState == "no_player") {
+      document.getElementById("player_checkbox").style = "display:none";
     }
   }
 }

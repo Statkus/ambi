@@ -42,7 +42,7 @@
       <div id="search_results"></div>
     </div>
 
-    <div class="checkbox">
+    <div id="player_checkbox" class="checkbox" style="display:@_PLAYER_CHECKBOX_@">
       <span class="checkbox_title">Player</span>
       <label class="switch" title="Display/hide song player depending on if you want to play the songs or only add songs to the playlist">
         <input type="checkbox" id="player_display_checkbox" checked onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$player_display_checkbox?checked=' + this.checked, true)">

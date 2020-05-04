@@ -147,6 +147,18 @@ package body Callback_Room is
          Insert (Translations, Assoc (Player_State'Img, "no_player"));
       end if;
 
+      if
+        (Current_Client.Is_Sync_With_Room
+         and then Current_Room.Get_Current_Song.Get_Provider /= Api.No_Provider_Api)
+        or else
+        (not Current_Client.Is_Sync_With_Room
+         and then Current_Client.Get_Current_Song.Get_Provider /= Api.No_Provider_Api)
+      then
+         Insert (Translations, Assoc (Player_Checkbox'Img, "block"));
+      else
+         Insert (Translations, Assoc (Player_Checkbox'Img, "none"));
+      end if;
+
       if Current_Room.Get_Current_Song.Get_Provider /= Api.No_Provider_Api and
         Current_Client.Is_Sync_With_Room
       then

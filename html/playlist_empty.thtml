@@ -1,0 +1,6 @@
+@@IF@@ @_DISPLAY_NEXT_SUGGESTED_SONG_@
+  <span>Playlist empty, next song based on suggestions:</span>
+  <div id="next_suggested_song" class="song_list">@_SONG_LIST_@</div>
+@@ELSE@@
+  <span>Playlist empty, search song or select History/Likes songs</span>
+@@END_IF@@

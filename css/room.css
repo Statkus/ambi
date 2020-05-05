@@ -332,6 +332,12 @@ input:checked + .slider:before {
   padding: 7px;
 }
 
+/* Next suggested song ****************************************************************************/
+#next_suggested_song {
+  padding: 0px;
+  margin-top: 5px;
+}
+
 /* Show suggestions button ************************************************************************/
 #show_suggestions_button {
   cursor: pointer;

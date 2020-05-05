@@ -292,8 +292,10 @@ package body Callback_Room is
       Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
    is
    begin
-      Current_Room.Get_Client (Aws.Status.Session (Request)).Display_Player
-      (Boolean'Value (Aws.Status.Parameter (Request, To_Parameter_String (Param_Checked))));
+      Current_Room.Display_Client_Player
+      (Session_Id                              =>
+         Aws.Status.Session (Request), Display =>
+         Boolean'Value (Aws.Status.Parameter (Request, To_Parameter_String (Param_Checked))));
 
       return Aws.Response.Build (Aws.Mime.Text_Html, "");
    end Player_Display_Checkbox_Callback;
@@ -306,12 +308,10 @@ package body Callback_Room is
       Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
    is
    begin
-      Current_Room.Get_Client (Aws.Status.Session (Request)).Sync_With_Room
-      (Boolean'Value
-         (Aws.Status.Parameter
-            (Request,
-             To_Parameter_String
-               (Param_Checked))), Current_Room.Get_Current_Song, Current_Room.Get_Playlist);
+      Current_Room.Sync_Client_With_Room
+      (Session_Id                           =>
+         Aws.Status.Session (Request), Sync =>
+         Boolean'Value (Aws.Status.Parameter (Request, To_Parameter_String (Param_Checked))));
 
       return Aws.Response.Build (Aws.Mime.Text_Html, "");
    end Player_Sync_Checkbox_Callback;
@@ -491,13 +491,68 @@ package body Callback_Room is
       Client_Playlist : Song.Item.List.T_Item_List := Current_Client.Get_Playlist;
    begin
       if Current_Client.Is_Sync_With_Room then
-         Room_Playlist.Iterate (Build_Playlist_Item'Access);
+         if Room_Playlist.Is_Empty then
+            Response := To_Unbounded_String (Build_Empty_Playlist (Current_Room, Current_Client));
+         else
+            Room_Playlist.Iterate (Build_Playlist_Item'Access);
+         end if;
       else
-         Client_Playlist.Iterate (Build_Playlist_Item'Access);
+         if Client_Playlist.Is_Empty then
+            Response := To_Unbounded_String (Build_Empty_Playlist (Current_Room, Current_Client));
+         else
+            Client_Playlist.Iterate (Build_Playlist_Item'Access);
+         end if;
       end if;
 
       return To_String (Response);
    end Build_Playlist;
+
+   -------------------------------------------------------------------------------------------------
+   -- Build_Empty_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Build_Empty_Playlist
+     (Current_Room   : in not null Room.T_Room_Access;
+      Current_Client : in not null Client.T_Client_Access) return String
+   is
+      use Templates_Parser;
+
+      use type Api.T_Api_Provider;
+
+      Translations : Translate_Set;
+   begin
+      if Current_Client.Is_Sync_With_Room
+        and then Current_Room.Is_Auto_Playback_Requested
+        and then not Current_Room.Get_Suggestions.Is_Empty
+        and then Current_Room.Get_Current_Song.Get_Provider /= Api.No_Provider_Api
+      then
+         Insert (Translations, Assoc (Display_Next_Suggested_Song'Img, True));
+         Insert
+           (Translations,
+            Assoc (Song_Id'Img, Current_Room.Get_Suggestions.First_Element.Get_Id));
+         Insert
+           (Translations,
+            Assoc (Song_Title'Img, Current_Room.Get_Suggestions.First_Element.Get_Title));
+         Insert
+           (Translations,
+            Assoc
+              (Song_Thumbnail_Link'Img,
+               Current_Room.Get_Suggestions.First_Element.Get_Thumbnail_Link));
+
+         if Current_Room.Is_Song_Liked (Current_Room.Get_Suggestions.First_Element) then
+            Insert (Translations, Assoc (Liked'Img, "s"));
+         else
+            Insert (Translations, Assoc (Liked'Img, "r"));
+         end if;
+
+         Insert
+           (Translations,
+            Assoc (Song_List'Img, To_String (Parse ("html/song_list_item.thtml", Translations))));
+      else
+         Insert (Translations, Assoc (Display_Next_Suggested_Song'Img, False));
+      end if;
+
+      return Parse ("html/playlist_empty.thtml", Translations);
+   end Build_Empty_Playlist;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Song_List

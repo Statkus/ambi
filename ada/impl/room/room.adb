@@ -17,21 +17,22 @@ package body Room is
    is
       New_Room : constant T_Room_Access :=
         new T_Room'
-          (Name_Length       => Name'Length,
-           Name              => Name,
-           Db                => Ambi_Database,
-           Api_Dispatcher    => Api_Dispatcher,
-           Websocket         => Websocket,
-           Client_List       => Client.List.Initialize,
-           Current_Song      => Song.Initialize,
-           Playlist          => Song.Item.List.Initialize,
-           Song_Suggestions  => Song.List.Initialize,
-           Current_Item_Id   => Song.Item.T_Item_Id'First,
-           Sync_Task         => null,
-           Next_Song_Ready   => False,
-           Last_Request_Time => Ada.Real_Time.Clock,
-           Block_Websocket   => False,
-           Global_Mutex      => <>);
+          (Name_Length             => Name'Length,
+           Name                    => Name,
+           Db                      => Ambi_Database,
+           Api_Dispatcher          => Api_Dispatcher,
+           Websocket               => Websocket,
+           Client_List             => Client.List.Initialize,
+           Auto_Playback_Requested => False,
+           Current_Song            => Song.Initialize,
+           Playlist                => Song.Item.List.Initialize,
+           Song_Suggestions        => Song.List.Initialize,
+           Current_Item_Id         => Song.Item.T_Item_Id'First,
+           Sync_Task               => null,
+           Next_Song_Ready         => False,
+           Last_Request_Time       => Ada.Real_Time.Clock,
+           Block_Websocket         => False,
+           Global_Mutex            => <>);
    begin
       New_Room.Db.Add_To_Rooms (Name);
 
@@ -76,6 +77,7 @@ package body Room is
       Aws.Session.Set (Session_Id, "ID", Aws.Session.Image (Session_Id));
 
       This.Client_List.Append (Client.New_And_Initialize (Session_Id));
+      This.Auto_Playback_Requested := True;
 
       This.Websocket.Send_Room_Request (This.Name, Update_Nb_Clients);
       This.Last_Request_Time := Ada.Real_Time.Clock;
@@ -88,6 +90,35 @@ package body Room is
          ", number of clients:" &
          This.Client_List.Length'Img);
    end Add_Client;
+
+   -------------------------------------------------------------------------------------------------
+   -- Display_Client_Player
+   -------------------------------------------------------------------------------------------------
+   procedure Display_Client_Player
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Display    : in     Boolean)
+   is
+   begin
+      This.Get_Client (Session_Id).Display_Player (Display => Display);
+
+      This.Update_Auto_Playback_Requested;
+   end Display_Client_Player;
+
+   -------------------------------------------------------------------------------------------------
+   -- Sync_Client_With_Room
+   -------------------------------------------------------------------------------------------------
+   procedure Sync_Client_With_Room
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Sync       : in     Boolean)
+   is
+   begin
+      This.Get_Client (Session_Id).Sync_With_Room
+      (Synced => Sync, Room_Current_Song => This.Current_Song, Room_Playlist => This.Playlist);
+
+      This.Update_Auto_Playback_Requested;
+   end Sync_Client_With_Room;
 
    -------------------------------------------------------------------------------------------------
    -- Add_Song_To_Playlist
@@ -328,6 +359,13 @@ package body Room is
      (This.Db.Is_Room_Song_Liked (This.Name, Song_To_Check));
 
    -------------------------------------------------------------------------------------------------
+   -- Is_Auto_Playback_Requested
+   -------------------------------------------------------------------------------------------------
+   function Is_Auto_Playback_Requested
+     (This : in T_Room) return Boolean is
+     (This.Auto_Playback_Requested);
+
+   -------------------------------------------------------------------------------------------------
    -- T_Sync_Task
    -------------------------------------------------------------------------------------------------
    task body T_Sync_Task is
@@ -377,9 +415,7 @@ package body Room is
                -- Add the current song to the history
                This.Db.Add_To_Room_History (This.Name, This.Current_Song);
             else
-               if This.Client_List.Is_Auto_Playback_Requested and
-                 not This.Song_Suggestions.Is_Empty
-               then
+               if This.Auto_Playback_Requested and not This.Song_Suggestions.Is_Empty then
                   -- Auto playback is requested, play a song following suggestion
                   This.Current_Song := This.Song_Suggestions.First_Element;
 
@@ -407,6 +443,22 @@ package body Room is
    end T_Sync_Task;
 
    -------------------------------------------------------------------------------------------------
+   -- Update_Auto_Playback_Requested
+   -------------------------------------------------------------------------------------------------
+   procedure Update_Auto_Playback_Requested (This : in out T_Room) is
+      Previous_Auto_Playback_Requested : constant Boolean := This.Auto_Playback_Requested;
+   begin
+      This.Auto_Playback_Requested := This.Client_List.Is_Auto_Playback_Requested;
+
+      if This.Auto_Playback_Requested /= Previous_Auto_Playback_Requested and
+        This.Playlist.Is_Empty and
+        This.Current_Song.Get_Provider /= Api.No_Provider_Api
+      then
+         This.Websocket.Send_Room_Request (This.Name, Update_Playlist);
+      end if;
+   end Update_Auto_Playback_Requested;
+
+   -------------------------------------------------------------------------------------------------
    -- Remove_Disconnected_Client
    -------------------------------------------------------------------------------------------------
    procedure Remove_Disconnected_Client (This : in out T_Room) is
@@ -417,6 +469,8 @@ package body Room is
       if Previous_Number_Of_Clients /= This.Client_List.Length then
          This.Websocket.Send_Room_Request (This.Name, Update_Nb_Clients);
          This.Last_Request_Time := Ada.Real_Time.Clock;
+
+         This.Update_Auto_Playback_Requested;
 
          Put_Line
            ("Room " &

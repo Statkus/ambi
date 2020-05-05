@@ -49,6 +49,7 @@ private
       Player_Script,
       Song_List,
       Suggestions_List,
+      Display_Next_Suggested_Song,
       Client_Sync,
       Server_Address,
       Song_Id,
@@ -158,6 +159,13 @@ private
    -- Build_Playlist
    -------------------------------------------------------------------------------------------------
    function Build_Playlist
+     (Current_Room   : in not null Room.T_Room_Access;
+      Current_Client : in not null Client.T_Client_Access) return String;
+
+   -------------------------------------------------------------------------------------------------
+   -- Build_Empty_Playlist
+   -------------------------------------------------------------------------------------------------
+   function Build_Empty_Playlist
      (Current_Room   : in not null Room.T_Room_Access;
       Current_Client : in not null Client.T_Client_Access) return String;
 

@@ -45,6 +45,22 @@ package Room is
    procedure Add_Client (This : in out T_Room; Session_Id : in Aws.Session.Id);
 
    -------------------------------------------------------------------------------------------------
+   -- Display_Client_Player
+   -------------------------------------------------------------------------------------------------
+   procedure Display_Client_Player
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Display    : in     Boolean);
+
+   -------------------------------------------------------------------------------------------------
+   -- Sync_Client_With_Room
+   -------------------------------------------------------------------------------------------------
+   procedure Sync_Client_With_Room
+     (This       : in out T_Room;
+      Session_Id : in     Aws.Session.Id;
+      Sync       : in     Boolean);
+
+   -------------------------------------------------------------------------------------------------
    -- Add_Song_To_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Add_Song_To_Playlist
@@ -138,6 +154,11 @@ package Room is
    -------------------------------------------------------------------------------------------------
    function Is_Song_Liked (This : in T_Room; Song_To_Check : in Song.T_Song) return Boolean;
 
+   -------------------------------------------------------------------------------------------------
+   -- Is_Auto_Playback_Requested
+   -------------------------------------------------------------------------------------------------
+   function Is_Auto_Playback_Requested (This : in T_Room) return Boolean;
+
 private
 
    -------------------------------------------------------------------------------------------------
@@ -151,6 +172,11 @@ private
    type T_Sync_Task_Access is access T_Sync_Task;
 
    -------------------------------------------------------------------------------------------------
+   -- Update_Auto_Playback_Requested
+   -------------------------------------------------------------------------------------------------
+   procedure Update_Auto_Playback_Requested (This : in out T_Room);
+
+   -------------------------------------------------------------------------------------------------
    -- Remove_Disconnected_Client
    -------------------------------------------------------------------------------------------------
    procedure Remove_Disconnected_Client (This : in out T_Room);
@@ -159,20 +185,21 @@ private
    Number_Of_Excluded_Songs : constant := 10;
 
    type T_Room (Name_Length : Positive) is tagged limited record
-      Name              : String (Positive'First .. Name_Length);
-      Db                : Database.T_Database_Class_Access;
-      Api_Dispatcher    : Api.Dispatcher.T_Dispatcher_Access;
-      Websocket         : Web_Methods.Websocket.T_Websocket_Class_Access;
-      Client_List       : Client.List.T_Client_List;
-      Current_Song      : Song.T_Song;
-      Playlist          : Song.Item.List.T_Item_List;
-      Song_Suggestions  : Song.List.T_Song_List;
-      Current_Item_Id   : Song.Item.T_Item_Id;
-      Sync_Task         : T_Sync_Task_Access;
-      Next_Song_Ready   : Boolean;
-      Last_Request_Time : Ada.Real_Time.Time;
-      Block_Websocket   : Boolean;
-      Global_Mutex      : Mutex.T_Mutex;
+      Name                    : String (Positive'First .. Name_Length);
+      Db                      : Database.T_Database_Class_Access;
+      Api_Dispatcher          : Api.Dispatcher.T_Dispatcher_Access;
+      Websocket               : Web_Methods.Websocket.T_Websocket_Class_Access;
+      Client_List             : Client.List.T_Client_List;
+      Auto_Playback_Requested : Boolean;
+      Current_Song            : Song.T_Song;
+      Playlist                : Song.Item.List.T_Item_List;
+      Song_Suggestions        : Song.List.T_Song_List;
+      Current_Item_Id         : Song.Item.T_Item_Id;
+      Sync_Task               : T_Sync_Task_Access;
+      Next_Song_Ready         : Boolean;
+      Last_Request_Time       : Ada.Real_Time.Time;
+      Block_Websocket         : Boolean;
+      Global_Mutex            : Mutex.T_Mutex;
    end record;
 
 end Room;

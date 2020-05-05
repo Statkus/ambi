@@ -540,11 +540,23 @@ package body Callback_Room is
 
          when Likes =>
             Songs := Current_Room.Get_Likes;
-            Songs.Reverse_Iterate (Build_Song_List_Item'Access);
+
+            if not Songs.Is_Empty then
+               Songs.Reverse_Iterate (Build_Song_List_Item'Access);
+            else
+               Response :=
+                 To_Unbounded_String
+                   ("<span>No song liked for the moment, add one by clicking on <i class=""far fa-heart""></i></span> of a song");
+            end if;
 
          when Suggestions =>
             Songs := Current_Room.Get_Suggestions;
-            Songs.Iterate (Build_Song_List_Item'Access);
+
+            if not Songs.Is_Empty then
+               Songs.Iterate (Build_Song_List_Item'Access);
+            else
+               Response := To_Unbounded_String ("<span>No suggestions available</span>");
+            end if;
 
          when others =>
             null;

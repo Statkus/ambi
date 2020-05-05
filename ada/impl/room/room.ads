@@ -155,7 +155,7 @@ private
    -------------------------------------------------------------------------------------------------
    procedure Remove_Disconnected_Client (This : in out T_Room);
 
-   Number_Of_Suggestions    : constant := 5;
+   Number_Of_Suggestions    : constant := 10;
    Number_Of_Excluded_Songs : constant := 10;
 
    type T_Room (Name_Length : Positive) is tagged limited record

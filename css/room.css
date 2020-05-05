@@ -372,6 +372,7 @@ input:checked + .slider:before {
 /* Suggestions list *******************************************************************************/
 #suggestions_list {
   margin-top: 60px;
+  margin-bottom: 8px;
 }
 
 /* Hide suggestions button ************************************************************************/
@@ -410,6 +411,10 @@ input:checked + .slider:before {
   .song_list {
     width: 100%;
     left: 0px;
+  }
+
+  #suggestions_list {
+    margin-bottom: 0px;
   }
 }
 

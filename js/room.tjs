@@ -107,7 +107,7 @@ function hideSettings() {
 // Called to show the suggestions side navigaton
 function showSuggestions() {
   if (window.matchMedia("(min-width: 666px)").matches) {
-    document.getElementById("suggestions").style.width = "660px";
+    document.getElementById("suggestions").style.width = "670px";
   }
   else {
     document.getElementById("suggestions").style.width = "100%";

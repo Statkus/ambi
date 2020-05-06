@@ -424,20 +424,30 @@ package body Api.Provider.Youtube.Test is
       Yt_Api : constant T_Youtube_Access :=
         New_And_Initialize (Http_Accessor, "obj/yt_api_key.txt");
    begin
-      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
-      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key (0) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (500) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 500, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (1000) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
 
       Yt_Api.Api_Keys.Append (To_Unbounded_String ("test_key_2"));
 
-      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
-      Assert (Yt_Api.Get_Key = "test_key_2", "Wrong key returned.");
-      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key (799) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 799, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (1) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (0) = "test_key_2", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
 
       Yt_Api.Api_Keys.Append (To_Unbounded_String ("test_key_3"));
 
-      Assert (Yt_Api.Get_Key = "test_key_2", "Wrong key returned.");
-      Assert (Yt_Api.Get_Key = "test_key_3", "Wrong key returned.");
-      Assert (Yt_Api.Get_Key = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Get_Key (800) = "test_key_2", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (876) = "test_key_3", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
+      Assert (Yt_Api.Get_Key (1000) = "test_key", "Wrong key returned.");
+      Assert (Yt_Api.Api_Key_Quota = 0, "Wrong API quota.");
    end Test_Get_Key;
 
    -------------------------------------------------------------------------------------------------

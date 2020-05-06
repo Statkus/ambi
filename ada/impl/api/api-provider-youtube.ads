@@ -42,7 +42,7 @@ private
    -------------------------------------------------------------------------------------------------
    -- Get_Key
    -------------------------------------------------------------------------------------------------
-   function Get_Key (This : in out T_Youtube) return String;
+   function Get_Key (This : in out T_Youtube; Query_Value : in Natural) return String;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Playlist
@@ -112,9 +112,16 @@ private
 
    Max_Number_Of_Request_Retry : constant := 10;
 
+   Search_Query_Value         : constant := 105;
+   Videos_Query_Value         : constant := 5;
+   Playlist_Items_Query_Value : constant := 5;
+
+   Quota : constant := 8000;
+
    type T_Youtube is new T_Provider with record
       Api_Keys       : Api_Key_Vectors.Vector;
       Api_Key_Cursor : Api_Key_Vectors.Cursor;
+      Api_Key_Quota  : Natural;
       Http_Accessor  : Web_Methods.Http.T_Http_Class_Access;
    end record;
 

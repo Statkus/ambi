@@ -21,7 +21,8 @@ package body Api.Provider.Youtube is
       Api_Key_File_Name : in String) return T_Youtube_Access
    is
       New_Api : constant T_Youtube_Access :=
-        new T_Youtube'(Http_Accessor => Http_Accessor, others => <>);
+        new T_Youtube'
+          (Http_Accessor => Http_Accessor, Api_Key_Quota => Natural'First, others => <>);
 
       Config_File : File_Type;
       Api_Keys    : Api_Key_Vectors.Vector;
@@ -123,15 +124,20 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    -- Get_Key
    -------------------------------------------------------------------------------------------------
-   function Get_Key (This : in out T_Youtube) return String is
+   function Get_Key (This : in out T_Youtube; Query_Value : in Natural) return String is
       use Api_Key_Vectors;
 
       Key : constant String := To_String (Element (This.Api_Key_Cursor));
    begin
-      Next (This.Api_Key_Cursor);
+      This.Api_Key_Quota := This.Api_Key_Quota + Query_Value;
 
-      if This.Api_Key_Cursor = No_Element then
-         This.Api_Key_Cursor := This.Api_Keys.First;
+      if This.Api_Key_Quota >= Quota then
+         Next (This.Api_Key_Cursor);
+         This.Api_Key_Quota := Natural'First;
+
+         if This.Api_Key_Cursor = No_Element then
+            This.Api_Key_Cursor := This.Api_Keys.First;
+         end if;
       end if;
 
       return Key;
@@ -175,7 +181,7 @@ package body Api.Provider.Youtube is
    begin
       return Api_Url &
         "search?key=" &
-        This.Get_Key &
+        This.Get_Key (Search_Query_Value) &
         "&q=" &
         Search_Input &
         "&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
@@ -186,7 +192,12 @@ package body Api.Provider.Youtube is
    -------------------------------------------------------------------------------------------------
    function Format_Video_Request (This : in out T_Youtube; Video_Id : in String) return String is
    begin
-      return Api_Url & "videos?key=" & This.Get_Key & "&id=" & Video_Id & "&part=contentDetails";
+      return Api_Url &
+        "videos?key=" &
+        This.Get_Key (Videos_Query_Value) &
+        "&id=" &
+        Video_Id &
+        "&part=contentDetails";
    end Format_Video_Request;
 
    -------------------------------------------------------------------------------------------------
@@ -199,7 +210,7 @@ package body Api.Provider.Youtube is
    begin
       return Api_Url &
         "search?key=" &
-        This.Get_Key &
+        This.Get_Key (Search_Query_Value) &
         "&relatedToVideoId=" &
         Video_Id &
         "&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
@@ -216,7 +227,7 @@ package body Api.Provider.Youtube is
    begin
       return Api_Url &
         "playlistItems?key=" &
-        This.Get_Key &
+        This.Get_Key (Playlist_Items_Query_Value) &
         "&playlistId=" &
         Playlist_Id &
         "&pageToken=" &

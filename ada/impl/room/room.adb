@@ -391,6 +391,8 @@ package body Room is
                      This.Db.Get_Room_Last_Songs (This.Name, Number_Of_Excluded_Songs)));
             end if;
 
+            This.Next_Song_Ready := True;
+
             This.Websocket.Send_Room_Request (This.Name, Update_Room_Current_Song);
             This.Last_Request_Time := Ada.Real_Time.Clock;
 
@@ -436,8 +438,6 @@ package body Room is
                   This.Websocket.Send_Room_Request (This.Name, Hide_Next_Room_Song_Button);
                end if;
             end if;
-
-            This.Next_Song_Ready := True;
          end loop;
       end loop;
    end T_Sync_Task;

@@ -365,7 +365,7 @@ package body Api.Provider.Youtube is
         Json.Streams.Create_Stream (Json_String_Response'Access);
       Json_Allocator : Types.Memory_Allocator;
 
-      Duration : Natural := Natural'First;
+      Video_Duration : Natural := Natural'First;
    begin
       declare
          -- This declaration might raise an exception if the JSON is not well formatted
@@ -373,13 +373,13 @@ package body Api.Provider.Youtube is
       begin
          for Item of Json_Result.Get ("items") loop
             -- Normally there is only one item
-            Duration :=
+            Video_Duration :=
               Convert_Iso_8601_Duration_To_Seconds
                 (Item.Get ("contentDetails").Get ("duration").Value);
          end loop;
       end;
 
-      return Duration;
+      return Video_Duration;
 
    exception
       when others =>

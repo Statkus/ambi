@@ -14,7 +14,21 @@ project Ambi is
    for Exec_Dir use ".";
 
    package Compiler is
-      for Default_Switches ("Ada") use ("-O", "-gnato", "-gnatwa", "-gnatwh", "-gnatwl", "-gnatwt");
+      for Default_Switches ("Ada") use
+        ("-O",
+         "-gnato",
+         "-gnatwa",
+         "-gnatwh",
+         "-gnatw.h",
+         "-gnatw.k",
+         "-gnatwl",
+         "-gnatw.l",
+         "-gnatw.n",
+         "-gnatwo",
+         "-gnatw.s",
+         "-gnatwt",
+         "-gnatw.u",
+         "-gnatw.w");
    end Compiler;
 
    package Pretty_Printer is

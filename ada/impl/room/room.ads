@@ -159,6 +159,11 @@ package Room is
    -------------------------------------------------------------------------------------------------
    function Is_Auto_Playback_Requested (This : in T_Room) return Boolean;
 
+   -------------------------------------------------------------------------------------------------
+   -- Get_Next_Song_Votes
+   -------------------------------------------------------------------------------------------------
+   function Get_Next_Song_Votes (This : in T_Room) return Natural;
+
 private
 
    -------------------------------------------------------------------------------------------------
@@ -195,6 +200,7 @@ private
       Playlist                : Song.Item.List.T_Item_List;
       Song_Suggestions        : Song.List.T_Song_List;
       Current_Item_Id         : Song.Item.T_Item_Id;
+      Next_Song_Votes         : Natural;
       Sync_Task               : T_Sync_Task_Access;
       Next_Song_Ready         : Boolean;
       Last_Request_Time       : Ada.Real_Time.Time;

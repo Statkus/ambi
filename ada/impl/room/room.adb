@@ -28,6 +28,7 @@ package body Room is
            Playlist                => Song.Item.List.Initialize,
            Song_Suggestions        => Song.List.Initialize,
            Current_Item_Id         => Song.Item.T_Item_Id'First,
+           Next_Song_Votes         => Natural'First,
            Sync_Task               => null,
            Next_Song_Ready         => False,
            Last_Request_Time       => Ada.Real_Time.Clock,
@@ -80,6 +81,8 @@ package body Room is
       This.Auto_Playback_Requested := True;
 
       This.Websocket.Send_Room_Request (This.Name, Update_Nb_Clients);
+      This.Websocket.Send_Room_Request (This.Name, Update_Next_Song_Votes);
+
       This.Last_Request_Time := Ada.Real_Time.Clock;
 
       Put_Line
@@ -220,17 +223,24 @@ package body Room is
       Next_Song_Request_Time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       if This.Current_Song.Get_Provider /= Api.No_Provider_Api then
-         This.Next_Song_Ready := False;
+         This.Next_Song_Votes := This.Next_Song_Votes + 1;
 
-         This.Sync_Task.Skip_Song;
+         if This.Next_Song_Votes > This.Client_List.Length / 2 then
+            This.Next_Song_Ready := False;
+            This.Next_Song_Votes := Natural'First;
 
-         while not This.Next_Song_Ready and
-           Ada.Real_Time.To_Duration (Ada.Real_Time.Clock - Next_Song_Request_Time) < 10.0
-         loop
-            null;
-         end loop;
+            This.Sync_Task.Skip_Song;
 
-         This.Websocket.Send_Room_Request (This.Name, Force_Next_Song);
+            while not This.Next_Song_Ready and
+              Ada.Real_Time.To_Duration (Ada.Real_Time.Clock - Next_Song_Request_Time) < 10.0
+            loop
+               null;
+            end loop;
+
+            This.Websocket.Send_Room_Request (This.Name, Force_Next_Song);
+         end if;
+
+         This.Websocket.Send_Room_Request (This.Name, Update_Next_Song_Votes);
       end if;
    end Next_Song;
 
@@ -366,6 +376,11 @@ package body Room is
      (This.Auto_Playback_Requested);
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Next_Song_Votes
+   -------------------------------------------------------------------------------------------------
+   function Get_Next_Song_Votes (This : in T_Room) return Natural is (This.Next_Song_Votes);
+
+   -------------------------------------------------------------------------------------------------
    -- T_Sync_Task
    -------------------------------------------------------------------------------------------------
    task body T_Sync_Task is
@@ -392,6 +407,7 @@ package body Room is
             end if;
 
             This.Next_Song_Ready := True;
+            This.Next_Song_Votes := Natural'First;
 
             This.Websocket.Send_Room_Request (This.Name, Update_Room_Current_Song);
             This.Last_Request_Time := Ada.Real_Time.Clock;
@@ -468,6 +484,8 @@ package body Room is
 
       if Previous_Number_Of_Clients /= This.Client_List.Length then
          This.Websocket.Send_Room_Request (This.Name, Update_Nb_Clients);
+         This.Websocket.Send_Room_Request (This.Name, Update_Next_Song_Votes);
+
          This.Last_Request_Time := Ada.Real_Time.Clock;
 
          This.Update_Auto_Playback_Requested;

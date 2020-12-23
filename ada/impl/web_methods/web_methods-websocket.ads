@@ -10,6 +10,7 @@ package Web_Methods.Websocket is
       Update_History,
       Update_Likes,
       Update_Suggestions,
+      Update_Next_Song_Votes,
       Clear_Search_Input,
       Force_Next_Song,
       Show_Next_Room_Song_Button,

@@ -92,6 +92,8 @@ package body Callback_Room is
             Response := Get_Song_List_Callback (Request, Current_Room);
          elsif Uri = "/get_current_room_song" then
             Response := Get_Current_Room_Song_Callback (Current_Room);
+         elsif Uri = "/get_next_song_votes" then
+            Response := Get_Next_Song_Votes_Callback (Current_Room);
          elsif Uri = "/get_nb_clients" then
             Response := Get_Number_Of_Clients_Callback (Current_Room);
          else
@@ -168,6 +170,11 @@ package body Callback_Room is
       end if;
 
       Insert (Translations, Assoc (Room_Song'Img, Current_Room.Get_Current_Song.Get_Title));
+      Insert
+        (Translations,
+         Assoc
+           (Next_Song_Votes'Img,
+            Current_Room.Get_Next_Song_Votes'Img & " /" & Current_Room.Get_Number_Of_Clients'Img));
       Insert (Translations, Assoc (Nb_Clients'Img, Current_Room.Get_Number_Of_Clients'Img));
       Insert (Translations, Assoc (Song_List'Img, Build_Playlist (Current_Room, Current_Client)));
       Insert
@@ -404,6 +411,22 @@ package body Callback_Room is
              (To_Placeholder_String (Ph_Current_Room_Song),
               Current_Room.Get_Current_Song.Get_Title));
    end Get_Current_Room_Song_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Next_Song_Votes_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Next_Song_Votes_Callback
+     (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
+   is
+   begin
+      return Aws.Response.Build
+          (Aws.Mime.Text_Xml,
+           Pack_Ajax_Xml_Response
+             (To_Placeholder_String (Ph_Next_Room_Song_Votes),
+              Current_Room.Get_Next_Song_Votes'Img &
+              " /" &
+              Current_Room.Get_Number_Of_Clients'Img));
+   end Get_Next_Song_Votes_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Number_Of_Clients_Callback

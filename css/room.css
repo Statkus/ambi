@@ -210,8 +210,24 @@ input:checked + .slider:before {
 #next_room_song_button {
   background-color: inherit;
   color: inherit;
+  font-size: 20px;
   border: none;
   outline: none;
+}
+
+.next_room_song_button_clicked {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Next room song votes ***************************************************************************/
+#next_room_song_votes {
+  background-color: inherit;
+  color: inherit;
+  font-size: 10px;
+  position: relative;
+  bottom: 10px;
+  right: 10px;
 }
 
 /* Song list buttons ******************************************************************************/

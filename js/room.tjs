@@ -23,6 +23,9 @@ else {
 // State of the song list
 var songListState = "playlist";
 
+// True when next room song is already voted
+var nextRoomSongVoted = false;
+
 // Playlist items already up voted
 var upVotedItems = [];
 
@@ -66,9 +69,16 @@ ambiSocket.onmessage = function (event) {
 
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=suggestions");
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_current_room_song");
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_next_song_votes");
+
+    document.getElementById("next_room_song_button").className = "";
+    nextRoomSongVoted = false;
   }
   else if (event.data == "update_nb_clients") {
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_nb_clients");
+  }
+  else if (event.data == "update_next_song_votes") {
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_next_song_votes");
   }
   else if (event.data == "force_next_song") {
     if (clientState == "sync" && playerState != "no_player") {
@@ -81,12 +91,14 @@ ambiSocket.onmessage = function (event) {
   else if (event.data == "show_next_room_song_button") {
     if (clientState == "sync") {
       document.getElementById("next_room_song_button").style = "display:inline";
+      document.getElementById("next_room_song_votes").style = "display:inline";
       document.getElementById("player_checkbox").style = "display:block";
     }
   }
   else if (event.data == "hide_next_room_song_button") {
     if (clientState == "sync") {
       document.getElementById("next_room_song_button").style = "display:none";
+      document.getElementById("next_room_song_votes").style = "display:none";
     }
     if (clientState == "sync" && playerState == "no_player") {
       document.getElementById("player_checkbox").style = "display:none";
@@ -135,10 +147,19 @@ function addToPlaylist(elm) {
       "&song_title=" + encodeURIComponent(parentElm.getElementsByClassName("add_playlist_buttons")[0].innerHTML) +
       "&song_thumbnail_link=" + parentElm.getElementsByTagName("img")[0].getAttribute("src"));
 
-      parentElm.style.backgroundColor = "rgb(100, 100, 100)";
+    parentElm.style.backgroundColor = "rgb(100, 100, 100)";
     setTimeout(function() {
-    parentElm.style.backgroundColor = "rgb(0, 0, 0)";
+      parentElm.style.backgroundColor = "rgb(0, 0, 0)";
     }, 50);
+  }
+}
+
+// Function called when the next room song button is clicked
+function nextRoomSong() {
+  if (nextRoomSongVoted == false) {
+    ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')
+    document.getElementById("next_room_song_button").className = "next_room_song_button_clicked";
+    nextRoomSongVoted = true;
   }
 }
 

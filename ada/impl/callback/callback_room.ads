@@ -36,12 +36,18 @@ private
       Param_Source);
 
    type T_Placeholder is
-     (Ph_Search_Results, Ph_Song_List, Ph_Suggestions_List, Ph_Current_Room_Song, Ph_Nb_Clients);
+     (Ph_Search_Results,
+      Ph_Song_List,
+      Ph_Suggestions_List,
+      Ph_Current_Room_Song,
+      Ph_Next_Room_Song_Votes,
+      Ph_Nb_Clients);
 
    type T_Thtml_Field is
      (Room_Name,
       Room_Song,
       Next_Room_Song,
+      Next_Song_Votes,
       Nb_Clients,
       Player_State,
       Player_Checkbox,
@@ -142,6 +148,12 @@ private
    -- Get_Current_Room_Song_Callback
    -------------------------------------------------------------------------------------------------
    function Get_Current_Room_Song_Callback
+     (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Next_Song_Votes_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Next_Song_Votes_Callback
      (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
 
    -------------------------------------------------------------------------------------------------

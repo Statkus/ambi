@@ -54,7 +54,8 @@
 
     <p>
       Current room song: <span id="current_room_song">@_ROOM_SONG_@</span>
-      <button id="next_room_song_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$next_room_song')" style="display:@_NEXT_ROOM_SONG_@" title="Request next song, be careful the song will change for everybody in the room"><i class="fas fa-step-forward"></i></button>
+      <button id="next_room_song_button" onclick="nextRoomSong()" style="display:@_NEXT_ROOM_SONG_@" title="Vote to skip song"><i class="fas fa-step-forward"></i></button>
+      <span id="next_room_song_votes" style="display:@_NEXT_ROOM_SONG_@" title="Number of people that voted to skip song, the majority is needed">@_NEXT_SONG_VOTES_@</span>
     </p>
 
     <p>People connected:<span id="nb_clients">@_NB_CLIENTS_@</span></p>

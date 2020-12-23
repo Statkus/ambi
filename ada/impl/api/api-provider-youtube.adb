@@ -269,15 +269,20 @@ package body Api.Provider.Youtube is
          Json_Result : constant Types.Json_Value := Parsers.Parse (Json_Stream, Json_Allocator);
       begin
          for Item of Json_Result.Get ("items") loop
-            Video :=
-              Song.Initialize
-                (Id             => Item.Get ("id").Get ("videoId").Value,
-                 Title          => Item.Get ("snippet").Get ("title").Value,
-                 Thumbnail_Link =>
-                   Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
-                 Provider => Api.Youtube_Api);
+            begin
+               Video :=
+                 Song.Initialize
+                   (Id             => Item.Get ("id").Get ("videoId").Value,
+                    Title          => Item.Get ("snippet").Get ("title").Value,
+                    Thumbnail_Link =>
+                      Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
+                    Provider => Api.Youtube_Api);
 
-            Videos_Result.Append (Video);
+               Videos_Result.Append (Video);
+            exception
+               when others =>
+                  null;
+            end;
          end loop;
       end;
 
@@ -324,20 +329,25 @@ package body Api.Provider.Youtube is
          end if;
 
          for Item of Json_Result.Get ("items") loop
-            -- Filter private video
-            if Item.Get ("snippet").Get ("title").Value /= "Private video" and
-              Item.Get ("snippet").Get ("title").Value /= "Deleted video"
-            then
-               Video :=
-                 Song.Initialize
-                   (Id             => Item.Get ("snippet").Get ("resourceId").Get ("videoId").Value,
-                    Title          => Item.Get ("snippet").Get ("title").Value,
-                    Thumbnail_Link =>
-                      Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
-                    Provider => Api.Youtube_Api);
+            begin
+               -- Filter private video
+               if Item.Get ("snippet").Get ("title").Value /= "Private video" and
+                 Item.Get ("snippet").Get ("title").Value /= "Deleted video"
+               then
+                  Video :=
+                    Song.Initialize
+                      (Id => Item.Get ("snippet").Get ("resourceId").Get ("videoId").Value,
+                       Title          => Item.Get ("snippet").Get ("title").Value,
+                       Thumbnail_Link =>
+                         Item.Get ("snippet").Get ("thumbnails").Get ("default").Get ("url").Value,
+                       Provider => Api.Youtube_Api);
 
-               Videos_Result.Append (Video);
-            end if;
+                  Videos_Result.Append (Video);
+               end if;
+            exception
+               when others =>
+                  null;
+            end;
          end loop;
       end;
 
@@ -352,6 +362,8 @@ package body Api.Provider.Youtube is
 
    exception
       when others =>
+         Total_Results      := 0;
+         Unavailable_Videos := 0;
          return Song.List.Initialize;
    end Parse_Playlist_Item_Results;
 
@@ -372,10 +384,15 @@ package body Api.Provider.Youtube is
          Json_Result : constant Types.Json_Value := Parsers.Parse (Json_Stream, Json_Allocator);
       begin
          for Item of Json_Result.Get ("items") loop
-            -- Normally there is only one item
-            Video_Duration :=
-              Convert_Iso_8601_Duration_To_Seconds
-                (Item.Get ("contentDetails").Get ("duration").Value);
+            begin
+               -- Normally there is only one item
+               Video_Duration :=
+                 Convert_Iso_8601_Duration_To_Seconds
+                   (Item.Get ("contentDetails").Get ("duration").Value);
+            exception
+               when others =>
+                  null;
+            end;
          end loop;
       end;
 

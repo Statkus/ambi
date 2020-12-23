@@ -288,6 +288,8 @@ package body Api.Provider.Youtube.Test is
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_video_content_details.json");
+      Correct_Json_Missing_Part : constant String :=
+        Read_File ("ada/test/json_samples/youtube_video_content_details_missing_part.json");
       Wrong_Json : constant String := "";
 
       Video : constant Song.T_Song :=
@@ -301,6 +303,20 @@ package body Api.Provider.Youtube.Test is
       -- Correct JSON
       ----------------------------------------------------------------------------------------------
       Http_Accessor_Mock.Set_Get_Response (Correct_Json);
+      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
+
+      Assert (Yt_Api.Get_Song_Duration (Video) = 171, "Wrong duration returned.");
+
+      Assert
+        (Http_Accessor_Mock.Get_Get_Url =
+         "https://www.googleapis.com/youtube/v3/videos?key=test_key&id=UbQgXeY_zi4&part=contentDetails",
+         "Wrong URL given.");
+      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
+
+      ----------------------------------------------------------------------------------------------
+      -- Correct JSON missing part
+      ----------------------------------------------------------------------------------------------
+      Http_Accessor_Mock.Set_Get_Response (Correct_Json_Missing_Part);
       Http_Accessor_Mock.Reset_Number_Of_Get_Called;
 
       Assert (Yt_Api.Get_Song_Duration (Video) = 171, "Wrong duration returned.");
@@ -342,6 +358,8 @@ package body Api.Provider.Youtube.Test is
 
       Correct_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_search_video_list.json");
+      Correct_Json_Missing_Part : constant String :=
+        Read_File ("ada/test/json_samples/youtube_search_video_list_missing_part.json");
       Wrong_Json : constant String := "";
 
       Video : constant Song.T_Song :=
@@ -376,6 +394,49 @@ package body Api.Provider.Youtube.Test is
       Assert
         (Song_Vectors.Element (Videos.First).Get_Thumbnail_Link =
          "https://i.ytimg.com/vi/sEXzii5scvg/default.jpg",
+         "Wrong first video thumbnail link.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Provider = Api.Youtube_Api,
+         "Wrong first video provider.");
+
+      -- Check last video info
+      Assert (Song_Vectors.Element (Videos.Last).Get_Id = "3J0VZ6JX60w", "Wrong last video ID.");
+      Assert
+        (Song_Vectors.Element (Videos.Last).Get_Title =
+         "10 Choix Les Plus Difficiles (Test de Personnalité)",
+         "Wrong last video title.");
+      Assert
+        (Song_Vectors.Element (Videos.Last).Get_Thumbnail_Link =
+         "https://i.ytimg.com/vi/3J0VZ6JX60w/default.jpg",
+         "Wrong last video thumbnail link.");
+      Assert
+        (Song_Vectors.Element (Videos.Last).Get_Provider = Api.Youtube_Api,
+         "Wrong last video provider.");
+
+      ----------------------------------------------------------------------------------------------
+      -- Correct JSON missing part
+      ----------------------------------------------------------------------------------------------
+      Http_Accessor_Mock.Set_Get_Response (Correct_Json_Missing_Part);
+      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
+
+      Videos := Yt_Api.Get_Related_Songs (Video);
+
+      Assert
+        (Http_Accessor_Mock.Get_Get_Url =
+         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
+         "Wrong URL given.");
+      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
+      Assert (Natural (Videos.Length) = 5, "Wrong number of videos returned.");
+
+      -- Check first video info
+      Assert (Song_Vectors.Element (Videos.First).Get_Id = "2IRZMJKsPRw", "Wrong first video ID.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Title =
+         "Qui Est Secrètement Amoureux de Toi ? (Test de Personnalité)",
+         "Wrong first video title.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Thumbnail_Link =
+         "https://i.ytimg.com/vi/2IRZMJKsPRw/default.jpg",
          "Wrong first video thumbnail link.");
       Assert
         (Song_Vectors.Element (Videos.First).Get_Provider = Api.Youtube_Api,
@@ -456,6 +517,8 @@ package body Api.Provider.Youtube.Test is
 
       Single_Page_Playlist_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_playlist_item_list.json");
+      Single_Page_Playlist_Json_Missing_Part : constant String :=
+        Read_File ("ada/test/json_samples/youtube_playlist_item_list_missing_part.json");
       Multiple_Pages_Playlist_1_Json : constant String :=
         Read_File ("ada/test/json_samples/youtube_playlist_item_list_multiple_pages_1.json");
       Multiple_Pages_Playlist_2_Json : constant String :=
@@ -509,6 +572,34 @@ package body Api.Provider.Youtube.Test is
       Assert
         (Song_Vectors.Element (Videos.Last).Get_Provider = Api.Youtube_Api,
          "Wrong last video provider.");
+
+      ----------------------------------------------------------------------------------------------
+      -- Single page playlist missing part
+      ----------------------------------------------------------------------------------------------
+      Http_Accessor_Mock.Set_Get_Response (Single_Page_Playlist_Json_Missing_Part);
+      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
+
+      Videos := Yt_Api.Get_Playlist ("OLAK5uy_nF2626M3nvAFVKDgSHbkG0JkUeDe3LNJ8");
+
+      Assert
+        (Http_Accessor_Mock.Get_Get_Url =
+         "https://www.googleapis.com/youtube/v3/playlistItems?key=test_key&playlistId=OLAK5uy_nF2626M3nvAFVKDgSHbkG0JkUeDe3LNJ8&pageToken=&maxResults=50&part=snippet",
+         "Wrong URL given.");
+      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
+      Assert (Natural (Videos.Length) = 1, "Wrong number of videos returned.");
+
+      -- Check first video info
+      Assert (Song_Vectors.Element (Videos.First).Get_Id = "tkrijo2dDj4", "Wrong first video ID.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Title = "Caravan Palace - Miracle (Fakear Remix)",
+         "Wrong first video title.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Thumbnail_Link =
+         "https://i.ytimg.com/vi/tkrijo2dDj4/default.jpg",
+         "Wrong first video thumbnail link.");
+      Assert
+        (Song_Vectors.Element (Videos.First).Get_Provider = Api.Youtube_Api,
+         "Wrong first video provider.");
 
       ----------------------------------------------------------------------------------------------
       -- Multiple pages playlist

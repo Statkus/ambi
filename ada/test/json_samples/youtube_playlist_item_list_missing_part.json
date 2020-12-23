@@ -1,0 +1,140 @@
+{
+ "kind": "youtube#playlistItemListResponse",
+ "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/RFy4JZrP_9QoFUMFEu3Xw1v3HIU\"",
+ "pageInfo": {
+  "totalResults": 3,
+  "resultsPerPage": 50
+ },
+ "items": [
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/8WsExT3opMwDifYYiYwBhot7Qcw\"",
+   "id": "T0xBSzV1eV9uRjI2MjZNM252QUZWS0RnU0hia0cwSmtVZURlM0xOSjguNjRGQzU1NEU0RDQ1M0YzMw==",
+   "snippet": {
+    "publishedAt": "2020-03-18T23:32:51.000Z",
+    "channelId": "UCBR8-60-B28hp2BmDPdntcQ",
+    "description": "Click to stream or order our new album \"Chronologic\": https://lnk.to/Chronologic\nCARAVAN PALACE ON TOUR: https://bit.ly/2H6KLki\n🔔 Subscribe to our channel and click the bell to activate notifications: http://bit.ly/2gvdiok\n\n- buy the video: http://hyperurl.co/ceiil7\n\nThis video was written and directed by Double Ninja for Cumulus (www.cumulus-production.com)\nProducer: Thomas Vernay\nProduction manager: Mathias Lemaitre Sgard \nA&R: Thomas Vernay and Mathias Lemaitre Sgard\n\nMathias Lemaitre Sgard : Character design, animation\nMarie Houssin : Character design, animation\nNayla Vanderweyen : Design, layout\nVictor Tissot : Design, layout\nKora Von Prittwitz : Design, layout, animation \nMaî-Suan Lepage : Design, layout\nGabriel Murgue : Design, layout\nMarie Clerc : Design, layout\nMartin Clerget : Design, layout, character design \nRaoul Mallat : Design, layout, animation \nAugustin Discart : Layout\nFlorent Ribeyron : FX animation \nArnaud Lefebvre : Animation \nVictoria Pellet : Animation \nPaul Raillard : Animation \nMylène Cagnoli : Animation \nYann Wallaert : Font design",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/QdabIfmcqSQ/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/QdabIfmcqSQ/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/QdabIfmcqSQ/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/QdabIfmcqSQ/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/QdabIfmcqSQ/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "OLAK5uy_nF2626M3nvAFVKDgSHbkG0JkUeDe3LNJ8",
+    "position": 0,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "QdabIfmcqSQ"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/A74Ge53Vfi5Uu0nsx25RI9-Ye6w\"",
+   "id": "T0xBSzV1eV9uRjI2MjZNM252QUZWS0RnU0hia0cwSmtVZURlM0xOSjguQUQ4NTVGNTk2NkM4MzhDNA==",
+   "snippet": {
+    "publishedAt": "2020-03-18T23:32:51.000Z",
+    "channelId": "UCBR8-60-B28hp2BmDPdntcQ",
+    "title": "Caravan Palace - Miracle (Fakear Remix)",
+    "description": "Stream/download from your favorite service : https://LoneDiggers.lnk.to/MiracleFakearRemix\nNew album \"Chronologic\" available: https://lnk.to/Chronologic\nCARAVAN PALACE ON TOUR: https://bit.ly/2H6KLki\n🔔 Subscribe to our channel and click the bell to activate notifications: http://bit.ly/2gvdiok\n👉 Go give Fakear some love: https://www.youtube.com/Fakearofficial\n\nFollow us: \nhttp://www.caravanpalace.com\nhttp://www.facebook.com/CaravanPalace \nhttp://www.caravanpalace.com/ \nhttps://twitter.com/caravanpalace \nhttps://www.instagram.com/caravanpalace/",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/tkrijo2dDj4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/tkrijo2dDj4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/tkrijo2dDj4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/tkrijo2dDj4/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/tkrijo2dDj4/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "OLAK5uy_nF2626M3nvAFVKDgSHbkG0JkUeDe3LNJ8",
+    "position": 1,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "tkrijo2dDj4"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"xwzn9fn_LczrfK9QS3iZcGzqRGs/Fp0lNa6D6fXv_i4jj2IvBZLmIf0\"",
+   "id": "T0xBSzV1eV9uRjI2MjZNM252QUZWS0RnU0hia0cwSmtVZURlM0xOSjguREZEQ0I2NDdGNENFRTk3Qg==",
+   "snippet": {
+    "publishedAt": "2020-03-18T23:32:51.000Z",
+    "channelId": "UCBR8-60-B28hp2BmDPdntcQ",
+    "title": "Miracle (Boogie Belgique Remix)",
+    "description": "Provided to YouTube by Universal Music Group\n\nMiracle (Boogie Belgique Remix) · Caravan Palace\n\nMiracle\n\n℗ 2019 Lone Diggers\n\nReleased on: 2019-10-24\n\nProducer, Studio  Personnel, Re- Mixer: Boogie Belgique\nComposer  Lyricist: Charles Delaporte\nComposer  Lyricist: Arnaud De Bosredon\nComposer  Lyricist: Antoine Toustou\nComposer  Lyricist: Hugues Payen\nComposer  Lyricist: Sonia Fernandez Velasco\nAuthor: Aurélien Amzallag\n\nAuto-generated by YouTube.",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/IGBxWcu6iXE/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/IGBxWcu6iXE/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/IGBxWcu6iXE/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/IGBxWcu6iXE/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/IGBxWcu6iXE/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "YouTube",
+    "playlistId": "OLAK5uy_nF2626M3nvAFVKDgSHbkG0JkUeDe3LNJ8",
+    "position": 2
+   }
+  }
+ ]
+}

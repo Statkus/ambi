@@ -32,7 +32,15 @@ var upVotedItems = [];
 // Simulate a click on the playlist button
 document.getElementById("playlist_button").click();
 
-// WebSocket to update playlist and current room song for all clients
+// Add event listener to send chat message by pressing enter
+document.getElementById("chat_message").addEventListener("keydown", function(e) {
+  if (e.keyCode == 13) {
+    // If the enter key is pressed
+    document.getElementById("chat_send_button").click();
+  }
+});
+
+// WebSocket to update room state for all clients
 var ambiSocket = new WebSocket("ws://@_SERVER_ADDRESS_@/@_ROOM_NAME_@Socket");
 
 ambiSocket.onmessage = function (event) {
@@ -79,6 +87,9 @@ ambiSocket.onmessage = function (event) {
   }
   else if (event.data == "update_next_song_votes") {
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_next_song_votes");
+  }
+  else if (event.data == "update_chat_log") {
+    ajaxGetXmlRequest("/@_ROOM_NAME_@/get_chat_log");
   }
   else if (event.data == "force_next_song") {
     if (clientState == "sync" && playerState != "no_player") {
@@ -210,5 +221,14 @@ function showSongList(list) {
   if (songListState != list) {
     songListState = list;
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=" + list);
+  }
+}
+
+// Function called to send a chat message
+function sendChatMessage() {
+  var message = document.getElementById("chat_message").value;
+  if (message != "") {
+    ajaxGetRequestNoCallback("/@_ROOM_NAME_@/add_chat_message?message=" + message);
+    document.getElementById("chat_message").value = "";
   }
 }

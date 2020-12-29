@@ -94,7 +94,7 @@ input:checked + .slider:before {
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 20;
+  z-index: 30;
   top: 0;
   left: 0;
   background-color: rgb(17, 17, 17);
@@ -410,6 +410,84 @@ input:checked + .slider:before {
   top: 5px;
 }
 
+/* Show chat button *******************************************************************************/
+#show_chat_button {
+  cursor: pointer;
+  color: inherit;
+  font-size: 30px;
+  position: fixed;
+  bottom: 45px;
+  left: calc(50% + 325px);
+}
+
+/* Chat popup *************************************************************************************/
+#chat_popup {
+  display: none;
+  background-color: rgb(17, 17, 17);
+  position: fixed;
+  bottom: 0px;
+  left: calc(50% + 360px);
+  width: 400px;
+  z-index: 20;
+  padding: 5px;
+}
+
+#chat_title {
+  margin: 7px;
+  font-size: 24px;
+  font-weight: bolder;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 16px;
+}
+
+#hide_chat_button {
+  cursor: pointer;
+  position: absolute;
+  top: 9px;
+  right: 16px;
+  font-size: 36px;
+}
+
+#chat_log_scrollable {
+  height: 400px;
+  margin-top: 60px;
+  margin-bottom: 5px;
+  overflow-wrap: break-word;
+  overflow-y: auto;
+}
+
+#chat_log {
+  text-align: left;
+  overflow-anchor: none;
+}
+
+#chat_log_anchor {
+  overflow-anchor: auto;
+  height: 1px;
+}
+
+#chat_message {
+  width: calc(100% - 10px - 35px - 5px);
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px 5px;
+  margin: 0px;
+}
+
+#chat_send_button {
+  background-color: white;
+  color: black;
+  width: 35px;
+  height: 25px;
+  border-radius: 4px;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+}
+
 /* Back to top link *******************************************************************************/
 #back_to_top_link {
   color: inherit;
@@ -447,5 +525,28 @@ input:checked + .slider:before {
 
   #back_to_top_link {
     left: calc(100% - 38px);
+  }
+
+  #show_chat_button {
+    left: calc(100% - 38px);
+  }
+}
+
+@media all and (max-width: 1550px) {
+  #chat_popup {
+    left: calc(100% - 410px);
+  }
+}
+
+@media all and (max-width: 410px) {
+  #chat_popup {
+    left: 0px;
+    width: calc(100% - 10px);
+  }
+}
+
+@media all and (max-height: 500px) {
+  #chat_log_scrollable{
+    height: calc(100vh - 100px);
   }
 }

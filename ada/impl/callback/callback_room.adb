@@ -96,6 +96,10 @@ package body Callback_Room is
             Response := Get_Next_Song_Votes_Callback (Current_Room);
          elsif Uri = "/get_nb_clients" then
             Response := Get_Number_Of_Clients_Callback (Current_Room);
+         elsif Uri = "/get_chat_log" then
+            Response := Get_Chat_Log_Callback (Current_Room);
+         elsif Uri = "/add_chat_message" then
+            Response := Add_Chat_Message_Callback (Request, Current_Room);
          else
             Put_Line ("Room " & Current_Room.Get_Name & ", not supported request: '" & Uri & "'");
             Response := Aws.Response.Build (Aws.Mime.Text_Html, "");
@@ -182,6 +186,7 @@ package body Callback_Room is
          Assoc (Suggestions_List'Img, Build_Song_List (Current_Room, Suggestions)));
       Insert (Translations, Assoc (Client_Sync'Img, Current_Client.Is_Sync_With_Room));
       Insert (Translations, Assoc (Server_Address'Img, To_String (Server_Ip)));
+      Insert (Translations, Assoc (Chat_Log'Img, Current_Room.Get_Chat_Log));
 
       -- Room script
       Insert
@@ -441,6 +446,32 @@ package body Callback_Room is
              (To_Placeholder_String (Ph_Nb_Clients),
               Current_Room.Get_Number_Of_Clients'Img));
    end Get_Number_Of_Clients_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Chat_Log_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Chat_Log_Callback
+     (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
+   is
+   begin
+      return Aws.Response.Build
+          (Aws.Mime.Text_Xml,
+           Pack_Ajax_Xml_Response (To_Placeholder_String (Ph_Chat_Log), Current_Room.Get_Chat_Log));
+   end Get_Chat_Log_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_Chat_Message_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_Chat_Message_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
+   is
+   begin
+      Current_Room.Add_Chat_Message
+      (Aws.Status.Parameter (Request, To_Parameter_String (Param_Message)));
+
+      return Aws.Response.Build (Aws.Mime.Text_Html, "");
+   end Add_Chat_Message_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results

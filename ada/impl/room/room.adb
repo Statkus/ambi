@@ -33,7 +33,8 @@ package body Room is
            Next_Song_Ready         => False,
            Last_Request_Time       => Ada.Real_Time.Clock,
            Block_Websocket         => False,
-           Global_Mutex            => <>);
+           Global_Mutex            => <>,
+           Chat_Log                => Null_Unbounded_String);
    begin
       New_Room.Db.Add_To_Rooms (Name);
 
@@ -245,6 +246,20 @@ package body Room is
    end Next_Song;
 
    -------------------------------------------------------------------------------------------------
+   -- Add_Chat_Message
+   -------------------------------------------------------------------------------------------------
+   procedure Add_Chat_Message (This : in out T_Room; Message : in String) is
+   begin
+      if This.Chat_Log = Null_Unbounded_String then
+         Append (Source => This.Chat_Log, New_Item => Message);
+      else
+         Append (Source => This.Chat_Log, New_Item => "<br/>" & Message);
+      end if;
+
+      This.Websocket.Send_Room_Request (This.Name, Update_Chat_Log);
+   end Add_Chat_Message;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Name
    -------------------------------------------------------------------------------------------------
    function Get_Name (This : in T_Room) return String is (This.Name);
@@ -381,6 +396,11 @@ package body Room is
    function Get_Next_Song_Votes (This : in T_Room) return Natural is (This.Next_Song_Votes);
 
    -------------------------------------------------------------------------------------------------
+   -- Get_Chat_Log
+   -------------------------------------------------------------------------------------------------
+   function Get_Chat_Log (This : in T_Room) return String is (To_String (This.Chat_Log));
+
+   -------------------------------------------------------------------------------------------------
    -- T_Sync_Task
    -------------------------------------------------------------------------------------------------
    task body T_Sync_Task is
@@ -489,6 +509,10 @@ package body Room is
          This.Last_Request_Time := Ada.Real_Time.Clock;
 
          This.Update_Auto_Playback_Requested;
+
+         if This.Client_List.Length = 0 then
+            This.Chat_Log := Null_Unbounded_String;
+         end if;
 
          Put_Line
            ("Room " &

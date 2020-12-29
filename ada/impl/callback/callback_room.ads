@@ -33,7 +33,8 @@ private
       Param_Item_Id,
       Param_Liked,
       Param_Checked,
-      Param_Source);
+      Param_Source,
+      Param_Message);
 
    type T_Placeholder is
      (Ph_Search_Results,
@@ -41,7 +42,8 @@ private
       Ph_Suggestions_List,
       Ph_Current_Room_Song,
       Ph_Next_Room_Song_Votes,
-      Ph_Nb_Clients);
+      Ph_Nb_Clients,
+      Ph_Chat_Log);
 
    type T_Thtml_Field is
      (Room_Name,
@@ -64,7 +66,8 @@ private
       Item_Id,
       Source_Client,
       Up_Votes,
-      Liked);
+      Liked,
+      Chat_Log);
 
    type T_Xml_Field is (Placeholder, Value, Action_Fields);
 
@@ -161,6 +164,19 @@ private
    -------------------------------------------------------------------------------------------------
    function Get_Number_Of_Clients_Callback
      (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
+
+   -------------------------------------------------------------------------------------------------
+   -- Get_Chat_Log_Callback
+   -------------------------------------------------------------------------------------------------
+   function Get_Chat_Log_Callback
+     (Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_Chat_Message_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_Chat_Message_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results

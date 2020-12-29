@@ -1,4 +1,5 @@
 with Ada.Real_Time;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Aws.Session;
 
@@ -95,6 +96,11 @@ package Room is
    procedure Next_Song (This : in out T_Room);
 
    -------------------------------------------------------------------------------------------------
+   -- Add_Chat_Message
+   -------------------------------------------------------------------------------------------------
+   procedure Add_Chat_Message (This : in out T_Room; Message : in String);
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Name
    -------------------------------------------------------------------------------------------------
    function Get_Name (This : in T_Room) return String;
@@ -164,6 +170,11 @@ package Room is
    -------------------------------------------------------------------------------------------------
    function Get_Next_Song_Votes (This : in T_Room) return Natural;
 
+   -------------------------------------------------------------------------------------------------
+   -- Get_Chat_Log
+   -------------------------------------------------------------------------------------------------
+   function Get_Chat_Log (This : in T_Room) return String;
+
 private
 
    -------------------------------------------------------------------------------------------------
@@ -206,6 +217,7 @@ private
       Last_Request_Time       : Ada.Real_Time.Time;
       Block_Websocket         : Boolean;
       Global_Mutex            : Mutex.T_Mutex;
+      Chat_Log                : Unbounded_String;
    end record;
 
 end Room;

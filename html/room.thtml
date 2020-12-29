@@ -76,6 +76,19 @@
       <div id="suggestions_list" class="song_list">@_SUGGESTIONS_LIST_@</div>
     </div>
 
+    <div id="show_chat_button" onclick="document.getElementById('chat_popup').style.display = 'block';document.getElementById('chat_message').focus();" title="Show room chat"><i class="fas fa-comment"></i></div>
+
+    <div id="chat_popup">
+      <span id="chat_title">Room chat</span>
+      <div id="hide_chat_button" onclick="document.getElementById('chat_popup').style.display = 'none';" title="Hide room chat"><i class="fas fa-times"></i></div>
+      <div id="chat_log_scrollable">
+        <div id="chat_log">@_CHAT_LOG_@</div>
+        <div id="chat_log_anchor"></div>
+      </div>
+      <input id="chat_message" type="text" placeholder="Write to room" autocomplete="off">
+      <button id="chat_send_button" onclick="sendChatMessage()" title="Send message"><i class="fas fa-play"></i></button>
+    </div>
+
     <a id="back_to_top_link" href="#top" title="Go to the top of the page"><i class="fas fa-chevron-circle-up"></i></a>
 
     <script id="room_script">@_ROOM_SCRIPT_@</script>

@@ -420,6 +420,13 @@ input:checked + .slider:before {
   left: calc(50% + 325px);
 }
 
+#chat_notification{
+  color: red;
+  font-size: 15px;
+  position: absolute;
+  left: 15px;
+}
+
 /* Chat popup *************************************************************************************/
 #chat_popup {
   display: none;

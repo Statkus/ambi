@@ -90,6 +90,10 @@ ambiSocket.onmessage = function (event) {
   }
   else if (event.data == "update_chat_log") {
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_chat_log");
+
+    if (document.getElementById("chat_popup").style.display == "" || document.getElementById("chat_popup").style.display == "none") {
+      document.getElementById("chat_notification").innerHTML = "<i class='fas fa-circle'></i>";
+    }
   }
   else if (event.data == "force_next_song") {
     if (clientState == "sync" && playerState != "no_player") {
@@ -222,6 +226,13 @@ function showSongList(list) {
     songListState = list;
     ajaxGetXmlRequest("/@_ROOM_NAME_@/get_song_list?source=" + list);
   }
+}
+
+// Function called to show chat
+function showChat() {
+  document.getElementById("chat_popup").style.display = "block";
+  document.getElementById("chat_message").focus();
+  document.getElementById("chat_notification").innerHTML = "";
 }
 
 // Function called to send a chat message

@@ -76,7 +76,7 @@
       <div id="suggestions_list" class="song_list">@_SUGGESTIONS_LIST_@</div>
     </div>
 
-    <div id="show_chat_button" onclick="document.getElementById('chat_popup').style.display = 'block';document.getElementById('chat_message').focus();" title="Show room chat"><i class="fas fa-comment"></i></div>
+    <div id="show_chat_button" onclick="showChat()" title="Show room chat"><i class="fas fa-comment"></i><span id="chat_notification"></span></div>
 
     <div id="chat_popup">
       <span id="chat_title">Room chat</span>

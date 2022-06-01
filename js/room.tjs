@@ -237,7 +237,7 @@ function showChat() {
 
 // Function called to send a chat message
 function sendChatMessage() {
-  var message = document.getElementById("chat_message").value;
+  var message = encodeURIComponent(document.getElementById("chat_message").value);
   if (message != "") {
     ajaxGetRequestNoCallback("/@_ROOM_NAME_@/add_chat_message?message=" + message);
     document.getElementById("chat_message").value = "";

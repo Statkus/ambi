@@ -3,7 +3,7 @@ function index() {
 }
 
 function joinOrCreateRoom() {
-  var roomName = document.getElementById("room_name_input").value;
-  document.getElementById("input_form").action = "/" + roomName.toLowerCase();
-  document.getElementById("room_name_input").value = roomName.toLowerCase();
+  var roomName = document.getElementById("room_name_input").value.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+  document.getElementById("input_form").action = "/" + roomName;
+  document.getElementById("room_name_input").value = roomName;
 }

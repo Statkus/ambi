@@ -6,6 +6,7 @@ with Aws.Mime;
 
 with Callback_Room;
 with Room_Name_List;
+with Sanitizer;
 
 package body Callback is
 
@@ -54,7 +55,9 @@ package body Callback is
          if Current_Room /= null then
             -- Room request
             Response := Callback_Room.Callback (Request, Current_Room);
-         elsif Aws.Status.Parameter (Request, "roomName") = Uri (Uri'First + 1 .. Uri'Last) then
+         elsif Aws.Status.Parameter (Request, "roomName") = Uri (Uri'First + 1 .. Uri'Last) and
+           Sanitizer.Is_Room_Name_Sanitized (Uri (Uri'First + 1 .. Uri'Last))
+         then
             -- Create new room
             Cb.Room_List.Append
               (Room.New_And_Initialize

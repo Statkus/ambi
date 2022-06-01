@@ -8,6 +8,7 @@ with Aws.Session;
 with Templates_Parser;
 
 with Api;
+with Sanitizer;
 with Song.Item.List;
 
 package body Callback_Room is
@@ -468,7 +469,8 @@ package body Callback_Room is
    is
    begin
       Current_Room.Add_Chat_Message
-      (Aws.Status.Parameter (Request, To_Parameter_String (Param_Message)));
+      (Sanitizer.Sanitize_Chat_Message
+         (Aws.Status.Parameter (Request, To_Parameter_String (Param_Message))));
 
       return Aws.Response.Build (Aws.Mime.Text_Html, "");
    end Add_Chat_Message_Callback;

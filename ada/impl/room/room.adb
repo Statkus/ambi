@@ -250,10 +250,12 @@ package body Room is
    -------------------------------------------------------------------------------------------------
    procedure Add_Chat_Message (This : in out T_Room; Message : in String) is
    begin
-      if This.Chat_Log = Null_Unbounded_String then
-         Append (Source => This.Chat_Log, New_Item => Message);
-      else
-         Append (Source => This.Chat_Log, New_Item => "<br/>" & Message);
+      if Message'Length /= Natural'First then
+         if This.Chat_Log = Null_Unbounded_String then
+            Append (Source => This.Chat_Log, New_Item => Message);
+         else
+            Append (Source => This.Chat_Log, New_Item => "<br/>" & Message);
+         end if;
       end if;
 
       This.Websocket.Send_Room_Request (This.Name, Update_Chat_Log);
@@ -322,7 +324,7 @@ package body Room is
       use Song.List;
 
       ----------------------------------------------------------------------------------------------
-      -- Get_Song_Search_Results
+      -- Add_Playlist
       ----------------------------------------------------------------------------------------------
       procedure Add_Playlist (Element : in Song.T_Song) is
       begin

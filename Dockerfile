@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:18.04
 
 RUN apt update && apt install -y git make gcc gnat gpr gprbuild asis-programs libssl-dev libsqlite3-dev
 
@@ -6,6 +6,7 @@ RUN apt update && apt install -y git make gcc gnat gpr gprbuild asis-programs li
 WORKDIR /home/ubuntu
 RUN git clone --recurse-submodules https://github.com/AdaCore/aws.git
 WORKDIR aws
+RUN git checkout 20.0
 RUN make SOCKET=openssl setup NETLIB=ipv6
 RUN make build install
 

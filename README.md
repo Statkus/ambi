@@ -8,6 +8,7 @@ From an original idea available here: https://github.com/valladiervictor/ambi
   - apt install git make gcc gnat gpr gprbuild asis-programs libssl-dev libsqlite3-dev
   - git clone --recurse-submodules https://github.com/AdaCore/aws.git
   - cd aws
+  - git checkout 20.0
   - make SOCKET=openssl setup NETLIB=ipv6
   - make build
   - make install

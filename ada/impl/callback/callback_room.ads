@@ -34,7 +34,8 @@ private
       Param_Liked,
       Param_Checked,
       Param_Source,
-      Param_Message);
+      Param_Message,
+      Param_Player);
 
    type T_Placeholder is
      (Ph_Search_Results,

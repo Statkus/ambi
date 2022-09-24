@@ -45,6 +45,10 @@ package body Callback_Room is
       if Uri = "/" or Uri = "" then
          if not Current_Room.Is_Client_Registered (Session_Id) then
             Current_Room.Add_Client (Session_Id);
+
+            if Aws.Status.Parameter (Request, To_Parameter_String (Param_Player)) = "false" then
+               Current_Room.Display_Client_Player (Session_Id => Session_Id, Display => False);
+            end if;
          end if;
 
          Put_Line

@@ -18,7 +18,7 @@ button {
 .checkbox_title {
   font-weight: bolder;
   position: relative;
-  top: 3px;
+  top: 10px;
   margin: 10px;
 }
 
@@ -79,6 +79,19 @@ input:checked + .slider:before {
 
 .slider:before {
   border-radius: 50%;
+}
+
+/* QR code ****************************************************************************************/
+#qr_code_title {
+  font-weight: bolder;
+  width: 200px;
+  margin: 15px;
+  margin-top: 40px;
+  margin-bottom: 0px;
+}
+
+#qr_code_image {
+  margin: 15px;
 }
 
 /* Show settings button ***************************************************************************/

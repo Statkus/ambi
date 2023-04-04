@@ -35,7 +35,7 @@ package body Database is
       -- Create the likes table if it does not exist yet
       Db.Sqlite.Execute
         (Ambi_Db.Db_Handle,
-         "CREATE TABLE IF NOT EXISTS likes (song_id TEXT NOT NULL PRIMARY KEY, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
+         "CREATE TABLE IF NOT EXISTS likes (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, song_id TEXT NOT NULL, song_title TEXT NOT NULL, song_thumbnail_link TEXT NOT NULL, song_provider TEXT NOT NULL, room_name TEXT NOT NULL);");
 
       -- Add an index on room_name for likes table if it does not exist yet
       Db.Sqlite.Execute
@@ -258,7 +258,7 @@ package body Database is
          while Db.Sqlite.More (Db_Iterator) loop
             Db.Sqlite.Get_Line (Db_Iterator, Db_Row);
 
-            Db_Row_Id_Cursor        := Db_Row.First;
+            Db_Row_Id_Cursor        := Db.String_Vectors.Next (Db_Row.First);
             Db_Row_Title_Cursor     := Db.String_Vectors.Next (Db_Row_Id_Cursor);
             Db_Row_Thumbnail_Cursor := Db.String_Vectors.Next (Db_Row_Title_Cursor);
             Db_Row_Provider_Cursor  := Db.String_Vectors.Next (Db_Row_Thumbnail_Cursor);

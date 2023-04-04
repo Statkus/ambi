@@ -136,7 +136,7 @@ package body Database_Wrapper is
       while Db.Sqlite.More (Db_Iterator) loop
          Db.Sqlite.Get_Line (Db_Iterator, Db_Row);
 
-         if Table_Name = "history" then
+         if Table_Name = "history" or Table_Name = "likes" then
             Db_Row_Id_Cursor := Db.String_Vectors.Next (Db_Row.First);
          else
             Db_Row_Id_Cursor := Db_Row.First;

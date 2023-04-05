@@ -180,6 +180,13 @@ private
       Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
 
    -------------------------------------------------------------------------------------------------
+   -- Add_First_Result_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_First_Result_To_Playlist_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
+
+   -------------------------------------------------------------------------------------------------
    -- Build_Search_Results
    -------------------------------------------------------------------------------------------------
    function Build_Search_Results (Song_Search_Results : in Song.List.T_Song_List) return String;

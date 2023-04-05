@@ -166,6 +166,25 @@ package body Room is
    end Add_Song_To_Playlist;
 
    -------------------------------------------------------------------------------------------------
+   -- Add_First_Result_To_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Add_First_Result_To_Playlist (This : in out T_Room; Search_Input : in String) is
+      Search_Type : Api.T_Search_Type;
+      Song_List   : constant Song.List.T_Song_List :=
+        This.Api_Dispatcher.Get_Song_Search_Results (Api.Youtube_Api, Search_Input, Search_Type);
+   begin
+      case Search_Type is
+         when Api.Words | Api.Video_Link =>
+            if not Song_List.Is_Empty then
+               This.Add_Song_To_Playlist (Aws.Session.No_Session, Song_List.First_Element, True);
+            end if;
+
+         when Api.Playlist_Link =>
+            null;
+      end case;
+   end Add_First_Result_To_Playlist;
+
+   -------------------------------------------------------------------------------------------------
    -- Remove_Item_From_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Remove_Item_From_Playlist (This : in out T_Room; Item_Id : in Song.Item.T_Item_Id) is

@@ -109,6 +109,9 @@ package body Callback_Room is
             Put_Line ("Room " & Current_Room.Get_Name & ", not supported request: '" & Uri & "'");
             Response := Aws.Response.Build (Aws.Mime.Text_Html, "");
          end if;
+      elsif Uri = "/add_first_result_to_playlist" then
+         Put_Line ("Room " & Current_Room.Get_Name & ", anonymous client request: '" & Uri & "'");
+         Response := Add_First_Result_To_Playlist_Callback (Request, Current_Room);
       else
          Put_Line
            ("Room " &
@@ -478,6 +481,20 @@ package body Callback_Room is
 
       return Aws.Response.Build (Aws.Mime.Text_Html, "");
    end Add_Chat_Message_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Add_First_Result_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Add_First_Result_To_Playlist_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
+   is
+   begin
+      Current_Room.Add_First_Result_To_Playlist
+      (Search_Input => Aws.Status.Parameter (Request, To_Parameter_String (Param_Search_Input)));
+
+      return Aws.Response.Build (Aws.Mime.Text_Html, "");
+   end Add_First_Result_To_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Build_Search_Results

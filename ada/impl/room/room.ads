@@ -71,6 +71,11 @@ package Room is
       Low_Priority : in     Boolean := False);
 
    -------------------------------------------------------------------------------------------------
+   -- Add_First_Result_To_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Add_First_Result_To_Playlist (This : in out T_Room; Search_Input : in String);
+
+   -------------------------------------------------------------------------------------------------
    -- Remove_Item_From_Playlist
    -------------------------------------------------------------------------------------------------
    procedure Remove_Item_From_Playlist (This : in out T_Room; Item_Id : in Song.Item.T_Item_Id);

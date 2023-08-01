@@ -356,12 +356,6 @@ package body Api.Provider.Youtube.Test is
           (Web_Methods.Http.T_Http_Class_Access (Http_Accessor_Mock),
            "obj/yt_api_key.txt");
 
-      Correct_Json : constant String :=
-        Read_File ("ada/test/json_samples/youtube_search_video_list.json");
-      Correct_Json_Missing_Part : constant String :=
-        Read_File ("ada/test/json_samples/youtube_search_video_list_missing_part.json");
-      Wrong_Json : constant String := "";
-
       Video : constant Song.T_Song :=
         Song.Initialize
           (Id             => "test",
@@ -370,105 +364,7 @@ package body Api.Provider.Youtube.Test is
            Provider       => Api.Youtube_Api);
       Videos : T_Song_List := Song.List.Initialize;
    begin
-      ----------------------------------------------------------------------------------------------
-      -- Correct JSON
-      ----------------------------------------------------------------------------------------------
-      Http_Accessor_Mock.Set_Get_Response (Correct_Json);
-      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
-
       Videos := Yt_Api.Get_Related_Songs (Video);
-
-      Assert
-        (Http_Accessor_Mock.Get_Get_Url =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
-         "Wrong URL given.");
-      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
-      Assert (Natural (Videos.Length) = 10, "Wrong number of videos returned.");
-
-      -- Check first video info
-      Assert (Song_Vectors.Element (Videos.First).Get_Id = "sEXzii5scvg", "Wrong first video ID.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Title =
-         "TEST EN CARTON #73 - Animal Crossing : New Horizons",
-         "Wrong first video title.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Thumbnail_Link =
-         "https://i.ytimg.com/vi/sEXzii5scvg/default.jpg",
-         "Wrong first video thumbnail link.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Provider = Api.Youtube_Api,
-         "Wrong first video provider.");
-
-      -- Check last video info
-      Assert (Song_Vectors.Element (Videos.Last).Get_Id = "3J0VZ6JX60w", "Wrong last video ID.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Title =
-         "10 Choix Les Plus Difficiles (Test de Personnalité)",
-         "Wrong last video title.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Thumbnail_Link =
-         "https://i.ytimg.com/vi/3J0VZ6JX60w/default.jpg",
-         "Wrong last video thumbnail link.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Provider = Api.Youtube_Api,
-         "Wrong last video provider.");
-
-      ----------------------------------------------------------------------------------------------
-      -- Correct JSON missing part
-      ----------------------------------------------------------------------------------------------
-      Http_Accessor_Mock.Set_Get_Response (Correct_Json_Missing_Part);
-      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
-
-      Videos := Yt_Api.Get_Related_Songs (Video);
-
-      Assert
-        (Http_Accessor_Mock.Get_Get_Url =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
-         "Wrong URL given.");
-      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
-      Assert (Natural (Videos.Length) = 5, "Wrong number of videos returned.");
-
-      -- Check first video info
-      Assert (Song_Vectors.Element (Videos.First).Get_Id = "2IRZMJKsPRw", "Wrong first video ID.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Title =
-         "Qui Est Secrètement Amoureux de Toi ? (Test de Personnalité)",
-         "Wrong first video title.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Thumbnail_Link =
-         "https://i.ytimg.com/vi/2IRZMJKsPRw/default.jpg",
-         "Wrong first video thumbnail link.");
-      Assert
-        (Song_Vectors.Element (Videos.First).Get_Provider = Api.Youtube_Api,
-         "Wrong first video provider.");
-
-      -- Check last video info
-      Assert (Song_Vectors.Element (Videos.Last).Get_Id = "3J0VZ6JX60w", "Wrong last video ID.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Title =
-         "10 Choix Les Plus Difficiles (Test de Personnalité)",
-         "Wrong last video title.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Thumbnail_Link =
-         "https://i.ytimg.com/vi/3J0VZ6JX60w/default.jpg",
-         "Wrong last video thumbnail link.");
-      Assert
-        (Song_Vectors.Element (Videos.Last).Get_Provider = Api.Youtube_Api,
-         "Wrong last video provider.");
-
-      ----------------------------------------------------------------------------------------------
-      -- Wrong JSON
-      ----------------------------------------------------------------------------------------------
-      Http_Accessor_Mock.Set_Get_Response (Wrong_Json);
-      Http_Accessor_Mock.Reset_Number_Of_Get_Called;
-
-      Videos := Yt_Api.Get_Related_Songs (Video);
-
-      Assert
-        (Http_Accessor_Mock.Get_Get_Url =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
-         "Wrong URL given.");
-      Assert (Http_Accessor_Mock.Get_Number_Of_Get_Called = 1, "Wrong number of Get called.");
       Assert (Natural (Videos.Length) = 0, "Wrong number of videos returned.");
    end Test_Get_Related_Songs;
 
@@ -680,11 +576,6 @@ package body Api.Provider.Youtube.Test is
       Assert
         (Yt_Api.Format_Video_Request ("test") =
          "https://www.googleapis.com/youtube/v3/videos?key=test_key&id=test&part=contentDetails",
-         "Wrong URL request.");
-
-      Assert
-        (Yt_Api.Format_Videos_Related_Request ("test") =
-         "https://www.googleapis.com/youtube/v3/search?key=test_key&relatedToVideoId=test&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true",
          "Wrong URL request.");
 
       Assert

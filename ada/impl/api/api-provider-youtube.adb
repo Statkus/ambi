@@ -115,9 +115,12 @@ package body Api.Provider.Youtube is
      (This        : in out T_Youtube;
       Source_Song : in     Song.T_Song) return Song.List.T_Song_List
    is
+      pragma Unreferenced (This);
+      pragma Unreferenced (Source_Song);
    begin
-      return Parse_Video_Search_Results
-          (This.Get_Request_Response (This.Format_Videos_Related_Request (Source_Song.Get_Id)));
+      -- As of August 7, 2023, Youtube no longer allows to retreive related videos with parameter
+      -- relatedToVideoId
+      return Song.List.Initialize;
    end Get_Related_Songs;
 
    -------------------------------------------------------------------------------------------------
@@ -188,22 +191,6 @@ package body Api.Provider.Youtube is
    begin
       return Api_Url & "videos?key=" & This.Get_Key & "&id=" & Video_Id & "&part=contentDetails";
    end Format_Video_Request;
-
-   -------------------------------------------------------------------------------------------------
-   -- Format_Videos_Related_Request
-   -------------------------------------------------------------------------------------------------
-   function Format_Videos_Related_Request
-     (This     : in out T_Youtube;
-      Video_Id : in     String) return String
-   is
-   begin
-      return Api_Url &
-        "search?key=" &
-        This.Get_Key &
-        "&relatedToVideoId=" &
-        Video_Id &
-        "&maxResults=20&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
-   end Format_Videos_Related_Request;
 
    -------------------------------------------------------------------------------------------------
    -- Format_Playlist_Items_Request

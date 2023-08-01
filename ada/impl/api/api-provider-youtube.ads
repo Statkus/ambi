@@ -62,13 +62,6 @@ private
    function Format_Video_Request (This : in out T_Youtube; Video_Id : in String) return String;
 
    -------------------------------------------------------------------------------------------------
-   -- Format_Videos_Related_Request
-   -------------------------------------------------------------------------------------------------
-   function Format_Videos_Related_Request
-     (This     : in out T_Youtube;
-      Video_Id : in     String) return String;
-
-   -------------------------------------------------------------------------------------------------
    -- Format_Playlist_Items_Request
    -------------------------------------------------------------------------------------------------
    function Format_Playlist_Items_Request

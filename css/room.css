@@ -86,7 +86,7 @@ input:checked + .slider:before {
   font-weight: bolder;
   width: 200px;
   margin: 15px;
-  margin-top: 40px;
+  margin-top: 15px;
   margin-bottom: 0px;
 }
 
@@ -100,6 +100,14 @@ input:checked + .slider:before {
   font-size: 32px;
   position: absolute;
   z-index: 3;
+}
+
+#show_settings_button:hover {
+  color: rgb(230, 230, 230);
+}
+
+#show_settings_button:active {
+  color: rgb(200, 200, 200);
 }
 
 /* Settings side navigation ***********************************************************************/
@@ -135,9 +143,44 @@ input:checked + .slider:before {
   font-size: 36px;
 }
 
+#hide_settings_button:hover {
+  color: rgb(230, 230, 230);
+}
+
+#hide_settings_button:active {
+  color: rgb(200, 200, 200);
+}
+
 /* Sync with room checkbox ************************************************************************/
 #sync_checkbox {
   white-space: nowrap;
+}
+
+/* Shuffle likes to playlist **********************************************************************/
+#shuffle_likes_to_playlist {
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  padding: 15px;
+}
+
+#shuffle_likes_to_playlist_button {
+  background-color: white;
+  font-weight: bolder;
+  font-size: inherit;
+  font-family: inherit;
+  color: black;
+  width: 200px;
+  border-radius: 4px;
+  border: none;
+  padding: 10px;
+}
+
+#shuffle_likes_to_playlist_button:hover {
+  background-color: rgb(230, 230, 230);
+}
+
+#shuffle_likes_to_playlist_button:active {
+  background-color: rgb(200, 200, 200);
 }
 
 /* Room name **************************************************************************************/
@@ -154,6 +197,14 @@ input:checked + .slider:before {
   position: absolute;
   top: 22px;
   left: calc(50% + 223px);
+}
+
+#change_room_link:hover {
+  color: rgb(230, 230, 230);
+}
+
+#change_room_link:active {
+  color: rgb(200, 200, 200);
 }
 
 /* Search bar *************************************************************************************/
@@ -182,6 +233,14 @@ input:checked + .slider:before {
   border: none;
   padding: 0px;
   margin: 0px;
+}
+
+#search_button:hover {
+  background-color: rgb(230, 230, 230);
+}
+
+#search_button:active {
+  background-color: rgb(200, 200, 200);
 }
 
 #search_results {
@@ -382,6 +441,14 @@ input:checked + .slider:before {
   z-index: 3;
 }
 
+#show_suggestions_button:hover {
+  background-color: rgb(230, 230, 230);
+}
+
+#show_suggestions_button:active {
+  background-color: rgb(200, 200, 200);
+}
+
 /* Suggestions side navigation ********************************************************************/
 #suggestions {
   height: 100%;
@@ -423,6 +490,14 @@ input:checked + .slider:before {
   top: 5px;
 }
 
+#hide_suggestions_button:hover {
+  background-color: rgb(230, 230, 230);
+}
+
+#hide_suggestions_button:active {
+  background-color: rgb(200, 200, 200);
+}
+
 /* Show chat button *******************************************************************************/
 #show_chat_button {
   cursor: pointer;
@@ -431,6 +506,14 @@ input:checked + .slider:before {
   position: fixed;
   bottom: 45px;
   left: calc(50% + 325px);
+}
+
+#show_chat_button:hover {
+  color: rgb(230, 230, 230);
+}
+
+#show_chat_button:active {
+  color: rgb(200, 200, 200);
 }
 
 #chat_notification{
@@ -468,6 +551,14 @@ input:checked + .slider:before {
   top: 9px;
   right: 16px;
   font-size: 36px;
+}
+
+#hide_chat_button:hover {
+  color: rgb(230, 230, 230);
+}
+
+#hide_chat_button:active {
+  color: rgb(200, 200, 200);
 }
 
 #chat_log_scrollable {
@@ -515,6 +606,14 @@ input:checked + .slider:before {
   position: fixed;
   bottom: 5px;
   left: calc(50% + 325px);
+}
+
+#back_to_top_link:hover {
+  color: rgb(230, 230, 230);
+}
+
+#back_to_top_link:active {
+  color: rgb(200, 200, 200);
 }
 
 /* Special rules for small screen *****************************************************************/

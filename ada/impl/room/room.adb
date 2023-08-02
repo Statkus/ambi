@@ -1,3 +1,4 @@
+with Ada.Containers;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Room is
@@ -34,7 +35,8 @@ package body Room is
            Last_Request_Time       => Ada.Real_Time.Clock,
            Block_Websocket         => False,
            Global_Mutex            => <>,
-           Chat_Log                => Null_Unbounded_String);
+           Chat_Log                => Null_Unbounded_String,
+           Random_Generator        => <>);
    begin
       New_Room.Db.Add_To_Rooms (Name);
 
@@ -279,6 +281,28 @@ package body Room is
 
       This.Websocket.Send_Room_Request (This.Name, Update_Chat_Log);
    end Add_Chat_Message;
+
+   -------------------------------------------------------------------------------------------------
+   -- Shuffle_Likes_To_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Shuffle_Likes_To_Playlist (This : in out T_Room; Session_Id : in Aws.Session.Id) is
+      use Ada.Containers;
+
+      Likes         : Song.List.T_Song_List := This.Get_Likes;
+      Selected_Like : Natural;
+   begin
+      while not Likes.Is_Empty loop
+         Selected_Like :=
+           Natural
+             (Float (Ada.Numerics.Float_Random.Random (This.Random_Generator)) *
+              Float (Likes.Length - 1));
+
+         This.Add_Song_To_Playlist
+         (Session_Id => Session_Id, New_Song => Likes.Element (Selected_Like));
+
+         Likes.Delete (Selected_Like);
+      end loop;
+   end Shuffle_Likes_To_Playlist;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Name

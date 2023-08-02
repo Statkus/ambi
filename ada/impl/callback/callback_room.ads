@@ -142,6 +142,13 @@ private
       Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
 
    -------------------------------------------------------------------------------------------------
+   -- Shuffle_Likes_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Shuffle_Likes_To_Playlist_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data;
+
+   -------------------------------------------------------------------------------------------------
    -- Get_Song_List_Callback
    -------------------------------------------------------------------------------------------------
    function Get_Song_List_Callback

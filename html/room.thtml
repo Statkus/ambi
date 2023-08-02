@@ -29,6 +29,9 @@
           <span class="slider"></span>
         </label>
       </div>
+      <div id="shuffle_likes_to_playlist">
+        <button id="shuffle_likes_to_playlist_button" onclick="ajaxGetRequestNoCallback('/@_ROOM_NAME_@/onclick$shuffle_likes_to_playlist');">Shuffle likes to the playlist</button>
+      </div>
       <div id="qr_code_title">Scan me to add song to the playlist from your phone:</div>
       <img id="qr_code_image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://@_SERVER_ADDRESS_@/@_ROOM_NAME_@?player=false" alt="Room QR code">
     </div>

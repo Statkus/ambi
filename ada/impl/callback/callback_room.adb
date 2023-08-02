@@ -91,6 +91,8 @@ package body Callback_Room is
             Response := Next_Room_Song_Callback (Current_Room);
          elsif Uri = "/onclick$up_vote" then
             Response := Up_Vote_Callback (Request, Current_Room);
+         elsif Uri = "/onclick$shuffle_likes_to_playlist" then
+            Response := Shuffle_Likes_To_Playlist_Callback (Request, Current_Room);
          elsif Uri = "/next_client_song" then
             Response := Next_Client_Song_Callback (Request, Current_Room);
          elsif Uri = "/get_song_list" then
@@ -375,6 +377,19 @@ package body Callback_Room is
 
       return Aws.Response.Build (Aws.Mime.Text_Html, "");
    end Up_Vote_Callback;
+
+   -------------------------------------------------------------------------------------------------
+   -- Shuffle_Likes_To_Playlist_Callback
+   -------------------------------------------------------------------------------------------------
+   function Shuffle_Likes_To_Playlist_Callback
+     (Request      : in Aws.Status.Data;
+      Current_Room : in not null Room.T_Room_Access) return Aws.Response.Data
+   is
+   begin
+      Current_Room.Shuffle_Likes_To_Playlist (Session_Id => Aws.Status.Session (Request));
+
+      return Aws.Response.Build (Aws.Mime.Text_Html, "");
+   end Shuffle_Likes_To_Playlist_Callback;
 
    -------------------------------------------------------------------------------------------------
    -- Get_Song_List_Callback

@@ -1,3 +1,4 @@
+with Ada.Numerics.Float_Random;
 with Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
@@ -104,6 +105,11 @@ package Room is
    -- Add_Chat_Message
    -------------------------------------------------------------------------------------------------
    procedure Add_Chat_Message (This : in out T_Room; Message : in String);
+
+   -------------------------------------------------------------------------------------------------
+   -- Shuffle_Likes_To_Playlist
+   -------------------------------------------------------------------------------------------------
+   procedure Shuffle_Likes_To_Playlist (This : in out T_Room; Session_Id : in Aws.Session.Id);
 
    -------------------------------------------------------------------------------------------------
    -- Get_Name
@@ -223,6 +229,7 @@ private
       Block_Websocket         : Boolean;
       Global_Mutex            : Mutex.T_Mutex;
       Chat_Log                : Unbounded_String;
+      Random_Generator        : Ada.Numerics.Float_Random.Generator;
    end record;
 
 end Room;

@@ -3,6 +3,8 @@ with Ada.Text_IO;       use Ada.Text_IO;
 
 with GNAT.Regpat; use GNAT.Regpat;
 
+with Aws.Url;
+
 with Json.Parsers;
 with Json.Streams;
 with Json.Types;
@@ -180,7 +182,7 @@ package body Api.Provider.Youtube is
         "search?key=" &
         This.Get_Key &
         "&q=" &
-        Search_Input &
+        Aws.Url.Encode (Search_Input) &
         "&maxResults=10&part=snippet&videoDefinition=any&type=video&safeSearch=none&videoEmbeddable=true";
    end Format_Search_Request;
 

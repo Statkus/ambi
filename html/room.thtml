@@ -40,7 +40,7 @@
 
     <div id="search_bar">
       <input id="search_input" type="text" placeholder="Search song" autocomplete="off" autofocus>
-      <button id="search_button" onclick="ajaxGetXmlRequest('/@_ROOM_NAME_@/onclick$search_button?search_input=' + document.getElementById('search_input').value);"><i class="fas fa-search"></i></button>
+      <button id="search_button" onclick="ajaxGetXmlRequest('/@_ROOM_NAME_@/onclick$search_button?search_input=' + encodeURIComponent(document.getElementById('search_input').value));"><i class="fas fa-search"></i></button>
       <div id="search_results"></div>
     </div>
 

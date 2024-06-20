@@ -298,7 +298,10 @@ package body Room is
               Float (Likes.Length - 1));
 
          This.Add_Song_To_Playlist
-         (Session_Id => Session_Id, New_Song => Likes.Element (Selected_Like));
+         (Session_Id                                    =>
+            Session_Id, New_Song                        =>
+            Likes.Element (Selected_Like), Low_Priority =>
+            True);
 
          Likes.Delete (Selected_Like);
       end loop;
